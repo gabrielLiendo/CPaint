@@ -12,10 +12,14 @@
 #include "triangle.h"
 #include "square.h"
 
+#ifdef _MSC_VER
+#pragma warning (disable: 4505) // unreferenced local function has been removed
+#endif
+
 using namespace std;
 
 typedef enum { HARDWARE, SOFTWARE } renderingMode;
-typedef enum { LINE, TRIANGLE, SQUARE } figureShape;
+typedef enum { LINE, TRIANGLE, RECTANGLE } figureShape;
 
 renderingMode mode = HARDWARE;
 figureShape shape = LINE;
@@ -32,65 +36,50 @@ list<shared_ptr<CShape>> shapes;
 shared_ptr<CShape> current_shape;
 
 
-static bool show_demo_window = true;
-static bool show_another_window = false;
+static bool showGUI = true;
 static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-void my_display_code()
+void drawGUI()
 {
-	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	if (show_demo_window)
-		ImGui::ShowDemoWindow(&show_demo_window);
+	static float f = 0.0f;
+	static int counter = 0;
 
-	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-	{
-		static float f = 0.0f;
-		static int counter = 0;
+	ImGui::Begin("Main Configuration");                          // Create a window called "Hello, world!" and append into it.
 
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+	ImGui::ColorEdit3("Background Color", bgColor); // Edit 3 floats representing a color
 
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-		ImGui::Checkbox("Another Window", &show_another_window);
+	ImGui::ColorEdit3("Fill Color", fillColor); // Edit 3 floats representing a color
 
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+	if (ImGui::Button("Line"))
+		shape = LINE;
+	if (ImGui::Button("Triangle"))
+		shape = TRIANGLE;
+	if (ImGui::Button("Rectangle"))
+		shape = RECTANGLE;
 
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
-		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
-
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
-	}
-
-	// 3. Show another simple window.
-	if (show_another_window)
-	{
-		ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me"))
-			show_another_window = false;
-		ImGui::End();
-	}
+	ImGui::SameLine();
+	
+	ImGui::End();
 }
+
 void renderScene(void) 
 {	
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL2_NewFrame();
 	ImGui_ImplGLUT_NewFrame();
 
-	my_display_code();
 
-	//Rendering
+	//Draw the ImGui frame
+	drawGUI();
+
+	// Render GUI
 	ImGui::Render();
 	ImGuiIO& io = ImGui::GetIO();
-
+	glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
 	glClearColor(bgColor[0], bgColor[1], bgColor[2], 1);
 	glClear(GL_COLOR_BUFFER_BIT);
+	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
-	//cout << "." << endl;
 
 	if(current_shape)
 		current_shape->render();
@@ -98,11 +87,11 @@ void renderScene(void)
 	// Render every shape
 	for (auto const& s : shapes) 
 		s->render();
-
-	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-
+	
+	
 	// Present frame buffer
 	glutSwapBuffers();
+	glutPostRedisplay();
 }
 
 void onResize(int w, int h)
@@ -149,7 +138,7 @@ void onClickCanvas(int button, int state, int x, int y)
 				t->set(x, y, x, y, x, y);
 				current_shape = t;
 			}
-			else if (shape == SQUARE)
+			else if (shape == RECTANGLE)
 			{	
 				shared_ptr<CSquare> s = make_shared<CSquare>(fillColor[0], fillColor[1], fillColor[2]);
 				s->set(x, y, x, y, x, y, x, y);
@@ -161,6 +150,7 @@ void onClickCanvas(int button, int state, int x, int y)
 		case GLUT_UP:
 			shapes.push_back(current_shape);
 			current_shape = NULL;
+			cout << "DONE" << endl;
 		default:
 			break;
 		}
@@ -174,10 +164,12 @@ void onClick(int button, int state, int x, int y)
 {	
 	ImGuiIO& io = ImGui::GetIO();
 
-	if (io.WantCaptureMouse) 
-		ImGui_ImplGLUT_MouseFunc(button, state, x, y); // Redirect event to ImGui
-	else 
+	if (io.WantCaptureMouse){
+		ImGui_ImplGLUT_MouseFunc(button, state, x, y);
+	}
+	else {
 		onClickCanvas(button, state, x, y); // Manage click on canvas	
+	}
 }
 
 void onMotion(int x, int y)
@@ -186,12 +178,14 @@ void onMotion(int x, int y)
 
 	if (io.WantCaptureMouse)
 		ImGui_ImplGLUT_MotionFunc(x, y);
+
 	else
 	{
 		if (current_shape)
 		{
 			current_shape->update(x, height - y - 1);
 			glutPostRedisplay();
+			cout << "update" << endl;
 		}
 	}
 }
@@ -225,7 +219,7 @@ int main(int argc, char** argv)
 	ImGui_ImplOpenGL2_Init();
 
 	// Set GLUT custom event callbacks
-	// NOTE: This will overwrite some of the functions set by ImGui_ImplGLUT_InstallFuncs() 
+	// NOTE: This will overwrite some of bindings set by ImGui_ImplGLUT_InstallFuncs() 
 	glutMouseFunc(onClick);
 	glutMotionFunc(onMotion);
 

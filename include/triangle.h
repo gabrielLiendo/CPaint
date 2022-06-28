@@ -44,11 +44,8 @@ public:
 		setColor(fillColor[0], fillColor[1], fillColor[2]);
 
 		glBegin(GL_TRIANGLES); {
-			for (auto p : points) {
-				cout << p.getX() << " " << p.getY() << endl;
+			for (auto p : points)
 				glVertex2i(p.getX(), p.getY());
-			}
-		
 		}
 			
 		glEnd();

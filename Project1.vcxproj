@@ -167,6 +167,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Header.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_impl_glut.h" />
@@ -175,11 +176,11 @@
     <ClInclude Include="include\imgui\imstb_rectpack.h" />
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
-    <ClInclude Include="square.h" />
-    <ClInclude Include="point2D.h" />
-    <ClInclude Include="triangle.h" />
-    <ClInclude Include="line.h" />
-    <ClInclude Include="shape.h" />
+    <ClInclude Include="include\line.h" />
+    <ClInclude Include="include\point2D.h" />
+    <ClInclude Include="include\shape.h" />
+    <ClInclude Include="include\square.h" />
+    <ClInclude Include="include\triangle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
