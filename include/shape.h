@@ -1,4 +1,5 @@
 #pragma once
+#include "point2D.h"
 #include <iostream>
 
 using namespace std;
@@ -7,6 +8,7 @@ class CShape
 {
 protected:
 	//float borderColor[3];
+	Point2D ctrlPoints[2];
 	float fillColor[3];
 
 public:
@@ -22,9 +24,14 @@ public:
 		cout << "Se destruyo un shape" << endl;
 	}
 
+	void set(int x0, int y0)
+	{
+		ctrlPoints[0].set(x0, y0);
+		ctrlPoints[1].set(x0, y0);
+	}
 
 	void putPixel(int x, int y)
-	{
+	{	
 		glBegin(GL_POINTS);
 			glVertex2i(x, y);
 		glEnd();
@@ -34,7 +41,6 @@ public:
 	{
 		glColor3f(r, g, b);
 	}
-
 
 	virtual void render() = 0;
 	

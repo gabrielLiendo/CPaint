@@ -15,22 +15,16 @@ public:
 		cout << "Se destruyo un cuadrado" << endl;
 	}
 
-	void set(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+	void update(int x1Ctrl, int y1Ctrl)
 	{
-		points[0].set(x0, y0);
-		points[1].set(x1, y1);
-		points[2].set(x2, y2);
-		points[3].set(x3, y3);
-	}
+		ctrlPoints[1].set(x1Ctrl, y1Ctrl);
 
-	void update(int x3, int y3)
-	{	
-		int x0 = points[0].getX();
-		int y0 = points[0].getY();
-
-		points[1].set(x0, y3);
-		points[2].set(x3, y3);
-		points[3].set(x3, y0);
+		int x0Ctrl = ctrlPoints[0].getX(), y0Ctrl = ctrlPoints[0].getY();
+		
+		points[0].set(x0Ctrl, y0Ctrl);
+		points[1].set(x0Ctrl, y1Ctrl);
+		points[2].set(x1Ctrl, y1Ctrl);
+		points[3].set(x1Ctrl, y0Ctrl);
 	}
 
 	void render()

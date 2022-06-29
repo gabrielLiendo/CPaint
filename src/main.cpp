@@ -3,23 +3,20 @@
 #include "imgui_impl_opengl2.h"
 
 #include <GL/freeglut.h>
-
-#include <list>
 #include <iostream>
+#include <list>
 #include <memory>
 
 #include "line.h"
 #include "triangle.h"
 #include "square.h"
+#include "circle.h"
 
-#ifdef _MSC_VER
-#pragma warning (disable: 4505) // unreferenced local function has been removed
-#endif
 
 using namespace std;
 
 typedef enum { HARDWARE, SOFTWARE } renderingMode;
-typedef enum { LINE, TRIANGLE, RECTANGLE } figureShape;
+typedef enum { LINE, TRIANGLE, RECTANGLE, CIRCLE } figureShape;
 
 renderingMode mode = HARDWARE;
 figureShape shape = LINE;
@@ -33,22 +30,16 @@ float fillColor[] = {1.0f, 1.0f, 1.0f};
 
 // Displayed Figures 
 list<shared_ptr<CShape>> shapes;
-shared_ptr<CShape> current_shape;
+shared_ptr<CShape> drawingShape;
 
-
-static bool showGUI = true;
-static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 void drawGUI()
 {
-	static float f = 0.0f;
-	static int counter = 0;
+	ImGui::Begin("Main Configuration");                   
 
-	ImGui::Begin("Main Configuration");                          // Create a window called "Hello, world!" and append into it.
+	ImGui::ColorEdit3("Background Color", bgColor); 
 
-	ImGui::ColorEdit3("Background Color", bgColor); // Edit 3 floats representing a color
-
-	ImGui::ColorEdit3("Fill Color", fillColor); // Edit 3 floats representing a color
+	ImGui::ColorEdit3("Fill Color", fillColor);
 
 	if (ImGui::Button("Line"))
 		shape = LINE;
@@ -56,8 +47,8 @@ void drawGUI()
 		shape = TRIANGLE;
 	if (ImGui::Button("Rectangle"))
 		shape = RECTANGLE;
-
-	ImGui::SameLine();
+	if (ImGui::Button("Circle"))
+		shape = CIRCLE;
 	
 	ImGui::End();
 }
@@ -68,9 +59,10 @@ void renderScene(void)
 	ImGui_ImplOpenGL2_NewFrame();
 	ImGui_ImplGLUT_NewFrame();
 
-
 	//Draw the ImGui frame
 	drawGUI();
+
+	cout << "." << endl;
 
 	// Render GUI
 	ImGui::Render();
@@ -80,14 +72,13 @@ void renderScene(void)
 	glClear(GL_COLOR_BUFFER_BIT);
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
+	// Render shape currently being drawn
+	if(drawingShape)
+		drawingShape->render();
 
-	if(current_shape)
-		current_shape->render();
-
-	// Render every shape
+	// Render every shape already in canvas
 	for (auto const& s : shapes) 
 		s->render();
-	
 	
 	// Present frame buffer
 	glutSwapBuffers();
@@ -129,27 +120,33 @@ void onClickCanvas(int button, int state, int x, int y)
 			if (shape == LINE)
 			{	
 				shared_ptr<CLine> l = make_shared<CLine>(fillColor[0], fillColor[1], fillColor[2]);
-				l->set(x, y, x, y);
-				current_shape = l;
+				l->set(x, y);
+				drawingShape = l;
 			}
 			else if (shape == TRIANGLE)
 			{
 				shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
-				t->set(x, y, x, y, x, y);
-				current_shape = t;
+				t->set(x, y);
+				drawingShape = t;
 			}
 			else if (shape == RECTANGLE)
 			{	
 				shared_ptr<CSquare> s = make_shared<CSquare>(fillColor[0], fillColor[1], fillColor[2]);
-				s->set(x, y, x, y, x, y, x, y);
-				current_shape = s;
+				s->set(x, y);
+				drawingShape = s;
+			}
+			else if (shape == CIRCLE)
+			{
+				shared_ptr<C_Circle> c = make_shared<C_Circle>(fillColor[0], fillColor[1], fillColor[2]);
+				c->set(x, y);
+				drawingShape = c;
 			}
 			
 			break;
 		}
 		case GLUT_UP:
-			shapes.push_back(current_shape);
-			current_shape = NULL;
+			shapes.push_back(drawingShape);
+			drawingShape = NULL;
 			cout << "DONE" << endl;
 		default:
 			break;
@@ -168,7 +165,7 @@ void onClick(int button, int state, int x, int y)
 		ImGui_ImplGLUT_MouseFunc(button, state, x, y);
 	}
 	else {
-		onClickCanvas(button, state, x, y); // Manage click on canvas	
+		onClickCanvas(button, state, x, y);
 	}
 }
 
@@ -178,15 +175,24 @@ void onMotion(int x, int y)
 
 	if (io.WantCaptureMouse)
 		ImGui_ImplGLUT_MotionFunc(x, y);
-
 	else
 	{
-		if (current_shape)
-		{
-			current_shape->update(x, height - y - 1);
-			glutPostRedisplay();
-			cout << "update" << endl;
-		}
+		if (drawingShape)
+			drawingShape->update(x, height - y - 1);
+	}
+}
+
+void onNormalKey(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'B':
+
+	case 27:
+		exit(0);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -222,6 +228,7 @@ int main(int argc, char** argv)
 	// NOTE: This will overwrite some of bindings set by ImGui_ImplGLUT_InstallFuncs() 
 	glutMouseFunc(onClick);
 	glutMotionFunc(onMotion);
+	glutKeyboardFunc(onNormalKey);
 
 	glutMainLoop();
 

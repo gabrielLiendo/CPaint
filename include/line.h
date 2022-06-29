@@ -4,9 +4,6 @@
 
 class CLine : public CShape
 {
-private:
-	Point2D points[2];
-
 public:
 	CLine(float r, float g, float b) : CShape(r, g, b) {}
 
@@ -15,15 +12,9 @@ public:
 		cout << "Se destruyo una linea" << endl;
 	}
 
-	void set(int x0, int y0, int x1, int y1)
+	void update(int x2, int y2)
 	{
-		points[0].set(x0, y0);
-		points[1].set(x1, y1);
-	}
-
-	void update(int x1, int y1)
-	{
-		points[1].set(x1, y1);
+		ctrlPoints[1].set(x2, y2);
 	}
 
 	void render()
@@ -31,11 +22,17 @@ public:
 		// despliegas la línea con el algoritmo de bresenham
 		setColor(fillColor[0], fillColor[1], fillColor[2]);
 
+		
 		// user putpixel de aquí en adelante... con Bresenham
+		//glEnable(GL_LINE_STIPPLE);
+		//glLineStipple(3, 3);
+		//glDisable(GL_LINE_STIPPLE);
+
 		glBegin(GL_LINES);
-			for (auto p : points)
+			for (auto p : ctrlPoints)
 				glVertex2i(p.getX(), p.getY());
 		glEnd();
+		
 	}
 
 	bool onClick(int x, int y) 

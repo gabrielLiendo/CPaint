@@ -4,7 +4,7 @@
 
 class CTriangle : public CShape
 {
-private:
+private:	
 	Point2D points[3];
 
 public:
@@ -12,42 +12,31 @@ public:
 
 	~CTriangle()
 	{
-		cout << "Se destruyo una linea" << endl;
+		cout << "Se destruyo un triangulo" << endl;
 	}
 
-	void set(int x0, int y0, int x1, int y1, int x2, int y2)
-	{
-		points[0].set(x0, y0);
-		points[1].set(x1, y1);
-		points[2].set(x2, y2);
-	}
+	void update(int x1Ctrl, int y1Ctrl)
+	{	
+		ctrlPoints[1].set(x1Ctrl, y1Ctrl);
 
-	void update(int x2, int y2)
-	{
-		int x0 = points[0].getX();
-		int y0 = points[0].getY();
+		int x0Ctrl = ctrlPoints[0].getX(), y0Ctrl = ctrlPoints[0].getY();
+		int xMiddle = x0Ctrl + (x1Ctrl - x0Ctrl) / 2;
 
-		if (x2 >= x0)
-		{
-			points[1].set(x0 - (x2 - x0), y2);
-			points[2].set(x2, y2);
-		}
-		else 
-		{	
-			points[1].set(x2, y2);
-			points[2].set(x0 - (x2 - x0), y2);
-		}	
+		if (y1Ctrl > y0Ctrl)
+			swap(y1Ctrl, y0Ctrl);
+
+		points[0].set(xMiddle, y0Ctrl);
+		points[1].set(x0Ctrl, y1Ctrl);
+		points[2].set(x1Ctrl, y1Ctrl);
 	}
 
 	void render()
-	{
+	{	
 		setColor(fillColor[0], fillColor[1], fillColor[2]);
 
-		glBegin(GL_TRIANGLES); {
+		glBegin(GL_TRIANGLES); 
 			for (auto p : points)
 				glVertex2i(p.getX(), p.getY());
-		}
-			
 		glEnd();
 	}
 

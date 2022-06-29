@@ -86,7 +86,7 @@
     <ClInclude Include="include\triangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header.h">
+    <ClInclude Include="include\circle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
