@@ -15,22 +15,22 @@ public:
 		cout << "Se destruyo un triangulo" << endl;
 	}
 
-	void update(int x1Ctrl, int y1Ctrl)
+	void update(int x1, int y1)
 	{	
-		ctrlPoints[1].set(x1Ctrl, y1Ctrl);
+		ctrlPoints[1].set(x1, y1);
 
-		int x0Ctrl = ctrlPoints[0].getX(), y0Ctrl = ctrlPoints[0].getY();
-		int xMiddle = x0Ctrl + (x1Ctrl - x0Ctrl) / 2;
+		int x0 = ctrlPoints[0].getX(), y0 = ctrlPoints[0].getY();
+		int xMiddle = x0 + ((x1 - x0) >> 1);
 
-		if (y1Ctrl > y0Ctrl)
-			swap(y1Ctrl, y0Ctrl);
+		if (y1 > y0)
+			swap(y1, y0);
 
-		points[0].set(xMiddle, y0Ctrl);
-		points[1].set(x0Ctrl, y1Ctrl);
-		points[2].set(x1Ctrl, y1Ctrl);
+		points[0].set(xMiddle, y0);
+		points[1].set(x0, y1);
+		points[2].set(x1, y1);
 	}
 
-	void render()
+	void render(const char* mode)
 	{	
 		setColor(fillColor[0], fillColor[1], fillColor[2]);
 

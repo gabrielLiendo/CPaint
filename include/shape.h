@@ -42,7 +42,7 @@ public:
 		glColor3f(r, g, b);
 	}
 
-	virtual void render() = 0;
+	virtual void render(const char* mode) = 0;
 	
 	virtual void update(int x, int y) = 0;
 

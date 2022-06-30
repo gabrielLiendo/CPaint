@@ -7,78 +7,46 @@
 #include <list>
 #include <memory>
 
+#include "imgui_UI.h"
 #include "line.h"
 #include "triangle.h"
 #include "square.h"
 #include "circle.h"
 
 
-using namespace std;
-
-typedef enum { HARDWARE, SOFTWARE } renderingMode;
-typedef enum { LINE, TRIANGLE, RECTANGLE, CIRCLE } figureShape;
-
-renderingMode mode = HARDWARE;
-figureShape shape = LINE;
-
-int width = 840, height = 480;
-
-// Colors
-float bgColor[] = { 0.1f, 0.2f, 0.4f };
-float borderColor[] = {0.0f, 0.0f, 0.0f};
-float fillColor[] = {1.0f, 1.0f, 1.0f};
+int width = 1600, height = 800;
 
 // Displayed Figures 
 list<shared_ptr<CShape>> shapes;
 shared_ptr<CShape> drawingShape;
 
 
-void drawGUI()
-{
-	ImGui::Begin("Main Configuration");                   
-
-	ImGui::ColorEdit3("Background Color", bgColor); 
-
-	ImGui::ColorEdit3("Fill Color", fillColor);
-
-	if (ImGui::Button("Line"))
-		shape = LINE;
-	if (ImGui::Button("Triangle"))
-		shape = TRIANGLE;
-	if (ImGui::Button("Rectangle"))
-		shape = RECTANGLE;
-	if (ImGui::Button("Circle"))
-		shape = CIRCLE;
-	
-	ImGui::End();
-}
-
 void renderScene(void) 
 {	
+	//Clear Frame
+	glClearColor(bgColor[0], bgColor[1], bgColor[2], 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL2_NewFrame();
 	ImGui_ImplGLUT_NewFrame();
 
 	//Draw the ImGui frame
-	drawGUI();
-
-	cout << "." << endl;
+	drawUI();
 
 	// Render GUI
 	ImGui::Render();
 	ImGuiIO& io = ImGui::GetIO();
 	glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
-	glClearColor(bgColor[0], bgColor[1], bgColor[2], 1);
-	glClear(GL_COLOR_BUFFER_BIT);
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
 	// Render shape currently being drawn
 	if(drawingShape)
-		drawingShape->render();
+		drawingShape->render(currentMode);
 
 	// Render every shape already in canvas
 	for (auto const& s : shapes) 
-		s->render();
+		s->render(currentMode);
 	
 	// Present frame buffer
 	glutSwapBuffers();
@@ -111,50 +79,44 @@ void onClickCanvas(int button, int state, int x, int y)
 	switch (button)
 	{
 	case GLUT_LEFT_BUTTON:
-		// Manage state of left-click (pressed or released)
-		switch (state)
-		{
-		case GLUT_DOWN:
+		if(state== GLUT_DOWN)
+		// Left-click was pressed
 		{	
 			y = height - y - 1;
-			if (shape == LINE)
-			{	
+			if (shapeSelected == "Line")
+			{
 				shared_ptr<CLine> l = make_shared<CLine>(fillColor[0], fillColor[1], fillColor[2]);
 				l->set(x, y);
 				drawingShape = l;
 			}
-			else if (shape == TRIANGLE)
+			else if (shapeSelected == "Triangle")
 			{
 				shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
 				t->set(x, y);
 				drawingShape = t;
 			}
-			else if (shape == RECTANGLE)
-			{	
+			else if (shapeSelected == "Rectangle")
+			{
 				shared_ptr<CSquare> s = make_shared<CSquare>(fillColor[0], fillColor[1], fillColor[2]);
 				s->set(x, y);
 				drawingShape = s;
 			}
-			else if (shape == CIRCLE)
+			else if (shapeSelected == "Circle")
 			{
 				shared_ptr<C_Circle> c = make_shared<C_Circle>(fillColor[0], fillColor[1], fillColor[2]);
 				c->set(x, y);
 				drawingShape = c;
 			}
-			
-			break;
 		}
-		case GLUT_UP:
+		else 
+		{
+			// Left-click released
 			shapes.push_back(drawingShape);
-			drawingShape = NULL;
+			drawingShape = nullptr;
 			cout << "DONE" << endl;
-		default:
-			break;
 		}
-	default:
-		break;
+
 	}
-	
 }
 
 void onClick(int button, int state, int x, int y)
@@ -182,19 +144,6 @@ void onMotion(int x, int y)
 	}
 }
 
-void onNormalKey(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
-	case 'B':
-
-	case 27:
-		exit(0);
-		break;
-	default:
-		break;
-	}
-}
 
 int main(int argc, char** argv)
 {	
@@ -217,6 +166,7 @@ int main(int argc, char** argv)
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	ImGui::StyleColorsDark();
 
 	// Setup Platform/Renderer backends
@@ -228,7 +178,6 @@ int main(int argc, char** argv)
 	// NOTE: This will overwrite some of bindings set by ImGui_ImplGLUT_InstallFuncs() 
 	glutMouseFunc(onClick);
 	glutMotionFunc(onMotion);
-	glutKeyboardFunc(onNormalKey);
 
 	glutMainLoop();
 

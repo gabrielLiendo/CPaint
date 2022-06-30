@@ -35,22 +35,22 @@ public:
 		}
 	}
 
-	void render()
+	void render(const char* mode)
 	{
 		setColor(fillColor[0], fillColor[1], fillColor[2]);
 
-		int x0Ctrl = ctrlPoints[0].getX(), y0Ctrl = ctrlPoints[0].getY();
-		int x1Ctrl = ctrlPoints[1].getX(), y1Ctrl = ctrlPoints[1].getY();
+		int x0 = ctrlPoints[0].getX(), y0 = ctrlPoints[0].getY();
+		int x1 = ctrlPoints[1].getX(), y1 = ctrlPoints[1].getY();
 
-		if (y1Ctrl > y0Ctrl)
-			swap(y1Ctrl, y0Ctrl);
+		if (y1 > y0)
+			swap(y1, y0);
 
-		int cx = x0Ctrl + (x1Ctrl - x0Ctrl)/2;
-		int cy = y1Ctrl + (y0Ctrl - y1Ctrl)/2;
+		int cx = x0 + ((x1 - x0) >> 1);
+		int cy = y1 + ((y0 - y1) >> 1);
 		int x, y, d, r;
 
 		x = 0;
-		r = y0Ctrl - cy;
+		r = y0 - cy;
 		y = r;
 		d = 1 - r;
 		circlePoints(x, y, cx, cy);
