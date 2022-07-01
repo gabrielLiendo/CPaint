@@ -10,7 +10,7 @@ const char* renderingModes[] = { "Hardware", "Software" };
 const char* currentMode = renderingModes[0];
 
 const char* shapeTypes[] = { "Line", "Circle", "Ellipse", "Rectangle", "Triangle", "Bezier\n Curve"};
-const char* shapeSelected = shapeTypes[0];
+const char* shapeToDraw = shapeTypes[0];
 
 
 void switchMode() {
@@ -49,6 +49,8 @@ void drawPalette(float* bindedColor, const char* desc_id)
 			bindedColor[0] = saved_palette[n].x;
 			bindedColor[1] = saved_palette[n].y;
 			bindedColor[2] = saved_palette[n].z;
+
+
 		}
 
 		// Allow user to drop colors into each palette entry. 
@@ -127,7 +129,7 @@ void drawUI()
 					if (ImGui::Selectable(shapeTypes[(3 * i) + j], selected == ((3 * i) + j), 0, ImVec2(70.0f, 50.0f)))
 					{
 						selected = (3 * i) + j;
-						shapeSelected = shapeTypes[selected];
+						shapeToDraw = shapeTypes[selected];
 					}
 				}
 			}

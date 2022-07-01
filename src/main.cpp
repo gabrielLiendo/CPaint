@@ -10,7 +10,7 @@
 #include "imgui_UI.h"
 #include "line.h"
 #include "triangle.h"
-#include "square.h"
+#include "rectangle.h"
 #include "circle.h"
 
 
@@ -51,6 +51,11 @@ void renderScene(void)
 	// Render every shape already in canvas
 	if (drawingShape)
 		drawingShape->render(currentMode);
+
+	if (selectedShape) {
+		selectedShape->setColor(fillColor[0], fillColor[1], fillColor[2]);
+	}
+		
 
 	for (auto const& s : shapes) 
 		s->render(currentMode);
@@ -112,7 +117,9 @@ void onClickCanvas(int button, int state, int x, int y)
 			}
 			else // We can draw
 			{	
+
 				cout << "VACIO" << endl;
+				cout << x << " " << y << endl;
 				drawing = true;
 				firstX0 = x; firstY0 = y;
 			}
@@ -152,25 +159,25 @@ void onClick(int button, int state, int x, int y)
 void createShape(int x1, int y1)
 {	
 	int x0 = firstX0, y0 = firstY0;
-	if (shapeSelected == "Line")
+	if (shapeToDraw == "Line")
 	{
 		shared_ptr<CLine> l = make_shared<CLine>(fillColor[0], fillColor[1], fillColor[2]);
 		l->set(x0, y0, x1, y1);
 		drawingShape = l;
 	}
-	else if (shapeSelected == "Triangle")
+	else if (shapeToDraw == "Triangle")
 	{
 		shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
 		t->set(x0, y0, x1, y1);
 		drawingShape = t;
 	}
-	else if (shapeSelected == "Rectangle")
+	else if (shapeToDraw == "Rectangle")
 	{
-		shared_ptr<CSquare> s = make_shared<CSquare>(fillColor[0], fillColor[1], fillColor[2]);
+		shared_ptr<CRectangle> s = make_shared<CRectangle>(fillColor[0], fillColor[1], fillColor[2]);
 		s->set(x0, y0, x1, y1);
 		drawingShape = s;
 	}
-	else if (shapeSelected == "Circle")
+	else if (shapeToDraw == "Circle")
 	{
 		shared_ptr<C_Circle> c = make_shared<C_Circle>(fillColor[0], fillColor[1], fillColor[2]);
 		c->set(x0, y0, x1, y1);
@@ -192,7 +199,7 @@ void onMotion(int x1, int y1)
 			if (!drawingShape)
 				createShape(x1, y1);
 			else
-				drawingShape->update(x1, y1);
+				drawingShape->set(firstX0, firstY0, x1, y1);
 		}
 		else if (selectedShape)
 			selectedShape->onMove(x1, y1);

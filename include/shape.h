@@ -15,6 +15,7 @@ protected:
 	//float borderColor[3];
 	int x0, x1, y0, y1;
 	float fillColor[3];
+	Point2D boxPoints[4];
 	Point2D refPoint;
 
 public:
@@ -23,11 +24,18 @@ public:
 		fillColor[0] = r; fillColor[1] = g; fillColor[2] = b;
 	}
 
+	// Set bounding box corner points
 	void set(int x0, int y0, int x1, int y1)
 	{
-		// Set bounding box corner points
-		this->x0 = x0; this->x1 = x1;
-		this->y0 = y0; this->y1 = y1;
+		if (x1 < x0)
+			swap(x0, x1);
+		if (y1 < y0)
+			swap(y1, y0);
+
+		boxPoints[0].x = x0; boxPoints[0].y = y1;
+		boxPoints[1].x = x0; boxPoints[1].y = y0;
+		boxPoints[2].x = x1; boxPoints[2].y = y0;
+		boxPoints[3].x = x1; boxPoints[3].y = y1;
 	}
 
 	void setRefPoint(int x, int y)
@@ -50,11 +58,8 @@ public:
 
 	void setColor(float r, float g, float b)
 	{
-		glColor3f(r, g, b);
+		fillColor[0] = r; fillColor[1] = g; fillColor[2] = b;
 	}
-
-
-	virtual void update(int x, int y) = 0;
 
 	virtual void render(const char* mode) = 0;
 

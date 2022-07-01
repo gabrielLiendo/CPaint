@@ -168,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\circle.h" />
+    <ClInclude Include="include\paint.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_impl_glut.h" />
@@ -177,9 +178,8 @@
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="include\line.h" />
-    <ClInclude Include="include\point2D.h" />
     <ClInclude Include="include\shape.h" />
-    <ClInclude Include="include\square.h" />
+    <ClInclude Include="include\rectangle.h" />
     <ClInclude Include="include\triangle.h" />
     <ClInclude Include="include\imgui_UI.h" />
   </ItemGroup>

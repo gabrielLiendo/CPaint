@@ -74,13 +74,10 @@
     <ClInclude Include="include\line.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\point2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\shape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\square.h">
+    <ClInclude Include="include\rectangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\triangle.h">
@@ -90,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui_UI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\paint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
