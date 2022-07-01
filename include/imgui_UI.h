@@ -12,7 +12,6 @@ const char* currentMode = renderingModes[0];
 const char* shapeTypes[] = { "Line", "Circle", "Ellipse", "Rectangle", "Triangle", "Bezier\n Curve"};
 const char* shapeSelected = shapeTypes[0];
 
-static ImVec4 color = ImVec4(114.0f / 255.0f, 144.0f / 255.0f, 154.0f / 255.0f, 200.0f / 255.0f);
 
 void switchMode() {
 	if (currentMode == "Hardware")
@@ -27,10 +26,12 @@ void drawPalette(float* bindedColor, const char* desc_id)
 	static bool saved_palette_init = true;
 	if (saved_palette_init)
 	{
+		saved_palette[0] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+		saved_palette[1] = ImVec4(0.75f, 0.75f, 0.75f, 0.75f);
+
 		for (int n = 0; n < IM_ARRAYSIZE(saved_palette); n++)
 		{
-			ImGui::ColorConvertHSVtoRGB(n / 31.0f, 0.8f, 0.8f,
-				saved_palette[n].x, saved_palette[n].y, saved_palette[n].z);
+			ImGui::ColorConvertHSVtoRGB(n / 27.0f, 0.8f, 0.8f,saved_palette[n].x, saved_palette[n].y, saved_palette[n].z);
 		}
 		saved_palette_init = false;
 	}
@@ -168,11 +169,9 @@ void drawUI()
 			ImGui::TreePop();
 
 		}
-
-		
 	}
 
 	ImGui::End();
 
-	ImGui::ShowDemoWindow();
+	//ImGui::ShowDemoWindow();
 }

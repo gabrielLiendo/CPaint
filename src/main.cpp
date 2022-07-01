@@ -18,9 +18,17 @@ int width = 1600, height = 800;
 
 // Displayed Figures 
 list<shared_ptr<CShape>> shapes;
-shared_ptr<CShape> drawingShape;
+shared_ptr<CShape> drawingShape = nullptr;
+shared_ptr<CShape> selectedShape = nullptr;
 
+int firstX0, firstY0;
+bool drawing = true;
 
+//Meter la Drawing Shape en la lista shapes
+//Una sola paleta, derecho para borde e izquierdo para borde
+//Click dragueas y sueltas, click dragueas y sueltas y listo
+//GL Loop
+//Al pasar el mouse encima de una figura 
 void renderScene(void) 
 {	
 	//Clear Frame
@@ -40,11 +48,10 @@ void renderScene(void)
 	glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
-	// Render shape currently being drawn
-	if(drawingShape)
+	// Render every shape already in canvas
+	if (drawingShape)
 		drawingShape->render(currentMode);
 
-	// Render every shape already in canvas
 	for (auto const& s : shapes) 
 		s->render(currentMode);
 	
@@ -73,6 +80,19 @@ void onResize(int w, int h)
 	glViewport(0, 0, width, height);
 }
 
+void onClickShape(int x, int y)
+{
+	for (auto const& s : shapes)
+	{
+		if (s->onClick(x, y))
+		{
+			selectedShape = s; 
+			return;
+		}
+	}
+	selectedShape = nullptr;
+}
+
 void onClickCanvas(int button, int state, int x, int y)
 {	
 	// Manage clicked button (left, rigth, middle)
@@ -83,41 +103,39 @@ void onClickCanvas(int button, int state, int x, int y)
 		// Left-click was pressed
 		{	
 			y = height - y - 1;
-			if (shapeSelected == "Line")
-			{
-				shared_ptr<CLine> l = make_shared<CLine>(fillColor[0], fillColor[1], fillColor[2]);
-				l->set(x, y);
-				drawingShape = l;
+			onClickShape(x, y);
+			
+			// A shape was selected
+			if (selectedShape) {
+				cout << "CUADRADO SELECCIONADO" << endl;
+				selectedShape->setRefPoint(x, y);
 			}
-			else if (shapeSelected == "Triangle")
-			{
-				shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
-				t->set(x, y);
-				drawingShape = t;
-			}
-			else if (shapeSelected == "Rectangle")
-			{
-				shared_ptr<CSquare> s = make_shared<CSquare>(fillColor[0], fillColor[1], fillColor[2]);
-				s->set(x, y);
-				drawingShape = s;
-			}
-			else if (shapeSelected == "Circle")
-			{
-				shared_ptr<C_Circle> c = make_shared<C_Circle>(fillColor[0], fillColor[1], fillColor[2]);
-				c->set(x, y);
-				drawingShape = c;
+			else // We can draw
+			{	
+				cout << "VACIO" << endl;
+				drawing = true;
+				firstX0 = x; firstY0 = y;
 			}
 		}
 		else 
 		{
-			// Left-click released
-			shapes.push_back(drawingShape);
-			drawingShape = nullptr;
-			cout << "DONE" << endl;
+			if (drawingShape) 
+			{
+				shapes.push_back(drawingShape);
+				drawingShape = nullptr;
+				drawing = false;
+				cout << "DONE" << endl;
+			}
+			if (selectedShape)
+				selectedShape = nullptr;
 		}
-
+		break;
+	default:
+		drawing = false;
+		break;
 	}
 }
+	
 
 void onClick(int button, int state, int x, int y)
 {	
@@ -131,16 +149,53 @@ void onClick(int button, int state, int x, int y)
 	}
 }
 
-void onMotion(int x, int y)
+void createShape(int x1, int y1)
+{	
+	int x0 = firstX0, y0 = firstY0;
+	if (shapeSelected == "Line")
+	{
+		shared_ptr<CLine> l = make_shared<CLine>(fillColor[0], fillColor[1], fillColor[2]);
+		l->set(x0, y0, x1, y1);
+		drawingShape = l;
+	}
+	else if (shapeSelected == "Triangle")
+	{
+		shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
+		t->set(x0, y0, x1, y1);
+		drawingShape = t;
+	}
+	else if (shapeSelected == "Rectangle")
+	{
+		shared_ptr<CSquare> s = make_shared<CSquare>(fillColor[0], fillColor[1], fillColor[2]);
+		s->set(x0, y0, x1, y1);
+		drawingShape = s;
+	}
+	else if (shapeSelected == "Circle")
+	{
+		shared_ptr<C_Circle> c = make_shared<C_Circle>(fillColor[0], fillColor[1], fillColor[2]);
+		c->set(x0, y0, x1, y1);
+		drawingShape = c;
+	}
+}
+
+void onMotion(int x1, int y1)
 {	
 	ImGuiIO& io = ImGui::GetIO();
 
 	if (io.WantCaptureMouse)
-		ImGui_ImplGLUT_MotionFunc(x, y);
+		ImGui_ImplGLUT_MotionFunc(x1, y1);
 	else
 	{
-		if (drawingShape)
-			drawingShape->update(x, height - y - 1);
+		y1 = height - y1 - 1;
+		if (drawing)
+		{
+			if (!drawingShape)
+				createShape(x1, y1);
+			else
+				drawingShape->update(x1, y1);
+		}
+		else if (selectedShape)
+			selectedShape->onMove(x1, y1);
 	}
 }
 

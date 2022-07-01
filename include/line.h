@@ -1,9 +1,11 @@
 #pragma once
-#include "point2D.h"
 #include "shape.h"
 
 class CLine : public CShape
 {
+private:
+	Point2D points[2];
+
 public:
 	CLine(float r, float g, float b) : CShape(r, g, b) {}
 
@@ -12,9 +14,10 @@ public:
 		cout << "Se destruyo una linea" << endl;
 	}
 
-	void update(int x2, int y2)
+	void update(int x1, int y1)
 	{
-		ctrlPoints[1].set(x2, y2);
+		// Update bounding box corner
+		this->x1 = x1; this->y1 = y1;
 	}
 
 	void render(const char* mode)
@@ -26,40 +29,35 @@ public:
 			//glEnable(GL_LINE_STIPPLE);
 			//glLineStipple(3, 3);
 			glBegin(GL_LINES);
-			for (auto p : ctrlPoints)
-				glVertex2i(p.getX(), p.getY());
+				glVertex2i(x0, y0);
+				glVertex2i(x1, y1);
 			glEnd();
 		}
 		else 
 		{	
-			int x0 = ctrlPoints[0].getX(), y0 = ctrlPoints[0].getY();
-			int x1 = ctrlPoints[1].getX(), y1 = ctrlPoints[1].getY();
-
 			// Draw using Bresenham's algorithm
 			int dx, dy, x, y, d, incE, incNE;
 
 			dx = x1 - x0;
 			dy = y1 - y0;
-			d = dx - (dy << 1);
+			d = (dy << 1) - dx;
 			incE = dy << 1;
-			incNE = (dx - dy) << 1;
+			incNE = (dy - dx) << 1;
 			x = x0;
 			y = y0;
 
 			putPixel(x, y);
 
-			if (dx > dy && dy >= 0) {
-				while (x < x1)
-				{
-					if (d <= 0) {
-						d += incNE;
-						y += 1;
-					}
-					else
-						d += incE;
-					x += 1;
-					putPixel(x, y);
+			while (x < x1)
+			{
+				if (d >= 0) {
+					d += incNE;
+					y += 1;
 				}
+				else
+					d += incE;
+				x += 1;
+				putPixel(x, y);
 			}
 		}
 	}
@@ -72,7 +70,7 @@ public:
 		return false;
 	}
 
-	void onMove(int x, int y)
+	void onMove(int x1, int y1)
 	{
 	}
 

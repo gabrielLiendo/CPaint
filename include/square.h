@@ -1,5 +1,4 @@
 #pragma once
-#include "point2D.h"
 #include "shape.h"
 
 class CSquare : public CShape
@@ -17,14 +16,14 @@ public:
 
 	void update(int x1, int y1)
 	{
-		ctrlPoints[1].set(x1, y1);
-
-		int x0 = ctrlPoints[0].getX(), y0 = ctrlPoints[0].getY();
+		// Update bounding box corner
+		this->x1 = x1; this->y1 = y1;
 		
-		points[0].set(x0, y0);
-		points[1].set(x0, y1);
-		points[2].set(x1, y1);
-		points[3].set(x1, y0);
+		// Update vertex positions
+		points[0].x = x0; points[0].y = y0;
+		points[1].x = x0; points[1].y = y1;
+		points[2].x = x1; points[2].y = y1;
+		points[3].x = x1; points[3].y = y0;
 	}
 
 	void render(const char* mode)
@@ -33,19 +32,34 @@ public:
 
 		glBegin(GL_QUADS);
 			for (auto p : points)
-				glVertex2i(p.getX(), p.getY());
+				glVertex2i(p.x, p.y);
 		glEnd();
 	}
 
 	bool onClick(int x, int y)
-	{
-		// determinar la distancia del click a la línea
-		// si es mejor a un umbral (e.g. 3 píxeles) entonces
-		// retornas true
+	{	
+		cout << "CHECK RECTANGLE" << endl;
+		cout << x0 << " " << x1 << " " << y0 << " " << y1 << endl;
+		cout << x << " " << y << endl;
+		if (x > x0 && x < x1 && y > y1 && y < y0)
+		{
+			cout << "clicked" << endl;
+			return true;
+		}
 		return false;
 	}
 
-	void onMove(int x, int y)
-	{
+	void onMove(int x1, int y1)
+	{	
+		int dx = x1 - refPoint.x;
+		int dy = y1 - refPoint.y;
+
+		for (int i = 0; i < 4; i++)
+		{
+			points[i].x += dx;
+			points[i].y += dy;
+		}
+
+		refPoint.x = x1; refPoint.y = y1;
 	}
 };

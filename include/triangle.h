@@ -1,5 +1,4 @@
 #pragma once
-#include "point2D.h"
 #include "shape.h"
 
 class CTriangle : public CShape
@@ -17,17 +16,15 @@ public:
 
 	void update(int x1, int y1)
 	{	
-		ctrlPoints[1].set(x1, y1);
-
-		int x0 = ctrlPoints[0].getX(), y0 = ctrlPoints[0].getY();
+		// Update bounding box corner
+		this->x1 = x1; this->y1 = y1;
 		int xMiddle = x0 + ((x1 - x0) >> 1);
 
-		if (y1 > y0)
-			swap(y1, y0);
 
-		points[0].set(xMiddle, y0);
-		points[1].set(x0, y1);
-		points[2].set(x1, y1);
+		// Update vertex positions
+		points[0].x = xMiddle; points[0].y = y0;
+		points[1].x = x0; points[1].y = y1;
+		points[2].x = x1; points[2].y = y1;
 	}
 
 	void render(const char* mode)
@@ -36,19 +33,16 @@ public:
 
 		glBegin(GL_TRIANGLES); 
 			for (auto p : points)
-				glVertex2i(p.getX(), p.getY());
+				glVertex2i(p.x, p.y);
 		glEnd();
 	}
 
 	bool onClick(int x, int y)
 	{
-		// determinar la distancia del click a la línea
-		// si es mejor a un umbral (e.g. 3 píxeles) entonces
-		// retornas true
 		return false;
 	}
 
-	void onMove(int x, int y)
+	void onMove(int x1, int y1)
 	{
 	}
 };

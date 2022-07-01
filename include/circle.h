@@ -1,6 +1,7 @@
 #pragma once
-#include "point2D.h"
 #include "shape.h"
+
+//ortho (-0.5 -0.5 -1)
 
 class C_Circle : public CShape
 {
@@ -12,15 +13,10 @@ public:
 		cout << "Se destruyó un circulo" << endl;
 	}
 
-	void set(int x0, int y0)
-	{	
-		ctrlPoints[0].set(x0, y0);
-		ctrlPoints[1].set(x0, y0);
-	}
-
 	void update(int x1, int y1)
 	{
-		ctrlPoints[1].set(x1, y1);
+		// Update bounding box corner
+		this->x1 = x1; this->y1 = y1;
 	}
 		
 	void circlePoints(int x, int y, int cx, int cy)
@@ -38,9 +34,6 @@ public:
 	void render(const char* mode)
 	{
 		setColor(fillColor[0], fillColor[1], fillColor[2]);
-
-		int x0 = ctrlPoints[0].getX(), y0 = ctrlPoints[0].getY();
-		int x1 = ctrlPoints[1].getX(), y1 = ctrlPoints[1].getY();
 
 		if (y1 > y0)
 			swap(y1, y0);
@@ -70,14 +63,10 @@ public:
 
 	bool onClick(int x, int y)
 	{
-		// determinar la distancia del click a la línea
-		// si es mejor a un umbral (e.g. 3 píxeles) entonces
-		// retornas true
 		return false;
 	}
 
-	void onMove(int x, int y)
+	void onMove(int x1, int y1)
 	{
 	}
-
 };
