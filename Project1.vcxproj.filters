@@ -80,7 +80,7 @@
     <ClInclude Include="include\shape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\square.h">
+    <ClInclude Include="include\rectangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\triangle.h">

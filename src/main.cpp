@@ -7,11 +7,11 @@
 #include <list>
 #include <memory>
 
-#include "imgui_UI.h"
 #include "line.h"
-#include "triangle.h"
-#include "square.h"
-#include "circle.h"
+#include "rectangle.h"
+//#include "triangle.h"
+//#include "circle.h"
+#include "imgui_UI.h"
 
 
 int width = 1600, height = 800;
@@ -19,12 +19,11 @@ int width = 1600, height = 800;
 // Displayed Figures 
 list<shared_ptr<CShape>> shapes;
 shared_ptr<CShape> drawingShape = nullptr;
-shared_ptr<CShape> selectedShape = nullptr;
+
 
 int firstX0, firstY0;
 bool drawing = true;
 
-//Meter la Drawing Shape en la lista shapes
 //Una sola paleta, derecho para borde e izquierdo para borde
 //Click dragueas y sueltas, click dragueas y sueltas y listo
 //GL Loop
@@ -87,6 +86,7 @@ void onClickShape(int x, int y)
 		if (s->onClick(x, y))
 		{
 			selectedShape = s; 
+			selectedShape->setSelected(true);
 			return;
 		}
 	}
@@ -102,12 +102,18 @@ void onClickCanvas(int button, int state, int x, int y)
 		if(state== GLUT_DOWN)
 		// Left-click was pressed
 		{	
+			if (selectedShape)
+			{
+				selectedShape->release();
+				selectedShape = nullptr;
+			}
+
 			y = height - y - 1;
 			onClickShape(x, y);
 			
 			// A shape was selected
 			if (selectedShape) {
-				cout << "CUADRADO SELECCIONADO" << endl;
+				cout << "FIGURA SELECCIONADA" << endl;
 				selectedShape->setRefPoint(x, y);
 			}
 			else // We can draw
@@ -121,13 +127,14 @@ void onClickCanvas(int button, int state, int x, int y)
 		{
 			if (drawingShape) 
 			{
+				drawingShape->setSelected(true);
+				selectedShape = drawingShape;
+
 				shapes.push_back(drawingShape);
 				drawingShape = nullptr;
 				drawing = false;
 				cout << "DONE" << endl;
 			}
-			if (selectedShape)
-				selectedShape = nullptr;
 		}
 		break;
 	default:
@@ -154,27 +161,27 @@ void createShape(int x1, int y1)
 	int x0 = firstX0, y0 = firstY0;
 	if (shapeSelected == "Line")
 	{
-		shared_ptr<CLine> l = make_shared<CLine>(fillColor[0], fillColor[1], fillColor[2]);
-		l->set(x0, y0, x1, y1);
+		shared_ptr<CLine> l = 
+			make_shared<CLine>(x0, y0, x1, y1, fillColor[0], fillColor[1], fillColor[2]);
 		drawingShape = l;
-	}
-	else if (shapeSelected == "Triangle")
-	{
-		shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
-		t->set(x0, y0, x1, y1);
-		drawingShape = t;
 	}
 	else if (shapeSelected == "Rectangle")
 	{
-		shared_ptr<CSquare> s = make_shared<CSquare>(fillColor[0], fillColor[1], fillColor[2]);
-		s->set(x0, y0, x1, y1);
+		shared_ptr<CRectangle> s =
+			make_shared<CRectangle>(x0, y0, x1, y1, fillColor[0], fillColor[1], fillColor[2]);
 		drawingShape = s;
+	}
+	else if (shapeSelected == "Triangle")
+	{
+		//shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
+		//t->set(x0, y0, x1, y1);
+		//drawingShape = t;
 	}
 	else if (shapeSelected == "Circle")
 	{
-		shared_ptr<C_Circle> c = make_shared<C_Circle>(fillColor[0], fillColor[1], fillColor[2]);
-		c->set(x0, y0, x1, y1);
-		drawingShape = c;
+		//shared_ptr<C_Circle> c = make_shared<C_Circle>(fillColor[0], fillColor[1], fillColor[2]);
+		//c->set(x0, y0, x1, y1);
+		//drawingShape = c;
 	}
 }
 

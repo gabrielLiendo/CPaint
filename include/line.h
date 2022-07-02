@@ -4,10 +4,15 @@
 class CLine : public CShape
 {
 private:
-	Point2D points[2];
+	CtrlPoint points[2];
+	CtrlPoint *pointSelected = nullptr;
 
 public:
-	CLine(float r, float g, float b) : CShape(r, g, b) {}
+	CLine(int x0, int y0, int x1, int y1, float r, float g, float b) : CShape(r, g, b) 
+	{
+		points[0] = CtrlPoint(x0, y0);
+		points[1] = CtrlPoint(x1, y1);
+	}
 
 	~CLine()
 	{
@@ -16,18 +21,29 @@ public:
 
 	void update(int x1, int y1)
 	{
-		// Update bounding box corner
-		this->x1 = x1; this->y1 = y1;
+		points[1].setPosition(x1, y1);
+	}
+
+	void setRefPoint(int x, int y)
+	{
+
+	}
+
+	void release () override
+	{
+		selected = false;
+		pointSelected = nullptr;
 	}
 
 	void render(const char* mode)
 	{	
-		setColor(fillColor[0], fillColor[1], fillColor[2]);
+		int x0 = points[0].getX(), y0 = points[0].getY();
+		int x1 = points[1].getX(), y1 = points[1].getY();
 
+		glColor3f(fillColor[0], fillColor[1], fillColor[2]);
+		// Render Line
 		if(mode=="Hardware")
 		{
-			//glEnable(GL_LINE_STIPPLE);
-			//glLineStipple(3, 3);
 			glBegin(GL_LINES);
 				glVertex2i(x0, y0);
 				glVertex2i(x1, y1);
@@ -36,42 +52,115 @@ public:
 		else 
 		{	
 			// Draw using Bresenham's algorithm
-			int dx, dy, x, y, d, incE, incNE;
-
-			dx = x1 - x0;
-			dy = y1 - y0;
-			d = (dy << 1) - dx;
-			incE = dy << 1;
-			incNE = (dy - dx) << 1;
+			int x, y, dx, dy, d, incN, incE, incNE, incSE;
 			x = x0;
 			y = y0;
-
-			putPixel(x, y);
-
-			while (x < x1)
-			{
-				if (d >= 0) {
-					d += incNE;
-					y += 1;
+			dx = abs(x1 - x);
+			dy = abs(y1 - y);
+			d = dx - (dy << 1);
+			incN = (dx << 1);
+			incE = -(dy << 1);
+			incNE = (dx-dy) << 1;
+			incSE = -incNE;
+			
+			// d is the middle point between pixels evaluated on the line
+			// If -1 > m < 1 we iterate over x  dx > dy
+			// If m < -1 or m >  1 we iterate over y
+			//cout << dx << " " << dy << endl;
+			putPixel(x0, y0);
+			if (dx >= dy) {
+				
+				if (x > x1)
+				{
+					swap(x, x1);
+					y = y1;
 				}
-				else
-					d += incE;
-				x += 1;
-				putPixel(x, y);
+
+				if (y1 < y)
+				{
+					x = x0;
+					for (; x < x1; x++)
+					{
+						if (d > 0) {
+							d += incSE;
+							y--;
+						}
+						else
+						{
+							d += incE;
+						}
+						putPixel(x, y);
+					}
+				}
+				else {
+					for (; x < x1; x++)
+					{
+						if (d > 0)
+							d += incE;
+						else
+						{
+							d += incNE;
+							y++;
+						}
+						putPixel(x, y);
+					}
+				}
 			}
+			else 
+			{
+				if (y > y1)
+				{
+					swap(y, y1);
+					x = x1;
+				}
+
+				for (; y < y1; y++)
+				{
+					if (d > 0) {
+						d += incNE;
+						x++;
+					}
+					else
+					{
+						d += incN;
+					}
+					putPixel(x, y);
+				}
+			}
+		}
+
+		// Render control points if shape is select
+		if (selected) {
+			for (auto p : points)
+				p.renderCtrlPoint();
 		}
 	}
 
 	bool onClick(int x, int y) 
 	{
-		// determinar la distancia del click a la línea
-		// si es mejor a un umbral (e.g. 3 píxeles) entonces
-		// retornas true
-		return false;
+		int x0 = points[0].getX(), y0 = points[0].getY();
+		int x1 = points[1].getX(), y1 = points[1].getY();
+
+		for (int i = 0; i < 2; i++)
+		{
+			if (points[i].distance(x, y) <= 4) {
+				pointSelected = &points[i];
+				return true;
+			}
+		}
+
+		int a = y0 - y1;
+		int b = x1 - x0;
+		int c = x0 * y1 - x1 * y0;
+		int distance = (int) abs(a * x + b * y + c) / sqrt(a * a + b * b);
+
+		return distance <= 4;
 	}
 
 	void onMove(int x1, int y1)
 	{
+		if (pointSelected)
+			pointSelected->setPosition(x1, y1);
 	}
 
 };

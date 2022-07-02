@@ -12,6 +12,7 @@ const char* currentMode = renderingModes[0];
 const char* shapeTypes[] = { "Line", "Circle", "Ellipse", "Rectangle", "Triangle", "Bezier\n Curve"};
 const char* shapeSelected = shapeTypes[0];
 
+shared_ptr<CShape> selectedShape = nullptr;
 
 void switchMode() {
 	if (currentMode == "Hardware")
@@ -49,6 +50,10 @@ void drawPalette(float* bindedColor, const char* desc_id)
 			bindedColor[0] = saved_palette[n].x;
 			bindedColor[1] = saved_palette[n].y;
 			bindedColor[2] = saved_palette[n].z;
+			if (shapeSelected)
+			{
+				selectedShape->setColor(saved_palette[n].x, saved_palette[n].y, saved_palette[n].z);
+			}
 		}
 
 		// Allow user to drop colors into each palette entry. 

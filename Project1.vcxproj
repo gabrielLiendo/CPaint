@@ -179,7 +179,7 @@
     <ClInclude Include="include\line.h" />
     <ClInclude Include="include\point2D.h" />
     <ClInclude Include="include\shape.h" />
-    <ClInclude Include="include\square.h" />
+    <ClInclude Include="include\rectangle.h" />
     <ClInclude Include="include\triangle.h" />
     <ClInclude Include="include\imgui_UI.h" />
   </ItemGroup>
