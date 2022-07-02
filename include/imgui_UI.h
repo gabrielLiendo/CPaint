@@ -10,7 +10,7 @@ const char* renderingModes[] = { "Hardware", "Software" };
 const char* currentMode = renderingModes[0];
 
 const char* shapeTypes[] = { "Line", "Circle", "Ellipse", "Rectangle", "Triangle", "Bezier\n Curve"};
-const char* shapeSelected = shapeTypes[0];
+const char* shapeToDraw = shapeTypes[0];
 
 shared_ptr<CShape> selectedShape = nullptr;
 
@@ -132,7 +132,7 @@ void drawUI()
 					if (ImGui::Selectable(shapeTypes[(3 * i) + j], selected == ((3 * i) + j), 0, ImVec2(70.0f, 50.0f)))
 					{
 						selected = (3 * i) + j;
-						shapeSelected = shapeTypes[selected];
+						shapeToDraw = shapeTypes[selected];
 					}
 				}
 			}

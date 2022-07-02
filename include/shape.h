@@ -12,6 +12,12 @@ struct Point2D
 
 class CtrlPoint
 {
+protected:
+	//float borderColor[3];
+	int x0, x1, y0, y1;
+	float fillColor[3];
+	Point2D refPoint;
+
 public:
 	int x, y;
 

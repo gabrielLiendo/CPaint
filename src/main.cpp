@@ -51,6 +51,11 @@ void renderScene(void)
 	if (drawingShape)
 		drawingShape->render(currentMode);
 
+	if (selectedShape) {
+		selectedShape->setColor(fillColor[0], fillColor[1], fillColor[2]);
+	}
+		
+
 	for (auto const& s : shapes) 
 		s->render(currentMode);
 	
@@ -118,7 +123,9 @@ void onClickCanvas(int button, int state, int x, int y)
 			}
 			else // We can draw
 			{	
+
 				cout << "VACIO" << endl;
+				cout << x << " " << y << endl;
 				drawing = true;
 				firstX0 = x; firstY0 = y;
 			}
@@ -159,23 +166,23 @@ void onClick(int button, int state, int x, int y)
 void createShape(int x1, int y1)
 {	
 	int x0 = firstX0, y0 = firstY0;
-	if (shapeSelected == "Line")
+	if (shapeToDraw == "Line")
 	{
 		shared_ptr<CLine> l = 
 			make_shared<CLine>(x0, y0, x1, y1, fillColor[0], fillColor[1], fillColor[2]);
 		drawingShape = l;
 	}
-	else if (shapeSelected == "Rectangle")
-	{
-		shared_ptr<CRectangle> s =
-			make_shared<CRectangle>(x0, y0, x1, y1, fillColor[0], fillColor[1], fillColor[2]);
-		drawingShape = s;
-	}
 	else if (shapeSelected == "Triangle")
 	{
-		//shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
-		//t->set(x0, y0, x1, y1);
-		//drawingShape = t;
+		shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
+		t->set(x0, y0, x1, y1);
+		drawingShape = t;
+	}
+	else if (shapeSelected == "Rectangle")
+	{
+		shared_ptr<CSquare> s = make_shared<CSquare>(fillColor[0], fillColor[1], fillColor[2]);
+		s->set(x0, y0, x1, y1);
+		drawingShape = s;
 	}
 	else if (shapeSelected == "Circle")
 	{
@@ -199,7 +206,7 @@ void onMotion(int x1, int y1)
 			if (!drawingShape)
 				createShape(x1, y1);
 			else
-				drawingShape->update(x1, y1);
+				drawingShape->set(firstX0, firstY0, x1, y1);
 		}
 		else if (selectedShape)
 			selectedShape->onMove(x1, y1);
