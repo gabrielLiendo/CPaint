@@ -9,6 +9,7 @@
 
 #include "line.h"
 #include "rectangle.h"
+#include "ellipse.h"
 //#include "triangle.h"
 //#include "circle.h"
 #include "imgui_UI.h"
@@ -183,6 +184,12 @@ void createShape(int x1, int y1)
 		shared_ptr<CRectangle> s = make_shared<CRectangle>(x0, y0, x1, y1, 
 			fillColor[0], fillColor[1], fillColor[2],borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = s;
+	}
+	else if (shapeToDraw == "Ellipse")
+	{
+		shared_ptr<CEllipse> e = make_shared<CEllipse>(x0, y0, x1, y1,
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+		drawingShape = e;
 	}
 
 	//else if (shapeSelected == "Triangle")

@@ -1,8 +1,6 @@
 #pragma once
 #include "shape.h"
 
-//ortho (-0.5 -0.5 -1)
-
 class C_Circle : public CShape
 {
 public:

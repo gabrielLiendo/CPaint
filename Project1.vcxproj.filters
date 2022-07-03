@@ -95,5 +95,8 @@
     <ClInclude Include="include\boxableShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ellipse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
