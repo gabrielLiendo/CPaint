@@ -14,12 +14,13 @@
 #include "imgui_UI.h"
 
 
+PaintUI ui;
+
 int width = 1600, height = 800;
 
 // Displayed Figures 
 list<shared_ptr<CShape>> shapes;
 shared_ptr<CShape> drawingShape = nullptr;
-
 
 int firstX0, firstY0;
 bool drawing = true;
@@ -30,6 +31,9 @@ bool drawing = true;
 //Al pasar el mouse encima de una figura 
 void renderScene(void) 
 {	
+	float *bgColor = ui.bgColor;
+	const char* currentMode = ui.currentMode;
+
 	//Clear Frame
 	glClearColor(bgColor[0], bgColor[1], bgColor[2], 1);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -39,7 +43,7 @@ void renderScene(void)
 	ImGui_ImplGLUT_NewFrame();
 
 	//Draw the ImGui frame
-	drawUI();
+	ui.drawUI();
 
 	// Render GUI
 	ImGui::Render();
@@ -50,12 +54,7 @@ void renderScene(void)
 	// Render every shape already in canvas
 	if (drawingShape)
 		drawingShape->render(currentMode);
-
-	if (selectedShape) {
-		selectedShape->setColor(fillColor[0], fillColor[1], fillColor[2]);
-	}
 		
-
 	for (auto const& s : shapes) 
 		s->render(currentMode);
 	
@@ -119,24 +118,23 @@ void onClickCanvas(int button, int state, int x, int y)
 			// A shape was selected
 			if (selectedShape) {
 				cout << "FIGURA SELECCIONADA" << endl;
-				selectedShape->setRefPoint(x, y);
+				selectedShape->setAnchorPoint(x, y);
+				drawing = false;
 			}
 			else // We can draw
 			{	
-
-				cout << "VACIO" << endl;
-				cout << x << " " << y << endl;
+				cout << "ESPACIO EN BLANCO" << endl;
 				drawing = true;
 				firstX0 = x; firstY0 = y;
 			}
 		}
 		else 
 		{
-			if (drawingShape) 
+			if (drawing && drawingShape)
 			{
+				// We finisish the figure, and it's marked as 'selected'
 				drawingShape->setSelected(true);
 				selectedShape = drawingShape;
-
 				shapes.push_back(drawingShape);
 				drawingShape = nullptr;
 				drawing = false;
@@ -145,6 +143,9 @@ void onClickCanvas(int button, int state, int x, int y)
 		}
 		break;
 	default:
+		if(selectedShape)
+			selectedShape->release();
+		selectedShape = nullptr;
 		drawing = false;
 		break;
 	}
@@ -165,31 +166,38 @@ void onClick(int button, int state, int x, int y)
 
 void createShape(int x1, int y1)
 {	
+	const char* shapeToDraw = ui.shapeToDraw;
+	float *fillColor = ui.fillColor, *borderColor = ui.borderColor;
+
 	int x0 = firstX0, y0 = firstY0;
+
+	
 	if (shapeToDraw == "Line")
 	{
-		shared_ptr<CLine> l = 
-			make_shared<CLine>(x0, y0, x1, y1, fillColor[0], fillColor[1], fillColor[2]);
+		shared_ptr<CLine> l = make_shared<CLine>(x0, y0, x1, y1, 
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = l;
 	}
-	else if (shapeSelected == "Triangle")
+	else if (shapeToDraw == "Rectangle")
 	{
-		shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
-		t->set(x0, y0, x1, y1);
-		drawingShape = t;
-	}
-	else if (shapeSelected == "Rectangle")
-	{
-		shared_ptr<CSquare> s = make_shared<CSquare>(fillColor[0], fillColor[1], fillColor[2]);
-		s->set(x0, y0, x1, y1);
+		shared_ptr<CRectangle> s = make_shared<CRectangle>(x0, y0, x1, y1, 
+			fillColor[0], fillColor[1], fillColor[2],borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = s;
 	}
-	else if (shapeSelected == "Circle")
-	{
+
+	//else if (shapeSelected == "Triangle")
+	//{
+	//	shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
+	//	t->set(x0, y0, x1, y1);
+	//	drawingShape = t;
+	//}
+	
+	//else if (shapeSelected == "Circle")
+	// {
 		//shared_ptr<C_Circle> c = make_shared<C_Circle>(fillColor[0], fillColor[1], fillColor[2]);
 		//c->set(x0, y0, x1, y1);
 		//drawingShape = c;
-	}
+	//}
 }
 
 void onMotion(int x1, int y1)
@@ -206,7 +214,7 @@ void onMotion(int x1, int y1)
 			if (!drawingShape)
 				createShape(x1, y1);
 			else
-				drawingShape->set(firstX0, firstY0, x1, y1);
+				drawingShape->update(x1, y1);
 		}
 		else if (selectedShape)
 			selectedShape->onMove(x1, y1);
@@ -216,6 +224,8 @@ void onMotion(int x1, int y1)
 
 int main(int argc, char** argv)
 {	
+	//ui = PaintUI(selectedShape);
+
 	// Initialize GLUT and create Window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -226,7 +236,7 @@ int main(int argc, char** argv)
 	glViewport(0, 0, width, height);	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, width, 0, height, -1, 1);
+	glOrtho(-0.5, width - 0.5, -0.5, height - 0.5, -1, 1);
 	
 	// Setup GLUT display function
 	glutDisplayFunc(renderScene);

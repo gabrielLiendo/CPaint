@@ -6,9 +6,11 @@ class CLine : public CShape
 private:
 	CtrlPoint points[2];
 	CtrlPoint *pointSelected = nullptr;
+	Point2D anchorPoint;
 
 public:
-	CLine(int x0, int y0, int x1, int y1, float r, float g, float b) : CShape(r, g, b) 
+	CLine(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
+		: CShape(r1, g1, b1, r2, g2, b2) 
 	{
 		points[0] = CtrlPoint(x0, y0);
 		points[1] = CtrlPoint(x1, y1);
@@ -24,9 +26,10 @@ public:
 		points[1].setPosition(x1, y1);
 	}
 
-	void setRefPoint(int x, int y)
+	void setAnchorPoint(int x, int y)
 	{
-
+		anchorPoint.x = x;
+		anchorPoint.y = y;
 	}
 
 	void release () override
@@ -40,10 +43,10 @@ public:
 		int x0 = points[0].getX(), y0 = points[0].getY();
 		int x1 = points[1].getX(), y1 = points[1].getY();
 
-		glColor3f(fillColor[0], fillColor[1], fillColor[2]);
 		// Render Line
 		if(mode=="Hardware")
 		{
+			glColor3f(fillColor.r, fillColor.g, fillColor.b);
 			glBegin(GL_LINES);
 				glVertex2i(x0, y0);
 				glVertex2i(x1, y1);
@@ -67,7 +70,7 @@ public:
 			// If -1 > m < 1 we iterate over x  dx > dy
 			// If m < -1 or m >  1 we iterate over y
 			//cout << dx << " " << dy << endl;
-			putPixel(x0, y0);
+			putPixel(x0, y0, fillColor);
 			if (dx >= dy) {
 				
 				if (x > x1)
@@ -89,7 +92,7 @@ public:
 						{
 							d += incE;
 						}
-						putPixel(x, y);
+						putPixel(x, y, fillColor);
 					}
 				}
 				else {
@@ -102,7 +105,7 @@ public:
 							d += incNE;
 							y++;
 						}
-						putPixel(x, y);
+						putPixel(x, y ,fillColor);
 					}
 				}
 			}
@@ -124,7 +127,7 @@ public:
 					{
 						d += incN;
 					}
-					putPixel(x, y);
+					putPixel(x, y, fillColor);
 				}
 			}
 		}
@@ -138,29 +141,42 @@ public:
 
 	bool onClick(int x, int y) 
 	{
-		int x0 = points[0].getX(), y0 = points[0].getY();
-		int x1 = points[1].getX(), y1 = points[1].getY();
+		// We check if the click fell on a vertex
+		int x0 = points[0].x, y0 = points[0].y;
+		int x1 = points[1].x, y1 = points[1].y;
 
 		for (int i = 0; i < 2; i++)
 		{
-			if (points[i].distance(x, y) <= 4) {
+			if (points[i].distance(x, y) <= 3) 
+			{
 				pointSelected = &points[i];
 				return true;
 			}
 		}
 
+		// We check if the click fell close to the line
 		int a = y0 - y1;
 		int b = x1 - x0;
 		int c = x0 * y1 - x1 * y0;
 		int distance = (int) abs(a * x + b * y + c) / sqrt(a * a + b * b);
 
-		return distance <= 4;
+		return distance <= 3;
 	}
 
 	void onMove(int x1, int y1)
 	{
 		if (pointSelected)
 			pointSelected->setPosition(x1, y1);
+		else
+		{
+			int dx = x1 - anchorPoint.x;
+			int dy = y1 - anchorPoint.y;
+
+			points[0].x += dx; points[0].y += dy;
+			points[1].x += dx; points[1].y += dy;
+
+			setAnchorPoint(x1, y1);
+		}
 	}
 
 };
