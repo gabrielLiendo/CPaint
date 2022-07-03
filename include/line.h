@@ -6,7 +6,7 @@ class CLine : public CShape
 private:
 	CtrlPoint points[2];
 	CtrlPoint *pointSelected = nullptr;
-	Point2D anchorPoint;
+	CtrlPoint anchorPoint;
 
 public:
 	CLine(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
@@ -23,7 +23,7 @@ public:
 
 	void update(int x1, int y1)
 	{
-		points[1].setPosition(x1, y1);
+		points[1].x = x1; points[1].y = y1;
 	}
 
 	void setAnchorPoint(int x, int y)
@@ -38,13 +38,12 @@ public:
 		pointSelected = nullptr;
 	}
 
-	void render(const char* mode)
+	void render(const bool mode)
 	{	
-		int x0 = points[0].getX(), y0 = points[0].getY();
-		int x1 = points[1].getX(), y1 = points[1].getY();
+		int x0 = points[0].x, y0 = points[0].y;
+		int x1 = points[1].x, y1 = points[1].y;
 
-		// Render Line
-		if(mode=="Hardware")
+		if(mode) // Hardware
 		{
 			glColor3f(fillColor.r, fillColor.g, fillColor.b);
 			glBegin(GL_LINES);
@@ -166,7 +165,10 @@ public:
 	void onMove(int x1, int y1)
 	{
 		if (pointSelected)
-			pointSelected->setPosition(x1, y1);
+		{
+			pointSelected->x = x1;
+			pointSelected->y = y1;
+		}
 		else
 		{
 			int dx = x1 - anchorPoint.x;

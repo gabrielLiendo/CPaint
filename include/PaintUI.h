@@ -8,7 +8,7 @@ shared_ptr<CShape> selectedShape;
 class PaintUI
 {
 private:
-	const char* renderingModes[2] = { "Hardware", "Software" };
+	const char* renderingModes[2] = { "Software", "Hardware" };
 	const char* shapeTypes[6] = { "Line", "Circle", "Ellipse", "Rectangle", "Triangle", "Bezier\n Curve" };
 
 public:
@@ -18,17 +18,14 @@ public:
 	float borderColor[3] = { 0.0f, 0.0f, 0.0f };
 	
 	// Current State
-	const char *currentMode = renderingModes[0];
-	const char *shapeToDraw = nullptr;
+	int selected = -1;                            
+	bool currentMode = 0; // 0->Software, 1->Hardware
 	bool rightClick = false;
 
 	PaintUI() { ; }
 
 	void switchMode() {
-		if (currentMode == "Hardware")
-			currentMode = renderingModes[1];
-		else
-			currentMode = renderingModes[0];
+		currentMode |= 0;
 	}
 
 	void drawPalette(float* bindedColor, const char *id)
@@ -87,7 +84,7 @@ public:
 	}
 
 	void drawUI()
-	{
+	{	
 		//Set UI flags
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar;
 		ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_DefaultOpen;
@@ -103,11 +100,11 @@ public:
 			float button_sz = ImGui::GetFrameHeight();
 
 			ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
-			if (ImGui::BeginCombo("##rendering mode", currentMode, ImGuiComboFlags_NoArrowButton))
+			if (ImGui::BeginCombo("##rendering mode", renderingModes[currentMode], ImGuiComboFlags_NoArrowButton))
 			{
-				for (int n = 0; n < IM_ARRAYSIZE(renderingModes); n++)
+				for (int n = 0; n < 2; n++)
 				{
-					bool is_selected = (currentMode == renderingModes[n]);
+					bool is_selected = (currentMode == n);
 					if (ImGui::Selectable(renderingModes[n], is_selected))
 						currentMode = renderingModes[n];
 					if (is_selected)
@@ -119,11 +116,11 @@ public:
 
 			ImGui::SameLine(0, spacing);
 			if (ImGui::ArrowButton("##l", ImGuiDir_Left))
-				switchMode();
+				currentMode = !currentMode;
 
 			ImGui::SameLine(0, spacing);
 			if (ImGui::ArrowButton("##r", ImGuiDir_Right))
-				switchMode();
+				currentMode = !currentMode;
 
 			ImGui::SameLine(0, style.ItemInnerSpacing.x);
 			ImGui::Text("Rendering Mode");
@@ -137,7 +134,7 @@ public:
 			{
 				ImGui::TreePush();
 
-				static int selected = -1;
+				
 				for (int i = 0; i < 2; i++) {
 					for (int j = 0; j < 3; j++)
 					{
@@ -147,7 +144,6 @@ public:
 						if (ImGui::Selectable(shapeTypes[(3 * i) + j], selected == ((3 * i) + j), 0, ImVec2(70.0f, 30.0f)))
 						{
 							selected = (3 * i) + j;
-							shapeToDraw = shapeTypes[selected];
 						}
 					}
 				}

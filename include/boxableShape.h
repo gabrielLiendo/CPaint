@@ -4,7 +4,7 @@ class BoxableShape
 {
 protected:
 	CtrlPoint boxPoints[4];
-	Point2D anchorPoint;
+	CtrlPoint anchorPoint;
 
 public:
 	BoxableShape(int x0, int y0, int x1, int y1)

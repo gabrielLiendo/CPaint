@@ -86,7 +86,7 @@
     <ClInclude Include="include\circle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\imgui_UI.h">
+    <ClInclude Include="include\paintUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\paint.h">

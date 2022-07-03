@@ -183,7 +183,7 @@
     <ClInclude Include="include\shape.h" />
     <ClInclude Include="include\rectangle.h" />
     <ClInclude Include="include\triangle.h" />
-    <ClInclude Include="include\imgui_UI.h" />
+    <ClInclude Include="include\paintUI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

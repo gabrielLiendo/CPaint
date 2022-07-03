@@ -4,46 +4,21 @@
 
 using namespace std;
 
-struct Point2D
-{
-	int x; 
-	int y;
-};
-
 struct Color
 {
 	float r, g, b;
 };
 
-class CtrlPoint
+struct CtrlPoint
 {
-protected:
-	int x0, x1, y0, y1;
-
-public:
 	int x, y;
 
 	CtrlPoint() {}
 
 	CtrlPoint(int x, int y)
 	{
-		setPosition(x, y);
-	}
-
-	void setPosition(int x, int y)
-	{
 		this->x = x;
 		this->y = y;
-	}
-
-	int getX()
-	{
-		return x;
-	}
-
-	int getY()
-	{
-		return y;
 	}
 
 	void renderCtrlPoint()
@@ -119,7 +94,7 @@ public:
 
 	virtual void setAnchorPoint(int x, int y) = 0;
 
-	virtual void render(const char* mode) = 0;
+	virtual void render(const bool mode) = 0;
 
 	virtual bool onClick(int x, int y) = 0;
 	

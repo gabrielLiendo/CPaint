@@ -48,7 +48,7 @@ public:
 		putPixel(cx - x, cy - y, c);
 	}
 
-	void render(const char* mode)
+	void render(const bool mode)
 	{
 		int x, y, d, ap2, bp2;
 		ap2 = a * a; bp2 = b * b;

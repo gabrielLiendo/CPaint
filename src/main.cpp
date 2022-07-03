@@ -8,12 +8,11 @@
 #include <memory>
 
 #include "line.h"
-#include "rectangle.h"
+#include "circle.h"
 #include "ellipse.h"
+#include "rectangle.h"
 //#include "triangle.h"
-//#include "circle.h"
-#include "imgui_UI.h"
-
+#include "paintUI.h"
 
 PaintUI ui;
 
@@ -33,7 +32,7 @@ bool drawing = true;
 void renderScene(void) 
 {	
 	float *bgColor = ui.bgColor;
-	const char* currentMode = ui.currentMode;
+	bool  currentMode = ui.currentMode;
 
 	//Clear Frame
 	glClearColor(bgColor[0], bgColor[1], bgColor[2], 1);
@@ -167,44 +166,35 @@ void onClick(int button, int state, int x, int y)
 
 void createShape(int x1, int y1)
 {	
-	const char* shapeToDraw = ui.shapeToDraw;
+	const int selected = ui.selected;
 	float *fillColor = ui.fillColor, *borderColor = ui.borderColor;
 
 	int x0 = firstX0, y0 = firstY0;
 
-	
-	if (shapeToDraw == "Line")
+	if (selected == 0)
 	{
 		shared_ptr<CLine> l = make_shared<CLine>(x0, y0, x1, y1, 
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = l;
 	}
-	else if (shapeToDraw == "Rectangle")
+	else if (selected == 1)
 	{
-		shared_ptr<CRectangle> s = make_shared<CRectangle>(x0, y0, x1, y1, 
-			fillColor[0], fillColor[1], fillColor[2],borderColor[0], borderColor[1], borderColor[2]);
-		drawingShape = s;
+		shared_ptr<CCircle> c = make_shared<CCircle>(x0, y0, x1, y1,
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+		drawingShape = c;
 	}
-	else if (shapeToDraw == "Ellipse")
+	else if (selected == 2)
 	{
 		shared_ptr<CEllipse> e = make_shared<CEllipse>(x0, y0, x1, y1,
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = e;
 	}
-
-	//else if (shapeSelected == "Triangle")
-	//{
-	//	shared_ptr<CTriangle> t = make_shared<CTriangle>(fillColor[0], fillColor[1], fillColor[2]);
-	//	t->set(x0, y0, x1, y1);
-	//	drawingShape = t;
-	//}
-	
-	//else if (shapeSelected == "Circle")
-	// {
-		//shared_ptr<C_Circle> c = make_shared<C_Circle>(fillColor[0], fillColor[1], fillColor[2]);
-		//c->set(x0, y0, x1, y1);
-		//drawingShape = c;
-	//}
+	else if (selected == 3)
+	{
+		shared_ptr<CRectangle> s = make_shared<CRectangle>(x0, y0, x1, y1, 
+			fillColor[0], fillColor[1], fillColor[2],borderColor[0], borderColor[1], borderColor[2]);
+		drawingShape = s;
+	}
 }
 
 void onMotion(int x1, int y1)
@@ -228,6 +218,17 @@ void onMotion(int x1, int y1)
 	}
 }
 
+void onKeyboardEntry(unsigned char c, int x, int y)
+{
+	// 1-6: Change shape to draw
+	if (c >= 49 && c <= 54)
+		ui.selected = c - 49;
+	// Change rendering mode
+	else if (c == 'h')
+		ui.currentMode = !ui.currentMode;
+	else
+		ImGui_ImplGLUT_KeyboardFunc(c, x, y);
+}
 
 int main(int argc, char** argv)
 {	
@@ -264,6 +265,8 @@ int main(int argc, char** argv)
 	// NOTE: This will overwrite some of bindings set by ImGui_ImplGLUT_InstallFuncs() 
 	glutMouseFunc(onClick);
 	glutMotionFunc(onMotion);
+	glutKeyboardFunc(onKeyboardEntry);
+
 
 	glutMainLoop();
 

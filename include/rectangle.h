@@ -26,9 +26,9 @@ public:
 		BoxableShape::setAnchorPoint(x, y);
 	}
 
-	void render(const char* mode)
+	void render(const bool mode)
 	{
-		if(mode=="Hardware")
+		if(mode) // Hardware
 		{
 			// Draw Content
 			glColor3f(fillColor.r, fillColor.g, fillColor.b);
@@ -91,7 +91,10 @@ public:
 	void onMove(int x1, int y1)
 	{	
 		if (pointSelected)
-			pointSelected->setPosition(x1, y1);
+		{
+			pointSelected->x = x1;
+			pointSelected->y = y1;
+		}
 		else 
 			moveBoundingBox(x1, y1);
 	}
