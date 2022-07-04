@@ -41,6 +41,8 @@ class CShape
 {
 protected:
 	Color fillColor, borderColor;
+	
+
 	bool selected = false;
 
 public:

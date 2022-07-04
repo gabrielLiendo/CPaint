@@ -4,9 +4,6 @@
 
 class CRectangle : public CShape, public BoxableShape
 {
-protected:
-	CtrlPoint* pointSelected = nullptr;
-
 public:
 	CRectangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
 		: CShape(r1, g1, b1, r2, g2, b2), BoxableShape(x0, y0, x1, y1) {}
@@ -18,7 +15,15 @@ public:
 
 	void update(int x1, int y1)
 	{
+		cout  << "UPDATING" << endl;
 		setBoundingBox(x1, y1);
+	}
+
+	void release() override
+	{
+		selected = false;
+		pointSelected = nullptr;
+		iPointSelected = -1;
 	}
 
 	void setAnchorPoint(int x, int y)
@@ -80,6 +85,7 @@ public:
 			if (boxPoints[i].distance(x, y) <= 3)
 			{
 				pointSelected = &boxPoints[i];
+				iPointSelected = i;
 				return true;
 			}
 		}
@@ -91,11 +97,8 @@ public:
 	void onMove(int x1, int y1)
 	{	
 		if (pointSelected)
-		{
-			pointSelected->x = x1;
-			pointSelected->y = y1;
-		}
-		else 
+			resizeBoundingBox(x1, y1);
+		else
 			moveBoundingBox(x1, y1);
 	}
 };

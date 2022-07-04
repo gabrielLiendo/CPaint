@@ -146,7 +146,7 @@ public:
 
 		for (int i = 0; i < 2; i++)
 		{
-			if (points[i].distance(x, y) <= 3) 
+			if (points[i].distance(x, y) <= 4) 
 			{
 				pointSelected = &points[i];
 				return true;
@@ -159,18 +159,18 @@ public:
 		int c = x0 * y1 - x1 * y0;
 		int distance = (int) abs(a * x + b * y + c) / sqrt(a * a + b * b);
 
-		return distance <= 3;
+		return distance <= 4;
 	}
 
 	void onMove(int x1, int y1)
 	{
 		if (pointSelected)
-		{
+		{	// Only move the vertex selected
 			pointSelected->x = x1;
 			pointSelected->y = y1;
 		}
 		else
-		{
+		{	// Move the whole line
 			int dx = x1 - anchorPoint.x;
 			int dy = y1 - anchorPoint.y;
 
@@ -180,5 +180,4 @@ public:
 			setAnchorPoint(x1, y1);
 		}
 	}
-
 };

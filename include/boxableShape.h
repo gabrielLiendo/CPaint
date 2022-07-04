@@ -5,6 +5,8 @@ class BoxableShape
 protected:
 	CtrlPoint boxPoints[4];
 	CtrlPoint anchorPoint;
+	CtrlPoint* pointSelected = nullptr;
+	int iPointSelected = -1;
 
 public:
 	BoxableShape(int x0, int y0, int x1, int y1)
@@ -51,6 +53,34 @@ public:
 		}
 
 		setAnchorPoint(x1, y1);
+	}
+
+	void resizeBoundingBox(int x, int y)
+	{
+		int i = iPointSelected;
+
+		boxPoints[i].x = x; boxPoints[i].y = y;
+
+		if (iPointSelected == 0) {
+			boxPoints[3].y = y;
+			boxPoints[1].x = x;
+		}
+
+		if (iPointSelected == 1) {
+			boxPoints[2].y = y;
+			boxPoints[0].x = x;
+		}
+
+		if (iPointSelected == 2) {
+			boxPoints[1].y = y;
+			boxPoints[3].x = x;
+		}
+
+		if (iPointSelected == 3) {
+			boxPoints[0].y = y;
+			boxPoints[2].x = x;
+		}
+			
 	}
 
 	void renderBox()
