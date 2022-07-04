@@ -18,6 +18,9 @@ private:
 	bool saved_palette_init = true;
 	ImVec4 saved_palette[28];
 
+	// Color test
+	ImVec4 color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+
 	// UI Widgets flags
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar;
 	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_DefaultOpen;
@@ -32,6 +35,8 @@ public:
 	int selected = -1;                            
 	bool currentMode = 0; // 0->Software, 1->Hardware
 	bool rightClick = false;
+
+	bool openBGPicker = false;
 
 	PaintUI() { ; }
 
@@ -202,6 +207,21 @@ public:
 			ImGui::Text("Send to front");
 		}
 
+		ImGui::PushStyleColor(ImGuiCol_Button, color);
+		if (openBGPicker || ImGui::ButtonEx("##customButton", ImVec2(20, 20), colorButtonFlags)) {
+			ImGui::OpenPopup("mypicker");
+		}
+		else {
+			ImGui::EndPopup();
+		}	
+		ImGui::PopStyleColor(1);
+
+		if (ImGui::BeginPopup("mypicker"))
+		{
+			ImGui::ColorPicker4("Background Color##picker", (float*)&color, colorButtonFlags);
+			ImGui::EndPopup();
+		}
+		
 
 		ImGui::End();
 	

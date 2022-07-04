@@ -63,6 +63,13 @@ void renderScene(void)
 	glutPostRedisplay();
 }
 
+void unselectFigure()
+{
+	if (selectedShape)
+		selectedShape->release();
+	selectedShape = nullptr;
+}
+
 void onResize(int w, int h)
 {	
 	if (h == 0)
@@ -143,9 +150,7 @@ void onClickCanvas(int button, int state, int x, int y)
 		}
 		break;
 	default:
-		if(selectedShape)
-			selectedShape->release();
-		selectedShape = nullptr;
+		unselectFigure();
 		drawing = false;
 		break;
 	}
@@ -218,6 +223,8 @@ void onMotion(int x1, int y1)
 	}
 }
 
+
+
 void onKeyboardEntry(unsigned char c, int x, int y)
 {
 	// 1-6: Change shape to draw
@@ -226,6 +233,10 @@ void onKeyboardEntry(unsigned char c, int x, int y)
 	// Change rendering mode
 	else if (c == 'h')
 		ui.currentMode = !ui.currentMode;
+	else if (c == 'B')
+		ui.openBGPicker = !ui.openBGPicker;
+	else if (c == 'u')
+		unselectFigure();
 	else
 		ImGui_ImplGLUT_KeyboardFunc(c, x, y);
 }

@@ -66,12 +66,13 @@ public:
 			incSE = -incNE;
 			
 			// d is the middle point between pixels evaluated on the line
-			// If -1 > m < 1 we iterate over x  dx > dy
+			
 			// If m < -1 or m >  1 we iterate over y
 			//cout << dx << " " << dy << endl;
 			putPixel(x0, y0, fillColor);
+
+			// If -1 > m < 1 we iterate over x  (dx > dy)
 			if (dx >= dy) {
-				
 				if (x > x1)
 				{
 					swap(x, x1);
