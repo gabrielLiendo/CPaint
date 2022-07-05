@@ -54,7 +54,7 @@ public:
 		else 
 		{	
 			// Draw using Bresenham's algorithm
-			int x, y, dx, dy, d, incN, incE, incNE;
+			int x, y, dx, dy, d, incN, incE, incNE, varX, varY;
 			x = x0;
 			y = y0;
 			dx = abs(x1 - x);
@@ -71,11 +71,16 @@ public:
 			
 			if (dy < dx) // |m| <= 1
 			{	
-				int varY = y1 > y ? 1 : -1;
+				if (x >= x1)
+				{
+					x = x1; x1 = x0;
+					y = y1; y1 = y0;
+				}
 
+				varY = y1 > y ? 1 : -1;
 				for (; x < x1; x++)
 				{
-					if (d <= 0)
+					if (d < 0)
 					{
 						d += incNE;
 						y += varY;
@@ -87,10 +92,16 @@ public:
 			}
 			else // m > 1 || m < -1 
 			{
-				int varX = x1 < x ? -1 : 1;
+				if (y >= y1)
+				{
+					x = x1; x1 = x0;
+					y = y1; y1 = y0;
+				}
+
+				varX = x1 < x ? -1 : 1;
 				for (; y < y1; y++)
 				{
-					if (d <= 0)
+					if (d < 0)
 						d += incN;
 					else {
 						d += incNE;
