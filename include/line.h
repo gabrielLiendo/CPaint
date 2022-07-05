@@ -54,82 +54,52 @@ public:
 		else 
 		{	
 			// Draw using Bresenham's algorithm
-			int x, y, dx, dy, d, incN, incE, incNE, incSE;
+			int x, y, dx, dy, d, incN, incE, incNE;
 			x = x0;
 			y = y0;
 			dx = abs(x1 - x);
 			dy = abs(y1 - y);
 			d = dx - (dy << 1);
-			incN = (dx << 1);
+			incN =  (dx << 1);
 			incE = -(dy << 1);
 			incNE = (dx-dy) << 1;
-			incSE = -incNE;
 			
 			// d is the middle point between pixels evaluated on the line
-			
-			// If m < -1 or m >  1 we iterate over y
-			//cout << dx << " " << dy << endl;
-			putPixel(x0, y0, fillColor);
-
 			// If -1 > m < 1 we iterate over x  (dx > dy)
-			if (dx >= dy) {
-				if (x > x1)
-				{
-					swap(x, x1);
-					y = y1;
-				}
+			// If m < -1 or m >  1 we iterate over y
+			putPixel(x0, y0, fillColor);
+			
+			if (dy < dx) // |m| <= 1
+			{	
+				int varY = y1 > y ? 1 : -1;
 
-				if (y1 < y)
+				for (; x < x1; x++)
 				{
-					x = x0;
-					for (; x < x1; x++)
+					if (d <= 0)
 					{
-						if (d > 0) {
-							d += incSE;
-							y--;
-						}
-						else
-						{
-							d += incE;
-						}
-						putPixel(x, y, fillColor);
-					}
-				}
-				else {
-					for (; x < x1; x++)
-					{
-						if (d > 0)
-							d += incE;
-						else
-						{
-							d += incNE;
-							y++;
-						}
-						putPixel(x, y ,fillColor);
-					}
-				}
-			}
-			else 
-			{
-				if (y > y1)
-				{
-					swap(y, y1);
-					x = x1;
-				}
-
-				for (; y < y1; y++)
-				{
-					if (d > 0) {
 						d += incNE;
-						x++;
+						y += varY;
 					}
 					else
-					{
+						d += incE;
+					putPixel(x, y, fillColor);
+				}
+			}
+			else // m > 1 || m < -1 
+			{
+				int varX = x1 < x ? -1 : 1;
+				for (; y < y1; y++)
+				{
+					if (d <= 0)
 						d += incN;
+					else {
+						d += incNE;
+						x += varX;
 					}
 					putPixel(x, y, fillColor);
 				}
 			}
+			
 		}
 
 		// Render control points if shape is select
