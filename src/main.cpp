@@ -25,9 +25,8 @@ shared_ptr<CShape> drawingShape = nullptr;
 int firstX0, firstY0;
 bool drawing = true;
 
-//Una sola paleta, derecho para borde e izquierdo para borde
 //Click dragueas y sueltas, click dragueas y sueltas y listo
-//GL Loop
+
 //Al pasar el mouse encima de una figura 
 void renderScene(void) 
 {	
@@ -54,9 +53,12 @@ void renderScene(void)
 	// Render every shape already in canvas
 	if (drawingShape)
 		drawingShape->render(currentMode);
-		
+	
 	for (auto const& s : shapes) 
 		s->render(currentMode);
+
+	if (selectedShape)
+		selectedShape->renderCtrlPoints();
 	
 	// Present frame buffer
 	glutSwapBuffers();
@@ -96,8 +98,8 @@ void onClickShape(int x, int y)
 	{
 		if (s->onClick(x, y))
 		{
+			s->clickedCtrlPoint(x, y);
 			selectedShape = s; 
-			selectedShape->setSelected(true);
 			return;
 		}
 	}
@@ -113,11 +115,7 @@ void onClickCanvas(int button, int state, int x, int y)
 		if(state== GLUT_DOWN)
 		// Left-click was pressed
 		{	
-			if (selectedShape)
-			{
-				selectedShape->release();
-				selectedShape = nullptr;
-			}
+			unselectFigure();
 
 			y = height - y - 1;
 			onClickShape(x, y);
@@ -140,12 +138,11 @@ void onClickCanvas(int button, int state, int x, int y)
 			if (drawing && drawingShape)
 			{
 				// We finisish the figure, and it's marked as 'selected'
-				drawingShape->setSelected(true);
 				selectedShape = drawingShape;
 				shapes.push_back(drawingShape);
 				drawingShape = nullptr;
 				drawing = false;
-				cout << "DONE" << endl;
+				cout << "FIGURA DIBUJADA" << endl;
 			}
 		}
 		break;

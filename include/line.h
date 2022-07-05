@@ -5,45 +5,35 @@ class CLine : public CShape
 {
 private:
 	CtrlPoint points[2];
-	CtrlPoint *pointSelected = nullptr;
-	CtrlPoint anchorPoint;
-
+	
 public:
 	CLine(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
-		: CShape(r1, g1, b1, r2, g2, b2) 
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2) 
 	{
 		points[0] = CtrlPoint(x0, y0);
 		points[1] = CtrlPoint(x1, y1);
 	}
 
-	~CLine()
-	{
-		cout << "Se destruyo una linea" << endl;
-	}
+	~CLine(){ cout << "Se destruyo una linea" << endl; }
 
 	void update(int x1, int y1)
 	{
 		points[1].x = x1; points[1].y = y1;
 	}
 
-	void setAnchorPoint(int x, int y)
+	void renderCtrlPoints()
 	{
-		anchorPoint.x = x;
-		anchorPoint.y = y;
+		// Render each vertex
+		for (int i=0; i < 2; i++)
+			points[i].renderCtrlPoint();
 	}
 
-	void release () override
-	{
-		selected = false;
-		pointSelected = nullptr;
-	}
-
-	void render(const bool mode)
+	void render(const bool modeHardware)
 	{	
 		int x0 = points[0].x, y0 = points[0].y;
 		int x1 = points[1].x, y1 = points[1].y;
 
-		if(mode) // Hardware
+		if(modeHardware) // Hardware
 		{
 			glColor3f(fillColor.r, fillColor.g, fillColor.b);
 			glBegin(GL_LINES);
@@ -53,7 +43,7 @@ public:
 		}
 		else 
 		{	
-			// Draw using Bresenham's algorithm
+			// Draw line using Bresenham's algorithm
 			int x, y, dx, dy, d, incN, incE, incNE, varX, varY;
 			x = x0;
 			y = y0;
@@ -64,12 +54,11 @@ public:
 			incE = -(dy << 1);
 			incNE = (dx-dy) << 1;
 			
-			// d is the middle point between pixels evaluated on the line
-			// If -1 > m < 1 we iterate over x  (dx > dy)
-			// If m < -1 or m >  1 we iterate over y
+			// Draw the initial pixel
 			putPixel(x0, y0, fillColor);
-			
-			if (dy < dx) // |m| <= 1
+
+			// If |m| < 1 (abs(dx) > abs(dy)) we iterate over the x-axis, otherwise we iterate over the y-axis
+			if (dy < dx)
 			{	
 				if (x >= x1)
 				{
@@ -90,7 +79,7 @@ public:
 					putPixel(x, y, fillColor);
 				}
 			}
-			else // m > 1 || m < -1 
+			else
 			{
 				if (y >= y1)
 				{
@@ -112,36 +101,37 @@ public:
 			}
 			
 		}
-
-		// Render control points if shape is select
-		if (selected) {
-			for (auto p : points)
-				p.renderCtrlPoint();
-		}
 	}
 
 	bool onClick(int x, int y) 
 	{
-		// We check if the click fell on a vertex
+		// We check if the click fell close to the line, threshold: 4 pixels
 		int x0 = points[0].x, y0 = points[0].y;
 		int x1 = points[1].x, y1 = points[1].y;
 
-		for (int i = 0; i < 2; i++)
-		{
-			if (points[i].distance(x, y) <= 4) 
-			{
-				pointSelected = &points[i];
-				return true;
-			}
-		}
-
-		// We check if the click fell close to the line
 		int a = y0 - y1;
 		int b = x1 - x0;
 		int c = x0 * y1 - x1 * y0;
 		int distance = (int) abs(a * x + b * y + c) / sqrt(a * a + b * b);
 
 		return distance <= 4;
+	}
+
+	void clickedCtrlPoint(int x, int y)
+	{
+		// We check if the click fell on a vertex
+		int dx, dy;
+		for (int i = 0; i < 2; i++)
+		{
+			dx = (x - points[i].x);
+			dy = (y - points[i].y);
+			// Check squared distance between vertex i and the click
+			if ((dx * dx + dy * dy) <= 16)
+			{
+				pointSelected = &points[i];
+				return;
+			}
+		}
 	}
 
 	void onMove(int x1, int y1)
@@ -159,7 +149,7 @@ public:
 			points[0].x += dx; points[0].y += dy;
 			points[1].x += dx; points[1].y += dy;
 
-			setAnchorPoint(x1, y1);
+			anchorPoint.x = x1; anchorPoint.y = y1;
 		}
 	}
 };

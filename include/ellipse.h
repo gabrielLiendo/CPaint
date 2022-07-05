@@ -11,32 +11,34 @@ private:
 
 public:
 	CEllipse(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
-		: CShape(r1, g1, b1, r2, g2, b2), BoxableShape(x0, y0, x1, y1) {}
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2), BoxableShape(x0, y0, x1, y1) {}
 
-	~CEllipse()
-	{
-		cout << "Se destruyo un elipse" << endl;
-	}
+	~CEllipse(){ cout << "Se destruyo un elipse" << endl; }
 
 	void update(int x1, int y1)
 	{
+		int x0 = anchorPoint.x;
 		int y0 = anchorPoint.y;
+
 		if (y1 >= y0)
 			swap(y0, y1);
 
 		// Update radii values
-		a = ((x1 - anchorPoint.x) >> 1);
+		a = ((x1 - x0) >> 1);
 		b = ((y0 - y1) >> 1);
+
 		// Update the center of the ellipse
 		cy = y1 + b;
-		cx = anchorPoint.x + a;
+		cx = x0 + a;
+
 		// Update position of the bounding box
-		setBoundingBox(x1, y1);
+		setBoundingBox(cx + a, cy - b, cx - a, cy + b);
 	}
 
-	void setAnchorPoint(int x, int y)
+	// Render the bounding box
+	void renderCtrlPoints()
 	{
-		BoxableShape::setAnchorPoint(x, y);
+		renderBox();
 	}
 
 	// Draw the 4 symmetrical points of the point (x,y)
@@ -87,23 +89,41 @@ public:
 			y -= 1;
 			ellipsePoints(x, y, borderColor);
 		}
-
-		// Render bounding box if the shape is selected
-		if (selected)
-			renderBox();
 	}
 
 	bool onClick(int x, int y)
 	{
-		return false;
+		int dx = x - cx;
+		int dy = y - cy;
+
+		return (((float)(dx * dx)/(a * a)) + ((float)(dy * dy) / (b * b))) <= 1.2;
+	}
+
+	void clickedCtrlPoint(int x, int y)
+	{
 	}
 
 	void onMove(int x1, int y1)
 	{
-	}
+		if (pointSelected)
+		{
+			//int dx = x1 - anchorPoint.x;
+			//anchorPoint.x = x1;
+			//anchorPoint.y = y1;
+			//r = r + dx;
 
-	void release()
-	{
-		this->selected = false;
+			//setBoundingBox(boxPoints[0].x - r, boxPoints[0].y + r, boxPoints[2].y + r, boxPoints[2].y - r);
+		}
+		else
+		{	// Move the whole ellipse
+			int dx = x1 - anchorPoint.x;
+			int dy = y1 - anchorPoint.y;
+
+			anchorPoint.x = x1;
+			anchorPoint.y = y1;
+
+			cx += dx; cy += dy;
+			moveBoundingBox(dx, dy);
+		}
 	}
 };

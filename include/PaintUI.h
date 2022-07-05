@@ -20,6 +20,7 @@ private:
 
 	// Color test
 	ImVec4 color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+	ImVec4 backup_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// UI Widgets flags
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar;
@@ -37,6 +38,7 @@ public:
 	bool rightClick = false;
 
 	bool openBGPicker = false;
+	bool openPopUpFlag = false;
 
 	PaintUI() { ; }
 
@@ -51,6 +53,11 @@ public:
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
 		}
+	}
+
+	static void CustomPicker(ImVec4 color, bool &statusPicker)
+	{
+		
 	}
 
 	void drawPalette()
@@ -102,8 +109,6 @@ public:
 
 	void drawUI()
 	{	
-		
-
 		ImGui::Begin("Configuration", 0, ImGuiWindowFlags_MenuBar);
 
 		if (ImGui::BeginMenuBar())
@@ -121,7 +126,6 @@ public:
 		{
 			// Rendering Mode Toggler
 			ImGuiStyle& style = ImGui::GetStyle();
-
 
 			float w = ImGui::CalcItemWidth();
 			float spacing = style.ItemInnerSpacing.x;
@@ -161,7 +165,6 @@ public:
 			if (ImGui::TreeNodeEx("Choose Shape", nodeFlags))
 			{
 				ImGui::TreePush();
-
 				for (int i = 0; i < 2; i++) {
 					for (int j = 0; j < 3; j++)
 					{
@@ -207,24 +210,32 @@ public:
 			ImGui::Text("Send to front");
 		}
 
-		ImGui::PushStyleColor(ImGuiCol_Button, color);
-		if (openBGPicker || ImGui::ButtonEx("##customButton", ImVec2(20, 20), colorButtonFlags)) {
+		openBGPicker |= ImGui::ColorButton("##3b", ImVec4(bgColor[0], bgColor[1], bgColor[2], 1.0f), colorButtonFlags);
+
+		if (openBGPicker) {
 			ImGui::OpenPopup("mypicker");
 		}
-		else {
-			ImGui::EndPopup();
-		}	
-		ImGui::PopStyleColor(1);
 
 		if (ImGui::BeginPopup("mypicker"))
 		{
-			ImGui::ColorPicker4("Background Color##picker", (float*)&color, colorButtonFlags);
+			float w = ImGui::CalcItemWidth();
+			ImGui::BeginGroup();
+			ImGui::Text("Background Color");
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(w - 10);
+			if (ImGui::Button("x", ImVec2(20, 20)))
+			{
+				openBGPicker = false;
+			}
+			ImGui::Separator();
+			ImGui::ColorPicker3("##picker", (float*)&bgColor, ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview);
+			ImGui::EndGroup();
 			ImGui::EndPopup();
+			openBGPicker = false;
 		}
-		
 
+		
 		ImGui::End();
-	
 		ImGui::ShowDemoWindow();
 	}
 };
