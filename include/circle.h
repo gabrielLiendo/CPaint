@@ -45,7 +45,11 @@ public:
 	}
 
 	void render(const bool mode)
-	{
+	{	
+		// Draw content
+		
+
+		// Draw border
 		int x, y, d;
 		x = 0;
 		y = r;

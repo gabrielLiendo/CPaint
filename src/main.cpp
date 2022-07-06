@@ -29,6 +29,42 @@ bool drawing = true;
 
 
 //Click dragueas y sueltas, click dragueas y sueltas y listo
+void createShape(int x1, int y1, int selected)
+{
+	float* fillColor = ui.fillColor, * borderColor = ui.borderColor;
+	int x0 = firstX0, y0 = firstY0;
+
+	if (selected == 0)
+	{
+		shared_ptr<CLine> l = make_shared<CLine>(x0, y0, x1, y1,
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+		drawingShape = l;
+	}
+	else if (selected == 1)
+	{
+		shared_ptr<CCircle> c = make_shared<CCircle>(x0, y0, x1, y1,
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+		drawingShape = c;
+	}
+	else if (selected == 2)
+	{
+		shared_ptr<CEllipse> e = make_shared<CEllipse>(x0, y0, x1, y1,
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+		drawingShape = e;
+	}
+	else if (selected == 3)
+	{
+		shared_ptr<CRectangle> s = make_shared<CRectangle>(x0, y0, x1, y1,
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+		drawingShape = s;
+	}
+	else if (selected == 4)
+	{
+		shared_ptr<CTriangle> s = make_shared<CTriangle>(x1, y1,
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+		drawingShape = s;
+	}
+}
 
 //Al pasar el mouse encima de una figura 
 void renderScene(void) 
@@ -119,9 +155,18 @@ void onClickCanvas(int button, int state, int x, int y)
 		if(state== GLUT_DOWN)
 		// Left-click was pressed
 		{	
-			unselectFigure();
-
+			const int selected = ui.selected;
 			y = height - y - 1;
+
+			if (selected == 4 || selected == 5)
+			{
+				if (!drawingShape)
+					createShape(x, y, selected);
+				else
+					drawingShape->update(x, y);
+			}
+
+			unselectFigure();
 			onClickShape(x, y);
 			
 			// A shape was selected
@@ -132,6 +177,7 @@ void onClickCanvas(int button, int state, int x, int y)
 			}
 			else // We can draw
 			{	
+
 				cout << "ESPACIO EN BLANCO" << endl;
 				drawing = true;
 				firstX0 = x; firstY0 = y;
@@ -171,38 +217,7 @@ void onClick(int button, int state, int x, int y)
 	}
 }
 
-void createShape(int x1, int y1)
-{	
-	const int selected = ui.selected;
-	float *fillColor = ui.fillColor, *borderColor = ui.borderColor;
 
-	int x0 = firstX0, y0 = firstY0;
-
-	if (selected == 0)
-	{
-		shared_ptr<CLine> l = make_shared<CLine>(x0, y0, x1, y1, 
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
-		drawingShape = l;
-	}
-	else if (selected == 1)
-	{
-		shared_ptr<CCircle> c = make_shared<CCircle>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
-		drawingShape = c;
-	}
-	else if (selected == 2)
-	{
-		shared_ptr<CEllipse> e = make_shared<CEllipse>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
-		drawingShape = e;
-	}
-	else if (selected == 3)
-	{
-		shared_ptr<CRectangle> s = make_shared<CRectangle>(x0, y0, x1, y1, 
-			fillColor[0], fillColor[1], fillColor[2],borderColor[0], borderColor[1], borderColor[2]);
-		drawingShape = s;
-	}
-}
 
 void onMotion(int x1, int y1)
 {	
@@ -216,7 +231,10 @@ void onMotion(int x1, int y1)
 		if (drawing)
 		{
 			if (!drawingShape)
-				createShape(x1, y1);
+			{
+				const int selected = ui.selected;
+				createShape(x1, y1, selected);
+			}
 			else
 				drawingShape->update(x1, y1);
 		}
@@ -229,17 +247,23 @@ void onMotion(int x1, int y1)
 
 void onKeyboardEntry(unsigned char c, int x, int y)
 {
-	cout << int(c) << endl;
 	// 1-6: Change shape to draw
 	if (c >= 49 && c <= 54)
 		ui.selected = c - 49;
 	// Change rendering mode
 	else if (c == 'h')
 		ui.currentMode = !ui.currentMode;
+	// Open color windows 
 	else if (c == 'B')
 		ui.openBGPicker = !ui.openBGPicker;
+	else if (c == 'c')
+		ui.openBorderPicker = !ui.openBorderPicker;
+	else if (c == 'f')
+		ui.openFillPicker = !ui.openFillPicker;
+	// Unselect current figure
 	else if (c == 'u')
 		unselectFigure();
+	// Redirect input to ImGui
 	else
 		ImGui_ImplGLUT_KeyboardFunc(c, x, y);
 }
@@ -270,7 +294,7 @@ int main(int argc, char** argv)
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.Fonts->AddFontFromFileTTF("misc/fonts/DroidSans.ttf", 15.5f);
+	//io.Fonts->AddFontFromFileTTF("misc/fonts/DroidSans.ttf", 15.5f);
 	io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 15.0f);
 
 	ImGui::StyleColorsDark();

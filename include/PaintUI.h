@@ -36,7 +36,8 @@ public:
 	bool rightClick = false;
 
 	bool openBGPicker = false;
-	bool openPopUpFlag = false;
+	bool openFillPicker = false;
+	bool openBorderPicker = false;
 
 	PaintUI() { ; }
 
@@ -51,11 +52,6 @@ public:
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
 		}
-	}
-
-	static void CustomPicker(ImVec4 color, bool &statusPicker)
-	{
-		
 	}
 
 	void drawPalette()
@@ -209,27 +205,39 @@ public:
 			ImGui::Text("Send to front");
 		}
 
-		openBGPicker |= ImGui::ColorButton("##3b", ImVec4(bgColor[0], bgColor[1], bgColor[2], 1.0f), colorButtonFlags);
-
-		if (openBGPicker) {
-			ImGui::OpenPopup("mypicker");
-		}
-		if (ImGui::BeginPopup("mypicker"))
+		ImGui::SetNextWindowSize(ImVec2(200, 270));
+		if (openBGPicker && ImGui::Begin("Background Color", &openBGPicker, ImGuiWindowFlags_NoResize))
 		{
 			float w = ImGui::CalcItemWidth();
-			ImGui::BeginGroup();
-			ImGui::Text("Background Color");
-			ImGui::SameLine();
-			ImGui::SetCursorPosX(w - 10);
-			if (ImGui::Button("x", ImVec2(20, 20)))
+			ImGui::PushItemWidth(1.35 * w);
+			ImGui::ColorPicker3("##picker", (float*)&bgColor, ImGuiColorEditFlags_NoSidePreview);
+			ImGui::End();
+		}
+
+		ImGui::SetNextWindowSize(ImVec2(200, 270));
+		if (openFillPicker && ImGui::Begin("Fill Color", &openFillPicker, ImGuiWindowFlags_NoResize))
+		{	
+			float w = ImGui::CalcItemWidth();
+			ImGui::PushItemWidth(1.35*w);
+			if (ImGui::ColorPicker3("##picker", (float*)&fillColor, ImGuiColorEditFlags_NoSidePreview))
 			{
-				openBGPicker = false;
+				if (selectedShape)
+					selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
 			}
-			ImGui::Separator();
-			ImGui::ColorPicker3("##picker", (float*)&bgColor, ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview);
-			ImGui::EndGroup();
-			ImGui::EndPopup();
-			openBGPicker = false;
+			ImGui::End();
+		}
+
+		ImGui::SetNextWindowSize(ImVec2(200, 270));
+		if (openBorderPicker && ImGui::Begin("Border Color", &openBorderPicker, ImGuiWindowFlags_NoResize))
+		{
+			float w = ImGui::CalcItemWidth();
+			ImGui::PushItemWidth(1.35 * w);
+			if (ImGui::ColorPicker3("##picker", (float*)&borderColor, ImGuiColorEditFlags_NoSidePreview))
+			{
+				if (selectedShape)
+					selectedShape->setBorderColor(borderColor[0], borderColor[1], borderColor[2]);
+			}
+			ImGui::End();
 		}
 
 		ImGui::End();

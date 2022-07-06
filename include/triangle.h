@@ -8,7 +8,7 @@ private:
 	int currentIndex = 0;
 
 public:
-	CTriangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
+	CTriangle(int x0, int y0, float r1, float g1, float b1, float r2, float g2, float b2)
 		: CShape(x0, y0, r1, g1, b1, r2, g2, b2)
 	{
 		points[0] = CtrlPoint(x0, y0);
@@ -24,18 +24,13 @@ public:
 
 	void renderCtrlPoints()
 	{
-
+		// Render each vertex
+		for (int i = 0; i < 3; i++)
+			points[i].renderCtrlPoint();
 	}
 	
 	void render(const bool modeHardware)
 	{	
-		// Draw Border
-		glColor3f(borderColor.r, borderColor.g, borderColor.b);
-		glBegin(GL_LINE_LOOP);
-			for (int i = 0; i < currentIndex; i++)
-				glVertex2i(points[i].x, points[i].y);
-		glEnd();
-
 		if (currentIndex == 3)
 		{
 			// Draw Content
@@ -45,6 +40,13 @@ public:
 				glVertex2i(points[i].x, points[i].y);
 			glEnd();
 		}
+
+		// Draw Border
+		glColor3f(borderColor.r, borderColor.g, borderColor.b);
+		glBegin(GL_LINE_LOOP);
+			for (int i = 0; i < currentIndex; i++)
+				glVertex2i(points[i].x, points[i].y);
+		glEnd();
 	}
 
 	
