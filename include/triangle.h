@@ -4,45 +4,68 @@
 class CTriangle : public CShape
 {
 private:	
-	Point2D points[3];
+	CtrlPoint points[3];
+	int currentIndex = 0;
 
 public:
-	CTriangle(float r, float g, float b) : CShape(r, g, b){}
-
-	~CTriangle()
+	CTriangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2)
 	{
-		cout << "Se destruyo un triangulo" << endl;
+		points[0] = CtrlPoint(x0, y0);
 	}
+
+	~CTriangle(){ cout << "Se destruyo un triangulo" << endl;}
 
 	void update(int x1, int y1)
 	{	
-		// Update bounding box corner
-		this->x1 = x1; this->y1 = y1;
-		int xMiddle = x0 + ((x1 - x0) >> 1);
-
-
-		// Update vertex positions
-		points[0].x = xMiddle; points[0].y = y0;
-		points[1].x = x0; points[1].y = y1;
-		points[2].x = x1; points[2].y = y1;
+		// Update current vertex positions
+		points[currentIndex].x = x1; points[currentIndex].y = y1;
 	}
 
-	void render(const char* mode)
+	void renderCtrlPoints()
+	{
+
+	}
+	
+	void render(const bool modeHardware)
 	{	
-		setColor(fillColor[0], fillColor[1], fillColor[2]);
-
-		glBegin(GL_TRIANGLES); 
-			for (auto p : points)
-				glVertex2i(p.x, p.y);
+		// Draw Border
+		glColor3f(borderColor.r, borderColor.g, borderColor.b);
+		glBegin(GL_LINE_LOOP);
+			for (int i = 0; i < currentIndex; i++)
+				glVertex2i(points[i].x, points[i].y);
 		glEnd();
+
+		if (currentIndex == 3)
+		{
+			// Draw Content
+			glColor3f(fillColor.r, fillColor.g, fillColor.b);
+			glBegin(GL_TRIANGLES);
+			for (int i = 0; i < 3; i++)
+				glVertex2i(points[i].x, points[i].y);
+			glEnd();
+		}
 	}
+
+	
 
 	bool onClick(int x, int y)
 	{
 		return false;
 	}
 
+	void clickedCtrlPoint(int x, int y)
+	{
+
+	}
+
 	void onMove(int x1, int y1)
 	{
+	}
+
+	bool finished() override
+	{
+		currentIndex += 1;
+		return currentIndex == 3;
 	}
 };

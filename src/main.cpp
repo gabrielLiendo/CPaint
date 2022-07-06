@@ -11,7 +11,7 @@
 #include "circle.h"
 #include "ellipse.h"
 #include "rectangle.h"
-//#include "triangle.h"
+#include "triangle.h"
 #include "paintUI.h"
 
 PaintUI ui;
@@ -24,6 +24,9 @@ shared_ptr<CShape> drawingShape = nullptr;
 
 int firstX0, firstY0;
 bool drawing = true;
+
+
+
 
 //Click dragueas y sueltas, click dragueas y sueltas y listo
 
@@ -71,6 +74,7 @@ void unselectFigure()
 		selectedShape->release();
 	selectedShape = nullptr;
 }
+
 
 void onResize(int w, int h)
 {	
@@ -135,9 +139,10 @@ void onClickCanvas(int button, int state, int x, int y)
 		}
 		else 
 		{
-			if (drawing && drawingShape)
+			if (drawing && drawingShape && drawingShape->finished())
 			{
 				// We finisish the figure, and it's marked as 'selected'
+				
 				selectedShape = drawingShape;
 				shapes.push_back(drawingShape);
 				drawingShape = nullptr;
@@ -224,6 +229,7 @@ void onMotion(int x1, int y1)
 
 void onKeyboardEntry(unsigned char c, int x, int y)
 {
+	cout << int(c) << endl;
 	// 1-6: Change shape to draw
 	if (c >= 49 && c <= 54)
 		ui.selected = c - 49;
@@ -237,6 +243,8 @@ void onKeyboardEntry(unsigned char c, int x, int y)
 	else
 		ImGui_ImplGLUT_KeyboardFunc(c, x, y);
 }
+
+
 
 int main(int argc, char** argv)
 {	
@@ -262,7 +270,14 @@ int main(int argc, char** argv)
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.Fonts->AddFontFromFileTTF("misc/fonts/DroidSans.ttf", 15.5f);
+	io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 15.0f);
+
 	ImGui::StyleColorsDark();
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 5));
+	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplGLUT_Init();
@@ -274,7 +289,7 @@ int main(int argc, char** argv)
 	glutMouseFunc(onClick);
 	glutMotionFunc(onMotion);
 	glutKeyboardFunc(onKeyboardEntry);
-
+	//glutSpecialFunc(onSpecialEntry);
 
 	glutMainLoop();
 

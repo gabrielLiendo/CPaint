@@ -43,6 +43,7 @@ protected:
 	Color fillColor, borderColor;
 	CtrlPoint anchorPoint;
 	CtrlPoint *pointSelected = nullptr;
+	int level = 0;
 
 public:
 	CShape(int x0, int y0, float r1, float g1, float b1, float r2, float g2, float b2)
@@ -103,4 +104,9 @@ public:
 	virtual void clickedCtrlPoint(int x, int y) = 0;
 	
 	virtual void onMove(int x1, int y1) = 0;
+
+	virtual bool finished()
+	{
+		return true;
+	}
 };

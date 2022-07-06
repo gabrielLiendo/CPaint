@@ -6,13 +6,11 @@
 // Pointer to current selected shape on main app
 shared_ptr<CShape> selectedShape;
 
-#define IMGUI_DEMO_MARKER(section)  do { if (GImGuiDemoMarkerCallback != NULL) GImGuiDemoMarkerCallback(__FILE__, __LINE__, section, GImGuiDemoMarkerCallbackUserData); } while (0)
-
 class PaintUI
 {
 private:
 	const char* renderingModes[2] = { "Software", "Hardware" };
-	const char* shapeTypes[6] = { "Line", "Circle", "Ellipse", "Rectangle", "Triangle", "Bezier\n Curve" };
+	const char* shapeTypes[6] = { "Line", "Circle", "Ellipse", "Rectangle", "Triangle", "Bezier Curve" };
 
 	// Color Palette
 	bool saved_palette_init = true;
@@ -164,42 +162,43 @@ public:
 		{
 			if (ImGui::TreeNodeEx("Choose Shape", nodeFlags))
 			{
+
 				ImGui::TreePush();
+				float w = ImGui::CalcItemWidth();
 				for (int i = 0; i < 2; i++) {
 					for (int j = 0; j < 3; j++)
 					{
 						if (j > 0)
 							ImGui::SameLine();
 
-						if (ImGui::Selectable(shapeTypes[(3 * i) + j], selected == ((3 * i) + j), 0, ImVec2(70.0f, 30.0f)))
+						if (ImGui::Selectable(shapeTypes[(3 * i) + j], selected == ((3 * i) + j), 0, ImVec2(w/2.3, 40.0f)))
 							selected = (3 * i) + j;
 					}
 				}
+				
 				ImGui::TreePop();
 			}
 
 			if (ImGui::TreeNodeEx("Edit Colors", nodeFlags))
 			{
-				ImGui::TreePush();
-				ImGui::Text("Fill Color:");
 				ImGui::SameLine();
-				if (ImGui::ColorEdit3("##1", fillColor, ImGuiColorEditFlags_NoInputs))
+				HelpMarker("Left-click on palette \nto change the fill color. \n\nRight-click on palette \nto change the border color.");
+
+				ImGui::TreePush();
+				if (ImGui::ColorEdit3("Fill Color", fillColor))
 				{
 					if (selectedShape)
 						selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
 				}
-				ImGui::SameLine();
-				ImGui::Text("Border Color:");
-				ImGui::SameLine();
-				if (ImGui::ColorEdit3("##2", borderColor, ImGuiColorEditFlags_NoInputs))
+				if (ImGui::ColorEdit3("Border Color", borderColor))
 				{
 					if (selectedShape)
 						selectedShape->setBorderColor(borderColor[0], borderColor[1], borderColor[2]);
 				}
-				ImGui::SameLine();
-				HelpMarker("Left-click on palette \nto change the fill color. \n\nRight-click on palette \nto change the border color.");
-				if (ImGui::TreeNodeEx("Default Palette:##1", nodeFlags)) 
-					drawPalette();
+				
+				ImGui::Separator();
+				ImGui::Text("Default Palette:");
+				drawPalette();
 
 				ImGui::TreePop();
 			}
@@ -215,7 +214,6 @@ public:
 		if (openBGPicker) {
 			ImGui::OpenPopup("mypicker");
 		}
-
 		if (ImGui::BeginPopup("mypicker"))
 		{
 			float w = ImGui::CalcItemWidth();
@@ -234,7 +232,6 @@ public:
 			openBGPicker = false;
 		}
 
-		
 		ImGui::End();
 		ImGui::ShowDemoWindow();
 	}
