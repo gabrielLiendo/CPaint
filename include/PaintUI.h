@@ -5,6 +5,7 @@
 
 // Pointer to current selected shape on main app
 shared_ptr<CShape> selectedShape;
+extern list<shared_ptr<CShape>> shapes;
 
 class PaintUI
 {
@@ -31,7 +32,7 @@ public:
 	float borderColor[3] = { 0.0f, 0.0f, 0.0f };
 	
 	// Current State
-	int selected = -1;                            
+	int shapeSelected = -1; 
 	bool currentMode = 0; // 0->Software, 1->Hardware
 	bool rightClick = false;
 
@@ -51,6 +52,34 @@ public:
 			ImGui::TextUnformatted(desc);
 			ImGui::PopTextWrapPos();
 			ImGui::EndTooltip();
+		}
+	}
+
+	void toggleLevel(int option)
+	{
+		if (selectedShape)
+		{
+			int level = selectedShape->getLayerLevel();
+			switch (option)
+			{
+			case -2:
+				level = (shapes.front()->getLayerLevel()) - 1;
+				break;
+			case -1: 
+				level -= 1;
+				break;
+			case 1:
+				level += 1;
+				break;
+			case 2:
+				level = (shapes.back()->getLayerLevel()) + 1;
+				break;
+			default:
+				break;
+			}
+			selectedShape->setLayerLevel(level);
+			shapes.sort([](const shared_ptr<CShape>& a, const shared_ptr<CShape>& b)
+				{ return a->getLayerLevel() < b->getLayerLevel(); });
 		}
 	}
 
@@ -167,11 +196,10 @@ public:
 						if (j > 0)
 							ImGui::SameLine();
 
-						if (ImGui::Selectable(shapeTypes[(3 * i) + j], selected == ((3 * i) + j), 0, ImVec2(w/2.3, 40.0f)))
-							selected = (3 * i) + j;
+						if (ImGui::Selectable(shapeTypes[(3 * i) + j], shapeSelected == ((3 * i) + j), 0, ImVec2(w/2.3, 40.0f)))
+							shapeSelected = (3 * i) + j;
 					}
 				}
-				
 				ImGui::TreePop();
 			}
 
@@ -202,9 +230,20 @@ public:
 
 		if (ImGui::CollapsingHeader("Tools", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::Text("Send to front");
+			if (ImGui::Button("<<", ImVec2(20, 20)))
+				toggleLevel(-2);
+			ImGui::SameLine();
+			if (ImGui::Button("-", ImVec2(20, 20)))
+				toggleLevel(-1);
+			ImGui::SameLine();
+			if (ImGui::Button("+", ImVec2(20, 20)))
+				toggleLevel(1);
+			ImGui::SameLine();
+			if (ImGui::Button(">>", ImVec2(20, 20)))
+				toggleLevel(2);
 		}
 
+		// Popup Windows
 		ImGui::SetNextWindowSize(ImVec2(200, 270));
 		if (openBGPicker && ImGui::Begin("Background Color", &openBGPicker, ImGuiWindowFlags_NoResize))
 		{
@@ -241,6 +280,6 @@ public:
 		}
 
 		ImGui::End();
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 	}
 };

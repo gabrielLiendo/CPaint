@@ -46,6 +46,7 @@ protected:
 	int level = 0;
 
 public:
+
 	CShape(int x0, int y0, float r1, float g1, float b1, float r2, float g2, float b2)
 	{	
 		anchorPoint.x = x0; anchorPoint.y = y0;
@@ -54,6 +55,16 @@ public:
 	}
 
 	virtual ~CShape(){ cout << "Se destruyo un shape" << endl; }
+
+	int getLayerLevel()
+	{
+		return level;
+	}
+
+	void setLayerLevel(int level)
+	{
+		this->level = level;
+	}
 
 	void setAnchorPoint(int x, int y)
 	{

@@ -4,8 +4,10 @@
 
 #include <GL/freeglut.h>
 #include <iostream>
-#include <list>
 #include <memory>
+#include <list>
+#include <algorithm>
+
 
 #include "line.h"
 #include "circle.h"
@@ -15,50 +17,50 @@
 #include "paintUI.h"
 
 PaintUI ui;
-
 int width = 1600, height = 800;
+int firstX0, firstY0;
+bool drawing = true;
 
 // Displayed Figures 
 list<shared_ptr<CShape>> shapes;
 shared_ptr<CShape> drawingShape = nullptr;
 
-int firstX0, firstY0;
-bool drawing = true;
-
-
-
+bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure)
+{
+	return figure->getLayerLevel() > fig->getLayerLevel();
+}
 
 //Click dragueas y sueltas, click dragueas y sueltas y listo
-void createShape(int x1, int y1, int selected)
+void createShape(int x1, int y1, int shapeSelected)
 {
 	float* fillColor = ui.fillColor, * borderColor = ui.borderColor;
 	int x0 = firstX0, y0 = firstY0;
 
-	if (selected == 0)
+	if (shapeSelected == 0)
 	{
 		shared_ptr<CLine> l = make_shared<CLine>(x0, y0, x1, y1,
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = l;
 	}
-	else if (selected == 1)
+	else if (shapeSelected == 1)
 	{
 		shared_ptr<CCircle> c = make_shared<CCircle>(x0, y0, x1, y1,
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = c;
 	}
-	else if (selected == 2)
+	else if (shapeSelected == 2)
 	{
 		shared_ptr<CEllipse> e = make_shared<CEllipse>(x0, y0, x1, y1,
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = e;
 	}
-	else if (selected == 3)
+	else if (shapeSelected == 3)
 	{
 		shared_ptr<CRectangle> s = make_shared<CRectangle>(x0, y0, x1, y1,
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = s;
 	}
-	else if (selected == 4)
+	else if (shapeSelected == 4)
 	{
 		shared_ptr<CTriangle> s = make_shared<CTriangle>(x1, y1,
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
@@ -155,13 +157,13 @@ void onClickCanvas(int button, int state, int x, int y)
 		if(state== GLUT_DOWN)
 		// Left-click was pressed
 		{	
-			const int selected = ui.selected;
+			const int shapeSelected = ui.shapeSelected;
 			y = height - y - 1;
 
-			if (selected == 4 || selected == 5)
+			if (shapeSelected == 4 || shapeSelected == 5)
 			{
 				if (!drawingShape)
-					createShape(x, y, selected);
+					createShape(x, y, shapeSelected);
 				else
 					drawingShape->update(x, y);
 			}
@@ -190,11 +192,16 @@ void onClickCanvas(int button, int state, int x, int y)
 				// We finisish the figure, and it's marked as 'selected'
 				
 				selectedShape = drawingShape;
+
+				shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),
+					drawingShape, isHigherLevel), drawingShape);
+
 				shapes.push_back(drawingShape);
 				drawingShape = nullptr;
 				drawing = false;
 				cout << "FIGURA DIBUJADA" << endl;
 			}
+			glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
 		}
 		break;
 	default:
@@ -232,14 +239,20 @@ void onMotion(int x1, int y1)
 		{
 			if (!drawingShape)
 			{
-				const int selected = ui.selected;
-				createShape(x1, y1, selected);
+				const int shapeSelected = ui.shapeSelected;
+				createShape(x1, y1, shapeSelected);
 			}
-			else
+			else {
 				drawingShape->update(x1, y1);
+			}
+				
 		}
-		else if (selectedShape)
+		else if (selectedShape) {
+			// Draggin shape position
 			selectedShape->onMove(x1, y1);
+			glutSetCursor(GLUT_CURSOR_CYCLE);
+		}
+			
 	}
 }
 
@@ -249,9 +262,9 @@ void onKeyboardEntry(unsigned char c, int x, int y)
 {
 	// 1-6: Change shape to draw
 	if (c >= 49 && c <= 54)
-		ui.selected = c - 49;
+		ui.shapeSelected = c - 49;
 	// Change rendering mode
-	else if (c == 'h')
+	if (c == 'h')
 		ui.currentMode = !ui.currentMode;
 	// Open color windows 
 	else if (c == 'B')
@@ -263,6 +276,15 @@ void onKeyboardEntry(unsigned char c, int x, int y)
 	// Unselect current figure
 	else if (c == 'u')
 		unselectFigure();
+	// Toggle current figure layer level
+	else if (c == 'b')
+		ui.toggleLevel(-2);
+	else if (c == '-')
+		ui.toggleLevel(-1);
+	else if (c == '+')
+		ui.toggleLevel(1);
+	else if (c == 'f')
+		ui.toggleLevel(2);
 	// Redirect input to ImGui
 	else
 		ImGui_ImplGLUT_KeyboardFunc(c, x, y);
@@ -313,6 +335,7 @@ int main(int argc, char** argv)
 	glutMouseFunc(onClick);
 	glutMotionFunc(onMotion);
 	glutKeyboardFunc(onKeyboardEntry);
+	
 	//glutSpecialFunc(onSpecialEntry);
 
 	glutMainLoop();
