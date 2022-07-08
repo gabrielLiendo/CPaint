@@ -8,7 +8,6 @@
 #include <list>
 #include <algorithm>
 
-
 #include "line.h"
 #include "circle.h"
 #include "ellipse.h"

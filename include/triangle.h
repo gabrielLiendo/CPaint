@@ -1,5 +1,5 @@
 #pragma once
-#include "shape.h"
+#include "line.h"
 
 class CTriangle : public CShape
 {
@@ -28,25 +28,45 @@ public:
 		for (int i = 0; i < 3; i++)
 			points[i].renderCtrlPoint();
 	}
-	
+
 	void render(const bool modeHardware)
 	{	
-		if (currentIndex == 3)
+		if (modeHardware)
 		{
-			// Draw Content
-			glColor3f(fillColor.r, fillColor.g, fillColor.b);
-			glBegin(GL_TRIANGLES);
-			for (int i = 0; i < 3; i++)
+			if (currentIndex == 3)
+			{
+				// Draw Content
+				glColor3f(fillColor.r, fillColor.g, fillColor.b);
+				glBegin(GL_TRIANGLES);
+				for (int i = 0; i < 3; i++)
+					glVertex2i(points[i].x, points[i].y);
+				glEnd();
+			}
+
+			// Draw Border
+			glColor3f(borderColor.r, borderColor.g, borderColor.b);
+			glBegin(GL_LINE_LOOP);
+			for (int i = 0; i < currentIndex; i++)
 				glVertex2i(points[i].x, points[i].y);
 			glEnd();
 		}
-
-		// Draw Border
-		glColor3f(borderColor.r, borderColor.g, borderColor.b);
-		glBegin(GL_LINE_LOOP);
-			for (int i = 0; i < currentIndex; i++)
-				glVertex2i(points[i].x, points[i].y);
-		glEnd();
+		else
+		{
+			// Draw Border
+			if (currentIndex == 2)
+			{
+				drawLine(points[0].x, points[0].y, points[1].x, points[1].y, borderColor);
+				
+			}
+			else if (currentIndex == 3)
+			{
+				drawLine(points[0].x, points[0].y, points[1].x, points[1].y, borderColor);
+				drawLine(points[1].x, points[1].y, points[2].x, points[2].y, borderColor);
+				drawLine(points[2].x, points[2].y, points[0].x, points[0].y, borderColor);
+			}
+				
+		}
+		
 	}
 
 	

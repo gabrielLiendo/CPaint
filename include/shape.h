@@ -99,10 +99,71 @@ public:
 	}
 
 	// Mark control point as deselected
-	void release() 
+	void release()
 	{
 		pointSelected = nullptr;
 	}
+
+	// Draw line using Bresenham's algorithm
+	void drawLine(int x0, int y0, int x1, int y1, Color c)
+	{
+		int x, y, dx, dy, d, incN, incE, incNE, varX, varY;
+		x = x0;
+		y = y0;
+		dx = abs(x1 - x);
+		dy = abs(y1 - y);
+		d = dx - (dy << 1);
+		incN = (dx << 1);
+		incE = -(dy << 1);
+		incNE = (dx - dy) << 1;
+
+		// Draw the initial pixel
+		putPixel(x0, y0, fillColor);
+
+		// If |m| < 1 (abs(dx) > abs(dy)) we iterate over the x-axis, otherwise we iterate over the y-axis
+		if (dy < dx)
+		{
+			if (x >= x1)
+			{
+				x = x1; x1 = x0;
+				y = y1; y1 = y0;
+			}
+
+			varY = y1 > y ? 1 : -1;
+			for (; x < x1; x++)
+			{
+				if (d < 0)
+				{
+					d += incNE;
+					y += varY;
+				}
+				else
+					d += incE;
+				putPixel(x, y, c);
+			}
+		}
+		else
+		{
+			if (y >= y1)
+			{
+				x = x1; x1 = x0;
+				y = y1; y1 = y0;
+			}
+
+			varX = x1 < x ? -1 : 1;
+			for (; y < y1; y++)
+			{
+				if (d < 0)
+					d += incN;
+				else {
+					d += incNE;
+					x += varX;
+				}
+				putPixel(x, y, c);
+			}
+		}
+	}
+
 
 	virtual void update(int x, int y) = 0;
 
