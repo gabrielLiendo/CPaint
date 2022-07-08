@@ -35,6 +35,11 @@ struct CtrlPoint
 	{
 		return (int)sqrt(pow(x - this->x, 2) + pow(y - this->y, 2) * 1.0);
 	}
+
+	bool operator<(CtrlPoint const& point) {
+		return y < point.y;
+	}
+
 };
 
 class CShape

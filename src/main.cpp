@@ -24,15 +24,17 @@ bool drawing = true;
 list<shared_ptr<CShape>> shapes;
 shared_ptr<CShape> drawingShape = nullptr;
 
+
+//Click dragueas y sueltas, click dragueas y sueltas y listo
 bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure)
 {
 	return figure->getLayerLevel() > fig->getLayerLevel();
 }
 
-//Click dragueas y sueltas, click dragueas y sueltas y listo
-void createShape(int x1, int y1, int shapeSelected)
+void createShape(int x1, int y1)
 {
-	float* fillColor = ui.fillColor, * borderColor = ui.borderColor;
+	const int shapeSelected = ui.shapeSelected;
+	const float* fillColor = ui.fillColor, * borderColor = ui.borderColor;
 	int x0 = firstX0, y0 = firstY0;
 
 	if (shapeSelected == 0)
@@ -61,7 +63,7 @@ void createShape(int x1, int y1, int shapeSelected)
 	}
 	else if (shapeSelected == 4)
 	{
-		shared_ptr<CTriangle> s = make_shared<CTriangle>(x1, y1,
+		shared_ptr<CTriangle> s = make_shared<CTriangle>(x0, y0, x1, y1,
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = s;
 	}
@@ -115,21 +117,13 @@ void unselectFigure()
 
 void onResize(int w, int h)
 {	
-	if (h == 0)
-		return;
-
 	width = w;
 	height = h;
 
-	// Use the Projection Matrix
+	// Set the viewport to be the entire new window
 	glMatrixMode(GL_PROJECTION);
-
-	// Reset Matrix
 	glLoadIdentity();
-
-	glOrtho(0, width, 0, height, -1, 1);
-
-	// Set the viewport to be the entire window
+	glOrtho(-0.5, width - 0.5, height - 0.5, -0.5, -1, 1);
 	glViewport(0, 0, width, height);
 }
 
@@ -156,17 +150,6 @@ void onClickCanvas(int button, int state, int x, int y)
 		if(state== GLUT_DOWN)
 		// Left-click was pressed
 		{	
-			const int shapeSelected = ui.shapeSelected;
-			y = height - y - 1;
-
-			if (shapeSelected == 4 || shapeSelected == 5)
-			{
-				if (!drawingShape)
-					createShape(x, y, shapeSelected);
-				else
-					drawingShape->update(x, y);
-			}
-
 			unselectFigure();
 			onClickShape(x, y);
 			
@@ -178,24 +161,21 @@ void onClickCanvas(int button, int state, int x, int y)
 			}
 			else // We can draw
 			{	
-
 				cout << "ESPACIO EN BLANCO" << endl;
 				drawing = true;
 				firstX0 = x; firstY0 = y;
 			}
 		}
-		else 
+		else // GLUT_UP
 		{
 			if (drawing && drawingShape && drawingShape->finished())
 			{
 				// We finisish the figure, and it's marked as 'selected'
-				
 				selectedShape = drawingShape;
 
 				shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),
 					drawingShape, isHigherLevel), drawingShape);
 
-				shapes.push_back(drawingShape);
 				drawingShape = nullptr;
 				drawing = false;
 				cout << "FIGURA DIBUJADA" << endl;
@@ -233,17 +213,12 @@ void onMotion(int x1, int y1)
 		ImGui_ImplGLUT_MotionFunc(x1, y1);
 	else
 	{
-		y1 = height - y1 - 1;
 		if (drawing)
 		{
 			if (!drawingShape)
-			{
-				const int shapeSelected = ui.shapeSelected;
-				createShape(x1, y1, shapeSelected);
-			}
-			else {
+				createShape(x1, y1);
+			else
 				drawingShape->update(x1, y1);
-			}
 				
 		}
 		else if (selectedShape) {
@@ -305,7 +280,7 @@ int main(int argc, char** argv)
 	glViewport(0, 0, width, height);	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-0.5, width - 0.5, -0.5, height - 0.5, -1, 1);
+	glOrtho(-0.5, width - 0.5, height - 0.5, -0.5, -1, 1);
 	
 	// Setup GLUT display function
 	glutDisplayFunc(renderScene);

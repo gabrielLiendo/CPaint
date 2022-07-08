@@ -1,7 +1,9 @@
 #pragma once
-#include <string>
 #include "imgui.h"
 #include "imgui_internal.h"
+
+#include <string>
+
 
 // Pointer to current selected shape on main app
 shared_ptr<CShape> selectedShape;
