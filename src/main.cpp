@@ -6,7 +6,6 @@
 #include <iostream>
 #include <memory>
 #include <list>
-#include <algorithm>
 
 #include "line.h"
 #include "circle.h"
@@ -133,6 +132,7 @@ void onClickShape(int x, int y)
 	{
 		if (s->onClick(x, y))
 		{
+			cout << x << " " << y << endl;
 			s->clickedCtrlPoint(x, y);
 			selectedShape = s; 
 			return;
@@ -217,7 +217,6 @@ void onMotion(int x1, int y1)
 				createShape(x1, y1);
 			else
 				drawingShape->update(x1, y1);
-				
 		}
 		else if (selectedShape) {
 			// Draggin shape position

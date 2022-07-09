@@ -102,7 +102,9 @@ public:
 
 		// Add position
 		info += to_string(points[0].x) + " " + to_string(points[0].y) + " "
-			+ to_string(points[1].x) + " " + to_string(points[1].y);
+			+ to_string(points[1].x) + " " + to_string(points[1].y) + " ";
+
+		info += to_string(fillColor.r) + " " + to_string(fillColor.g) + " " + to_string(fillColor.b);
 
 		info += "\n";
 	

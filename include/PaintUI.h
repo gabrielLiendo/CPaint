@@ -1,9 +1,13 @@
 #pragma once
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "file_handler.h"
+#include "tinyfiledialogs.h"
+
 #include <string>
-#include <charconv>
+
+#ifdef _MSC_VER
+#pragma warning(disable:4996) // Silences warnings about strcpy strcat fopen
+#endif
 
 using namespace std;
 
@@ -134,6 +138,135 @@ public:
 		ImGui::EndGroup();
 	}
 
+	void loadScene()
+	{
+		char const* lTheOpenFileName;
+		char const* lFilterPatterns[2] = { "*.txt", "*.text" };
+		FILE* lIn;
+		char lBuffer[1024];
+
+		lTheOpenFileName = tinyfd_openFileDialog(
+			"Open",
+			"",
+			2,
+			lFilterPatterns,
+			NULL,
+			0);
+
+		if (!lTheOpenFileName)
+			return;
+
+	#ifdef _WIN32
+		if (tinyfd_winUtf8)
+			lIn = _wfopen(tinyfd_utf8to16(lTheOpenFileName), L"r"); // the UTF-8 filename is converted to UTF-16
+		else
+	#endif
+			lIn = fopen(lTheOpenFileName, "r");
+
+		if (!lIn)
+		{
+			tinyfd_messageBox(
+				"Error",
+				"Can not open this file in read mode",
+				"Ok",
+				"error",
+				1);
+			return;
+		}
+
+		char* figureName[100];
+		char* token;
+		float color, newBGColor[3];
+
+		while (fgets(lBuffer, sizeof(lBuffer), lIn) != NULL) {
+
+			token = strtok(lBuffer, " \t");
+			if (strcmp(token, "BACKGROUND") == 0)
+			{
+				int i = 0;
+				token = strtok(NULL, " \t");
+				for (; token != NULL; i++)
+				{
+					color = atof(token);
+					if (color > 1.0f || color < 0.0f)
+					{
+						i = 4;
+						break;
+					}
+					newBGColor[i] = color;
+					token = strtok(NULL, " \t");
+				}
+				if (i != 3)
+					cout << "Invalid Background Color" << endl;
+				else
+				{
+					bgColor[0] = newBGColor[0]; bgColor[1] = newBGColor[1];
+					bgColor[2] = newBGColor[2];
+				}
+
+			}
+
+		}
+
+		fclose(lIn);
+	}
+
+	void saveScene()
+	{
+		char const* lTheSaveFileName;
+		char const* lFilterPatterns[2] = { "*.txt", "*.text" };
+		FILE* lIn;
+		char lBuffer[1024];
+
+	#ifdef _WIN32
+		tinyfd_winUtf8 = 1;
+	#endif
+
+		lTheSaveFileName = tinyfd_saveFileDialog(
+			"Save As",
+			"Scene.txt",
+			2,
+			lFilterPatterns,
+			nullptr);
+
+		if (!lTheSaveFileName)
+			return;
+
+	#ifdef _WIN32
+		if (tinyfd_winUtf8)
+			lIn = _wfopen(tinyfd_utf8to16(lTheSaveFileName), L"w");
+		else
+	#endif
+			lIn = fopen(lTheSaveFileName, "w");
+
+		if (!lIn)
+		{
+			tinyfd_messageBox(
+				"Error",
+				"Can not open this file in write mode",
+				"Ok",
+				"Error",
+				1);
+			return;
+		}
+
+		std::string background = "BACKGROUND "
+			+ std::to_string(bgColor[0]) + " " 
+			+ std::to_string(bgColor[1]) + " "
+			+ std::to_string(bgColor[2]) + "\n";
+
+		fputs(background.c_str(), lIn);
+
+		for (auto const& s : shapes) {
+			string info = s->getInfo();
+			fputs(info.c_str(), lIn);
+		}
+
+
+		fclose(lIn);
+
+	}
+
 	void drawUI()
 	{	
 		ImGui::Begin("Configuration", 0, ImGuiWindowFlags_MenuBar);
@@ -142,9 +275,10 @@ public:
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Open", "Ctrl+O")) { /* Do stuff */ }
+				if (ImGui::MenuItem("Open", "Ctrl+O"))
+					loadScene();
 				if (ImGui::MenuItem("Save", "Ctrl+S"))
-					saveFile();
+					saveScene();
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();

@@ -116,10 +116,23 @@ public:
 	{
 		string info = "RECTANGLE ";
 
-		// Add position
+		// Add position info
 		info += to_string(boxPoints[0].x) + " " + to_string(boxPoints[0].y) + " "
-			 + to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y);
+			 + to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y) + " ";
+		
+		// Add border info
+		info += to_string(borderColor.r) + " " + to_string(borderColor.g) + " "
+			+ to_string(borderColor.b) + " ";
+
+		// Add filler info
+		if (filled)
+		{
+			info = "FILLED_" + info + to_string(fillColor.r) + " " 
+				+ to_string(fillColor.g) + " " + to_string(fillColor.b);
+		}
+
 		info += "\n";
+
 		return info;
 	}
 };
