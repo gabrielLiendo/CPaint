@@ -5,15 +5,15 @@
 class CCircle : public CShape, public BoxableShape
 {
 private:
-	int r; // Radius
-	CtrlPoint center;
+	int r;      // Radius
+	int cx, cy; // Center;
 
 public:
-	CCircle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2), BoxableShape(x0, y0, x1, y1)
+	CCircle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled), BoxableShape(x0, y0, x1, y1)
 	{
 		r = anchorPoint.distance(x1, y1);
-		center.x = x0; center.y = y0;
+		cx = x0; cy = y0;
 	}
 
 	~CCircle(){ cout << "Se destruyo un circulo" << endl; }
@@ -30,57 +30,65 @@ public:
 		renderBox();
 	}
 
-	void circlePoints(int x, int y, Color color)
+	void circlePoints(int x, int y)
 	{	
-		int cx = center.x, cy = center.y;
-
 		for(int i=0; i<2; i++)
 		{
-			putPixel(cx+x, cy+y, color);
-			putPixel(cx-x, cy+y, color);
-			putPixel(cx-y, cy+x, color);
-			putPixel(cx+y, cy+x, color);
+			putPixel(cx+x, cy+y, borderColor);
+			putPixel(cx-x, cy+y, borderColor);
+			putPixel(cx-y, cy+x, borderColor);
+			putPixel(cx+y, cy+x, borderColor);
 			x = -x; y = -y;
 		}
 	}
 
+	
 	void render(const bool mode)
 	{	
-		int x, y, d;
-		int cx = center.x, cy = center.y;
-		
-		x = 0;
-		y = r;
+		int x = 0, y = r, d = 1 - r;
 
-		// Draw content
-		int x0 = cx - r, x1 = cx + r;
-		int y0 = cy + r, y1 = cy + r;
-		int xDec = 0;
-		// x = cx , y = cy;
-		drawLine(x0, cy, x1, cy, fillColor);
-		//for (int i = 1; i < 4; i++) {
-		//	drawLine(x0 + xDec, cy - i, x1 - xDec, cy - i, fillColor);
-		//	drawLine(x0 + xDec, cy + i, x1 - xDec, cy + i, fillColor);
-		//	xDec += i % 2 == 0 ? 0 : 1;
-		//}
-			
-	
-		// Draw border
-		x = 0;
-		y = r;
-		d = 1 - r;
-		circlePoints(x, y, borderColor);
-		while (y > x)
-		{
-			if (d < 0)
-				d += (x << 1) + 3;
-			else
+		if (filled)
+		{	// Draw border and filler in the same iteration
+
+			// Draw initial 8 points and middle line filler
+			circlePoints(x, y);
+			hLine(cx - r, cx + r, cy, fillColor);
+
+			// Draw one octant and reflect it's points
+			for (; y > x; x++)
 			{
-				d += ((x - y) << 1) + 5;
-				y--;
+				if (d < 0)
+					d += (x << 1) + 3;
+				else
+				{
+					d += ((x - y) << 1) + 5;
+					y--;
+
+					hLine(cx - x, cx + x, cy + y, fillColor);
+					hLine(cx - x, cx + x, cy - y, fillColor);
+				}
+
+				hLine(cx - y, cx + y, cy - x, fillColor);
+				hLine(cx - y, cx + y, cy + x, fillColor);
+				circlePoints(x, y);
 			}
-			x++;
-			circlePoints(x, y, borderColor);
+		}
+		else
+		{	// Draw initial 8 points 
+			circlePoints(x, y);
+
+			// Draw one octant and reflect it's points
+			for (; y > x; x++)
+			{
+				if (d < 0)
+					d += (x << 1) + 3;
+				else
+				{
+					d += ((x - y) << 1) + 5;
+					y--;
+				}
+				circlePoints(x, y);
+			}
 		}
 	}
 
@@ -101,7 +109,7 @@ public:
 			}
 		}
 
-		return center.distance(x,y) <= r + 3;
+		return (int)sqrt(pow(x - cx, 2) + pow(y - cy, 2) * 1.0) <= r + 3;
 	}
 
 	void clickedCtrlPoint(int x, int y)
@@ -127,8 +135,20 @@ public:
 			anchorPoint.x = x1; 
 			anchorPoint.y = y1;
 
-			center.x += dx; center.y += dy;
+			cx += dx; cy += dy;
 			moveBoundingBox(dx, dy);
 		}
+	}
+
+	std::string getInfo()
+	{
+		string info = "CIRCLE ";
+
+		// Add position
+		info += to_string(boxPoints[0].x) + " " + to_string(boxPoints[0].y) + " "
+			+ to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y);
+		info += "\n";
+
+		return info;
 	}
 };

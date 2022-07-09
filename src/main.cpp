@@ -34,37 +34,38 @@ bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure)
 void createShape(int x1, int y1)
 {
 	const int shapeSelected = ui.shapeSelected;
+	const bool filled = ui.allowFill;
 	const float* fillColor = ui.fillColor, * borderColor = ui.borderColor;
 	int x0 = firstX0, y0 = firstY0;
 
 	if (shapeSelected == 0)
 	{
 		shared_ptr<CLine> l = make_shared<CLine>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
 		drawingShape = l;
 	}
 	else if (shapeSelected == 1)
 	{
 		shared_ptr<CCircle> c = make_shared<CCircle>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
 		drawingShape = c;
 	}
 	else if (shapeSelected == 2)
 	{
 		shared_ptr<CEllipse> e = make_shared<CEllipse>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
 		drawingShape = e;
 	}
 	else if (shapeSelected == 3)
 	{
 		shared_ptr<CRectangle> s = make_shared<CRectangle>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
 		drawingShape = s;
 	}
 	else if (shapeSelected == 4)
 	{
 		shared_ptr<CTriangle> s = make_shared<CTriangle>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
 		drawingShape = s;
 	}
 }
@@ -160,7 +161,7 @@ void onClickCanvas(int button, int state, int x, int y)
 			}
 			else // We can draw
 			{	
-				cout << "ESPACIO EN BLANCO" << endl;
+				cout << "ESPACIO EN BLANCO " << x << " " << y << endl;
 				drawing = true;
 				firstX0 = x; firstY0 = y;
 			}
@@ -202,8 +203,6 @@ void onClick(int button, int state, int x, int y)
 	}
 }
 
-
-
 void onMotion(int x1, int y1)
 {	
 	ImGuiIO& io = ImGui::GetIO();
@@ -228,8 +227,6 @@ void onMotion(int x1, int y1)
 			
 	}
 }
-
-
 
 void onKeyboardEntry(unsigned char c, int x, int y)
 {
@@ -262,8 +259,6 @@ void onKeyboardEntry(unsigned char c, int x, int y)
 	else
 		ImGui_ImplGLUT_KeyboardFunc(c, x, y);
 }
-
-
 
 int main(int argc, char** argv)
 {	

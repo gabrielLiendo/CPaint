@@ -7,8 +7,8 @@ private:
 	CtrlPoint points[2];
 	
 public:
-	CLine(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2) 
+	CLine(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled)
 	{
 		points[0] = CtrlPoint(x0, y0);
 		points[1] = CtrlPoint(x1, y1);
@@ -18,14 +18,15 @@ public:
 
 	void update(int x1, int y1)
 	{
-		points[1].x = x1; points[1].y = y1;
+		points[1].x = x1; 
+		points[1].y = y1;
 	}
 
+	// Render each vertex
 	void renderCtrlPoints()
 	{
-		// Render each vertex
-		for (int i=0; i < 2; i++)
-			points[i].renderCtrlPoint();
+		points[0].renderCtrlPoint();
+		points[1].renderCtrlPoint();
 	}
 
 	void render(const bool modeHardware)
@@ -95,5 +96,16 @@ public:
 		}
 	}
 
+	std::string getInfo()
+	{
+		string info = "LINE ";
 
+		// Add position
+		info += to_string(points[0].x) + " " + to_string(points[0].y) + " "
+			+ to_string(points[1].x) + " " + to_string(points[1].y);
+
+		info += "\n";
+	
+		return info;
+	}
 };

@@ -10,8 +10,8 @@ private:
 	int cx, cy; // Center of ellipse
 
 public:
-	CEllipse(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2), BoxableShape(x0, y0, x1, y1) {}
+	CEllipse(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled), BoxableShape(x0, y0, x1, y1) {}
 
 	~CEllipse(){ cout << "Se destruyo un elipse" << endl; }
 
@@ -41,21 +41,23 @@ public:
 		renderBox();
 	}
 
-	void ellipseFill(int x, int y, Color c)
-	{
-		hLine(cx - x, cx + x, cy + y, c);
-		hLine(cx - x, cx + x, cy - y, c);
-	}
 
 	// Draw the 4 symmetrical points of the point (x,y)
-	void ellipsePoints(int x, int y, Color c)
+	void ellipsePoints(int x, int y)
 	{
-		putPixel(cx + x, cy + y, c);
-		putPixel(cx - x, cy + y, c);
-		putPixel(cx + x, cy - y, c);
-		putPixel(cx - x, cy - y, c);
+		putPixel(cx + x, cy + y, borderColor);
+		putPixel(cx - x, cy + y, borderColor);
+		putPixel(cx + x, cy - y, borderColor);
+		putPixel(cx - x, cy - y, borderColor);
 	}
 
+	void fillEllipse(int x, int y)
+	{
+		hLine(cx - x, cx + x, cy + y, fillColor);
+		hLine(cx - x, cx + x, cy - y, fillColor);
+	}
+
+	// Draw border and filler in the same iteration
 	void render(const bool mode)
 	{
 		int x, y, d, ap2, bp2;
@@ -64,39 +66,77 @@ public:
 		y = b;
 		d = b * ((b - ap2) << 2) + ap2;
 
-		// Draw initial 4 points
-		ellipsePoints(x, y, borderColor);
-
-		// Mode 1: Draw and fill while the tangent line to the point has slope [-1,0]
-		while ( ((bp2*(x+1)) << 1) < ap2*((y << 1) - 1))
+		if (filled)
 		{
-			if (d < 0)
-				d += (bp2*((x << 1) + 3)) << 2;
-			else
-			{
-				d += (bp2*((x+3) << 1) + (ap2*(1-y) << 1)) << 2;
-				y -= 1;
-				ellipseFill(x, y, fillColor);
-			}
-			x += 1;
-			ellipsePoints(x, y, borderColor);
-		}
+			// Draw initial 4 points
+			ellipsePoints(x, y);
 
-		// Mode 2: Draw and fill while the tangent line to the point has slope (-inf,-1]
-		d = bp2 * (((x*x + x) << 2) + 1) + ap2 * ((y * y - (y << 1) + 1 - bp2) << 2);
-		while (y > 0)
-		{
-			if (d < 0)
+			// Mode 1: Draw and fill while the tangent line to the point has slope [-1,0]
+			while (((bp2 * (x + 1)) << 1) < ap2 * ((y << 1) - 1))
 			{
-				d += (((bp2 * (x + 1)) << 1) + ap2 * (3 - (y << 1))) << 2;
+				if (d < 0)
+					d += (bp2 * ((x << 1) + 3)) << 2;
+				else
+				{
+					d += (bp2 * ((x + 3) << 1) + (ap2 * (1 - y) << 1)) << 2;
+					y -= 1;
+					fillEllipse(x, y);
+				}
 				x += 1;
+				ellipsePoints(x, y);
 			}
-			else
-				d += (ap2 * (3 - (y << 1))) << 2;
-			y -= 1;
 
-			ellipseFill(x, y, fillColor);
-			ellipsePoints(x, y, borderColor);
+			// Mode 2: Draw and fill while the tangent line to the point has slope (-inf,-1]
+			d = bp2 * (((x * x + x) << 2) + 1) + ap2 * ((y * y - (y << 1) + 1 - bp2) << 2);
+			while (y > 0)
+			{
+				if (d < 0)
+				{
+					d += (((bp2 * (x + 1)) << 1) + ap2 * (3 - (y << 1))) << 2;
+					x += 1;
+				}
+				else
+					d += (ap2 * (3 - (y << 1))) << 2;
+				y -= 1;
+
+				fillEllipse(x, y);
+				ellipsePoints(x, y);
+			}
+		}
+		else
+		{
+			// Draw initial 4 points
+			ellipsePoints(x, y);
+
+			// Mode 1: Draw and fill while the tangent line to the point has slope [-1,0]
+			while (((bp2 * (x + 1)) << 1) < ap2 * ((y << 1) - 1))
+			{
+				if (d < 0)
+					d += (bp2 * ((x << 1) + 3)) << 2;
+				else
+				{
+					d += (bp2 * ((x + 3) << 1) + (ap2 * (1 - y) << 1)) << 2;
+					y -= 1;
+				}
+				x += 1;
+				ellipsePoints(x, y);
+			}
+
+			// Mode 2: Draw and fill while the tangent line to the point has slope (-inf,-1]
+			d = bp2 * (((x * x + x) << 2) + 1) + ap2 * ((y * y - (y << 1) + 1 - bp2) << 2);
+			while (y > 0)
+			{
+				if (d < 0)
+				{
+					d += (((bp2 * (x + 1)) << 1) + ap2 * (3 - (y << 1))) << 2;
+					x += 1;
+				}
+				else
+					d += (ap2 * (3 - (y << 1))) << 2;
+				y -= 1;
+
+				ellipsePoints(x, y);
+			}
 		}
 	}
 
@@ -134,5 +174,17 @@ public:
 			cx += dx; cy += dy;
 			moveBoundingBox(dx, dy);
 		}
+	}
+
+	std::string getInfo()
+	{
+		string info = "ELLIPSE";
+
+		// Add position
+		info += to_string(boxPoints[0].x) + " " + to_string(boxPoints[0].y) + " "
+			+ to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y);
+
+		info += "\n";
+		return info;
 	}
 };

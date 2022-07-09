@@ -5,8 +5,8 @@
 class CRectangle : public CShape, public BoxableShape
 {
 public:
-	CRectangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2), BoxableShape(x0, y0, x1, y1) {}
+	CRectangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled), BoxableShape(x0, y0, x1, y1) {}
 
 	~CRectangle(){ cout << "Se destruyo un cuadrado" << endl;}
 
@@ -25,13 +25,15 @@ public:
 	{
 		if(modeHardware) // Hardware
 		{
-			// Draw Content
-			glColor3f(fillColor.r, fillColor.g, fillColor.b);
-			glBegin(GL_QUADS);
-				for (int i=0; i < 4; i++)
+			if (filled)
+			{	// Draw Filled
+				glColor3f(fillColor.r, fillColor.g, fillColor.b);
+				glBegin(GL_QUADS);
+				for (int i = 0; i < 4; i++)
 					glVertex2i(boxPoints[i].x, boxPoints[i].y);
-			glEnd();
-
+				glEnd();
+			}
+			
 			// Draw Border
 			glColor3f(borderColor.r, borderColor.g, borderColor.b);
 			glBegin(GL_LINE_LOOP);
@@ -43,20 +45,29 @@ public:
 		{
 			int xmin = boxPoints[1].x, ymin = boxPoints[1].y;
             int xmax = boxPoints[3].x, ymax = boxPoints[3].y;
-			 
-			for(int x = xmin; x <= xmax; x++)
-			{
-				putPixel(x, ymin, borderColor);
-				putPixel(x, ymax, borderColor);
-			}
+			
+			// Draw top and bottom borders
+			hLine(xmin, xmax, ymin, borderColor);
+			hLine(xmin, xmax, ymax, borderColor);
 
-			for (int y = ymin+1; y < ymax; y++)
+			// Draw middle lines, filled or empty
+			if (filled)
 			{
-				putPixel(xmin, y, borderColor);
-				// Draw filler
-				for (int x = xmin + 1; x < xmax; x++)
-					putPixel(x, y, fillColor);
-				putPixel(xmax, y, borderColor);
+				// Draw border and filler in the same iteration
+				for (int y = ymin + 1; y < ymax; y++)
+				{
+					putPixel(xmin, y, borderColor);
+					hLine(xmin + 1, xmax - 1, y, fillColor);
+					putPixel(xmax, y, borderColor);
+				}
+			}
+			else
+			{
+				for (int y = ymin + 1; y < ymax; y++)
+				{
+					putPixel(xmin, y, borderColor);
+					putPixel(xmax, y, borderColor);
+				}
 			}
 		}
 	}
@@ -99,5 +110,16 @@ public:
 
 			moveBoundingBox(dx, dy);
 		}
+	}
+
+	std::string getInfo()
+	{
+		string info = "RECTANGLE ";
+
+		// Add position
+		info += to_string(boxPoints[0].x) + " " + to_string(boxPoints[0].y) + " "
+			 + to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y);
+		info += "\n";
+		return info;
 	}
 };

@@ -1,9 +1,11 @@
 #pragma once
 #include "imgui.h"
 #include "imgui_internal.h"
-
+#include "file_handler.h"
 #include <string>
+#include <charconv>
 
+using namespace std;
 
 // Pointer to current selected shape on main app
 shared_ptr<CShape> selectedShape;
@@ -17,7 +19,7 @@ private:
 
 	// Color Palette
 	bool saved_palette_init = true;
-	ImVec4 saved_palette[28];
+	ImVec4 saved_palette[26];
 
 	// Color test
 	ImVec4 color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -36,7 +38,7 @@ public:
 	// Current State
 	int shapeSelected = -1; 
 	bool currentMode = 0; // 0->Software, 1->Hardware
-	bool rightClick = false;
+	bool allowFill = 1;
 
 	bool openBGPicker = false;
 	bool openFillPicker = false;
@@ -101,9 +103,9 @@ public:
 		}
 
 		ImGui::BeginGroup();
-		for (int n = 0; n < 28; n++)
+		for (int n = 0; n < IM_ARRAYSIZE(saved_palette); n++)
 		{
-			if ((n % 14) != 0)
+			if ((n % 13) != 0)
 				ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
 
 			ImGui::PushID(n);
@@ -141,7 +143,8 @@ public:
 			if (ImGui::BeginMenu("File"))
 			{
 				if (ImGui::MenuItem("Open", "Ctrl+O")) { /* Do stuff */ }
-				if (ImGui::MenuItem("Save", "Ctrl+S")) { /* Do stuff */ }
+				if (ImGui::MenuItem("Save", "Ctrl+S"))
+					saveFile();
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
@@ -211,6 +214,16 @@ public:
 				HelpMarker("Left-click on palette \nto change the fill color. \n\nRight-click on palette \nto change the border color.");
 
 				ImGui::TreePush();
+
+				if (selectedShape)
+					allowFill = selectedShape->getFillBool();
+
+				if (ImGui::Checkbox("Draw Filler", &allowFill) && selectedShape)
+				{
+					selectedShape->setFilled(allowFill);
+					selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+				}
+					
 				if (ImGui::ColorEdit3("Fill Color", fillColor))
 				{
 					if (selectedShape)
@@ -232,17 +245,35 @@ public:
 
 		if (ImGui::CollapsingHeader("Tools", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (ImGui::Button("<<", ImVec2(20, 20)))
-				toggleLevel(-2);
-			ImGui::SameLine();
-			if (ImGui::Button("-", ImVec2(20, 20)))
-				toggleLevel(-1);
-			ImGui::SameLine();
-			if (ImGui::Button("+", ImVec2(20, 20)))
-				toggleLevel(1);
-			ImGui::SameLine();
-			if (ImGui::Button(">>", ImVec2(20, 20)))
-				toggleLevel(2);
+			if (ImGui::TreeNodeEx("Control Layer", nodeFlags))
+			{
+				ImGui::TreePush();
+
+				ImGui::Text("Back");
+				ImGui::SameLine();
+				if (ImGui::Button("<<", ImVec2(20, 20)))
+					toggleLevel(-2);
+				ImGui::SameLine();
+
+				ImGui::Text("Down");
+				ImGui::SameLine();
+				if (ImGui::Button("-", ImVec2(20, 20)))
+					toggleLevel(-1);
+				ImGui::SameLine();
+
+				ImGui::Text("Up");
+				ImGui::SameLine();
+				if (ImGui::Button("+", ImVec2(20, 20)))
+					toggleLevel(1);
+				ImGui::SameLine();
+
+				ImGui::Text("Front");
+				ImGui::SameLine();
+				if (ImGui::Button(">>", ImVec2(20, 20)))
+					toggleLevel(2);
+
+				ImGui::TreePop();
+			}
 		}
 
 		// Popup Windows
@@ -282,6 +313,6 @@ public:
 		}
 
 		ImGui::End();
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 	}
 };

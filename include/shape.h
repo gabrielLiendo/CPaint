@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <math.h>
+#include <string>
 
 using namespace std;
 
@@ -49,14 +50,16 @@ protected:
 	CtrlPoint anchorPoint;
 	CtrlPoint *pointSelected = nullptr;
 	int level = 0;
+	bool filled = true;
 
 public:
 
-	CShape(int x0, int y0, float r1, float g1, float b1, float r2, float g2, float b2)
+	CShape(int x0, int y0, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
 	{	
 		anchorPoint.x = x0; anchorPoint.y = y0;
 		fillColor.r = r1; fillColor.g = g1; fillColor.b = b1;
 		borderColor.r = r2; borderColor.g = g2; borderColor.b = b2;
+		this->filled = filled;
 	}
 
 	virtual ~CShape(){ cout << "Se destruyo un shape" << endl; }
@@ -69,6 +72,16 @@ public:
 	void setLayerLevel(int level)
 	{
 		this->level = level;
+	}
+
+	void setFilled(bool filled)
+	{
+		this->filled = filled;
+	}
+
+	bool getFillBool()
+	{
+		return filled;
 	}
 
 	void setAnchorPoint(int x, int y)
@@ -109,7 +122,7 @@ public:
 		pointSelected = nullptr;
 	}
 
-	// Draw line using Bresenham's algorithm
+	// Draw a line using Bresenham's algorithm
 	void drawLine(int x0, int y0, int x1, int y1, Color c)
 	{
 		int x, y, dx, dy, d, incN, incE, incNE, varX, varY;
@@ -181,6 +194,8 @@ public:
 	virtual void clickedCtrlPoint(int x, int y) = 0;
 	
 	virtual void onMove(int x1, int y1) = 0;
+
+	virtual std::string getInfo() = 0;
 
 	virtual bool finished()
 	{
