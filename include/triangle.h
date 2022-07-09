@@ -74,11 +74,11 @@ public:
 
 				ixLeft = (float)points[0].x, ixRight = (float)points[0].x;
 				// Draw lower semi-triangle filler
-				for (int y = ymin; y <= ymid; y++) 
+				for (int y = ymin+1; y <= ymid; y++) 
 				{
-					hLine(ceil(ixLeft), floor(ixRight), y, fillColor);
 					ixLeft += leftInc1;
 					ixRight += rightInc1;
+					hLine(ceil(ixLeft), floor(ixRight), y, fillColor);
 				}
 
 				if(divide.x < points[1].x)
@@ -87,7 +87,7 @@ public:
 					ixLeft = points[1].x, ixRight = divide.x;
 
 				// Draw upper semi-triangle filler
-				for (int y = ymid + 1; y <= ymax; y++) 
+				for (int y = ymid + 1; y < ymax-1; y++) 
 				{
 					ixLeft += leftInc2;
 					ixRight += rightInc2;
@@ -104,7 +104,17 @@ public:
 
 	bool onClick(int x, int y)
 	{
-		return false;
+		int y1, y2, y3;
+		int xmin = points[0].x, ymin = points[0].y;
+		int xmid = points[1].x, ymid = points[1].y;
+		int xmax = points[2].x, ymax = points[2].y;
+
+		y1 = (int)(((float)(xmid - xmin) / (float)(ymid - ymin) * (y - ymid)) + (xmid - x));
+		y2 = (int)(((float)(xmax - xmid) / (float)(ymax - ymid) * (y - ymax)) + (xmax - x));
+		y3 = (int)(((float)(xmin - xmax) / (float)(ymin - ymax) * (y - ymin)) + (xmin - x));
+
+		cout << y1 << " " << y2 << " " << y3 << endl;;
+		return (y1 > 0 && y2 > 0 && y3 < 0) || (y1 < 0 && y2 < 0 && y3 > 0);
 	}
 
 	void clickedCtrlPoint(int x, int y)
@@ -114,6 +124,20 @@ public:
 
 	void onMove(int x1, int y1)
 	{
+		// We move the whole triangle
+		int dx = x1 - anchorPoint.x;
+		int dy = y1 - anchorPoint.y;
+
+		anchorPoint.x = x1;
+		anchorPoint.y = y1;
+
+		for (int i = 0; i < 3; i++)
+		{
+			points[i].x += dx;
+			points[i].y += dy;
+		}
+		divide.x += dx;
+		divide.y += dy;
 	}
 
 	bool finished() override

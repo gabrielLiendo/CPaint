@@ -89,7 +89,6 @@ void renderScene(void)
 	// Render GUI
 	ImGui::Render();
 	ImGuiIO& io = ImGui::GetIO();
-	glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
 	// Render every shape already in canvas

@@ -46,11 +46,26 @@ public:
 
 	void render(const bool mode)
 	{	
-		// Draw content
-		
-
-		// Draw border
 		int x, y, d;
+		int cx = center.x, cy = center.y;
+		
+		x = 0;
+		y = r;
+
+		// Draw content
+		int x0 = cx - r, x1 = cx + r;
+		int y0 = cy + r, y1 = cy + r;
+		int xDec = 0;
+		// x = cx , y = cy;
+		drawLine(x0, cy, x1, cy, fillColor);
+		//for (int i = 1; i < 4; i++) {
+		//	drawLine(x0 + xDec, cy - i, x1 - xDec, cy - i, fillColor);
+		//	drawLine(x0 + xDec, cy + i, x1 - xDec, cy + i, fillColor);
+		//	xDec += i % 2 == 0 ? 0 : 1;
+		//}
+			
+	
+		// Draw border
 		x = 0;
 		y = r;
 		d = 1 - r;
@@ -62,9 +77,9 @@ public:
 			else
 			{
 				d += ((x - y) << 1) + 5;
-				y -= 1;
+				y--;
 			}
-			x += 1;
+			x++;
 			circlePoints(x, y, borderColor);
 		}
 	}

@@ -41,6 +41,12 @@ public:
 		renderBox();
 	}
 
+	void ellipseFill(int x, int y, Color c)
+	{
+		hLine(cx - x, cx + x, cy + y, c);
+		hLine(cx - x, cx + x, cy - y, c);
+	}
+
 	// Draw the 4 symmetrical points of the point (x,y)
 	void ellipsePoints(int x, int y, Color c)
 	{
@@ -58,10 +64,10 @@ public:
 		y = b;
 		d = b * ((b - ap2) << 2) + ap2;
 
-		// Draw initial point
+		// Draw initial 4 points
 		ellipsePoints(x, y, borderColor);
 
-		// Mode 1: Draw while the tangent line to the point has slope [-1,0]
+		// Mode 1: Draw and fill while the tangent line to the point has slope [-1,0]
 		while ( ((bp2*(x+1)) << 1) < ap2*((y << 1) - 1))
 		{
 			if (d < 0)
@@ -70,12 +76,13 @@ public:
 			{
 				d += (bp2*((x+3) << 1) + (ap2*(1-y) << 1)) << 2;
 				y -= 1;
+				ellipseFill(x, y, fillColor);
 			}
 			x += 1;
 			ellipsePoints(x, y, borderColor);
 		}
 
-		// Mode 2: Draw while the tangent line to the point has slope (-inf,-1]
+		// Mode 2: Draw and fill while the tangent line to the point has slope (-inf,-1]
 		d = bp2 * (((x*x + x) << 2) + 1) + ap2 * ((y * y - (y << 1) + 1 - bp2) << 2);
 		while (y > 0)
 		{
@@ -87,6 +94,8 @@ public:
 			else
 				d += (ap2 * (3 - (y << 1))) << 2;
 			y -= 1;
+
+			ellipseFill(x, y, fillColor);
 			ellipsePoints(x, y, borderColor);
 		}
 	}
