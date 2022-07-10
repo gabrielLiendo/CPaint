@@ -21,6 +21,17 @@ public:
 		points[1] = CtrlPoint(x1, y1);
 	}
 
+	CTriangle(int x0, int y0, int x1, int y1, int x2, int y2, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled)
+	{
+		points[0] = CtrlPoint(x0, y0);
+		points[1] = CtrlPoint(x1, y1);
+		points[2] = CtrlPoint(x2, y2);
+
+		currentIndex = 3;
+		setRenderValues();
+	}
+
 	~CTriangle(){ cout << "Se destruyo un triangulo" << endl;}
 
 	void update(int x1, int y1)
@@ -39,6 +50,33 @@ public:
 	void setPointsOrder()
 	{
 		sort(begin(points), end(points));
+	}
+
+	void setRenderValues()
+	{
+		setPointsOrder();
+
+		int xmin = points[0].x, ymin = points[0].y;
+		int xmid = points[1].x, ymid = points[1].y;
+		int xmax = points[2].x, ymax = points[2].y;
+
+		divide.x = (int)(((float)(xmax - xmin) / (float)(ymax - ymin) * (ymid - ymax)) + xmax);
+		divide.y = points[1].y;
+
+		if (divide.x > points[1].x)
+		{
+			leftInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
+			leftInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
+			rightInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
+			rightInc2 = rightInc1;
+		}
+		else
+		{
+			rightInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
+			rightInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
+			leftInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
+			leftInc2 = leftInc1;
+		}
 	}
 
 	void render(const bool modeHardware)
@@ -151,30 +189,7 @@ public:
 		}
 		else
 		{
-			setPointsOrder();
-
-			int xmin = points[0].x, ymin = points[0].y;
-			int xmid = points[1].x, ymid = points[1].y;
-			int xmax = points[2].x, ymax = points[2].y;
-
-			divide.x = (int)(((float)(xmax - xmin) / (float)(ymax - ymin)*(ymid - ymax))+xmax);
-			divide.y = points[1].y;
-
-			if (divide.x > points[1].x)
-			{
-				leftInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
-				leftInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
-				rightInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
-				rightInc2 = rightInc1;
-			}
-			else
-			{
-				rightInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
-				rightInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
-				leftInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
-				leftInc2 = leftInc1;
-			}
-		
+			setRenderValues();
 			return true;
 		}
 	}
@@ -190,12 +205,12 @@ public:
 
 		// Add border info
 		info += to_string(borderColor.r) + " " + to_string(borderColor.g) + " "
-			+ to_string(borderColor.b) + " ";
+			+ to_string(borderColor.b);
 
 		// Add filler info
 		if (filled)
 		{
-			info = "FILLED_" + info + to_string(fillColor.r) + " "
+			info = "FILLED_" + info + " " + to_string(fillColor.r) + " "
 				+ to_string(fillColor.g) + " " + to_string(fillColor.b);
 		}
 

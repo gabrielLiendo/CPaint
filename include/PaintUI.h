@@ -15,6 +15,11 @@ using namespace std;
 shared_ptr<CShape> selectedShape;
 extern list<shared_ptr<CShape>> shapes;
 
+bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure)
+{
+	return figure->getLayerLevel() > fig->getLayerLevel();
+}
+
 class PaintUI
 {
 private:
@@ -138,20 +143,57 @@ public:
 		ImGui::EndGroup();
 	}
 
+
+	int readPointsValues(char **token, int n, int *pValues)
+	{
+		int count = 0, value = 0;
+
+		for (int i = 0; i < n; i++)
+		{
+			value = atoi(*token);
+			pValues[i] = value;
+			*token = strtok(NULL, " \t");
+
+			if (value < 0)
+				return n + 1;
+			else
+				count += 1;
+		}
+		return count;
+	}
+
+	int readColorValues(char **token, float* color)
+	{
+		int count = 0;
+		float c = 0.0f;
+
+		for (int i = 0; i < 3; i++)
+		{
+			c = atof(*token);
+			color[i] = c;
+			*token = strtok(NULL, " \t");
+
+			if (c < 0.0f || c > 1.0f)
+				return 4;
+			else
+				count += 1;
+		}
+		return count;
+	}
+
 	void loadScene()
 	{
+		// File Variables
 		char const* lTheOpenFileName;
 		char const* lFilterPatterns[2] = { "*.txt", "*.text" };
 		FILE* lIn;
 		char lBuffer[1024];
+		// Read Figures Variables 
+		char* token;
+		int  filePValues[6];
+		float color, fileBGColor[3], fileBColor[3], fileFColor[3];
 
-		lTheOpenFileName = tinyfd_openFileDialog(
-			"Open",
-			"",
-			2,
-			lFilterPatterns,
-			NULL,
-			0);
+		lTheOpenFileName = tinyfd_openFileDialog("Open", "", 2, lFilterPatterns, NULL, 0);
 
 		if (!lTheOpenFileName)
 			return;
@@ -165,47 +207,153 @@ public:
 
 		if (!lIn)
 		{
-			tinyfd_messageBox(
-				"Error",
-				"Can not open this file in read mode",
-				"Ok",
-				"error",
-				1);
+			tinyfd_messageBox("Error", "Can not open this file in read mode", "Ok", "error", 1);
 			return;
 		}
 
-		char* figureName[100];
-		char* token;
-		float color, newBGColor[3];
-
-		while (fgets(lBuffer, sizeof(lBuffer), lIn) != NULL) {
-
-			token = strtok(lBuffer, " \t");
-			if (strcmp(token, "BACKGROUND") == 0)
+		// Get Background Color
+		fgets(lBuffer, sizeof(lBuffer), lIn);
+		token = strtok(lBuffer, " \t");
+		if (strcmp(token, "BACKGROUND") == 0)
+		{
+			int count = 0;
+			token = strtok(NULL, " \t");
+			count += readColorValues(&token, fileBGColor);
+			if (count != 3)
+				cout << "Invalid Background Color" << endl;
+			else
 			{
-				int i = 0;
+				bgColor[0] = fileBGColor[0]; bgColor[1] = fileBGColor[1]; bgColor[2] = fileBGColor[2];
+			}
+		}
+
+		// Get Figures
+		while (fgets(lBuffer, sizeof(lBuffer), lIn) != NULL) {
+			token = strtok(lBuffer, " \t");
+			if (strcmp(token, "LINE") == 0)
+			{
+				int count = 0;
 				token = strtok(NULL, " \t");
-				for (; token != NULL; i++)
-				{
-					color = atof(token);
-					if (color > 1.0f || color < 0.0f)
-					{
-						i = 4;
-						break;
-					}
-					newBGColor[i] = color;
-					token = strtok(NULL, " \t");
-				}
-				if (i != 3)
-					cout << "Invalid Background Color" << endl;
+				count += readPointsValues(&token, 4, filePValues);
+				count += readColorValues(&token, fileBColor);
+
+				if (count > 8)
+					cout << "Invalid Line" << endl;
 				else
 				{
-					bgColor[0] = newBGColor[0]; bgColor[1] = newBGColor[1];
-					bgColor[2] = newBGColor[2];
+					shared_ptr<CLine> l = make_shared<CLine>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
+						fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1], fileBColor[2], false);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),l, isHigherLevel), l);
 				}
-
 			}
+			else if (strcmp(token, "TRIANGLE") == 0)
+			{
+				int count = 0;
+				token = strtok(NULL, " \t");
+				count += readPointsValues(&token, 6, filePValues);
+				count += readColorValues(&token, fileBColor);
 
+				if (count > 9)
+					cout << "Invalid Triangle" << endl;
+				else
+				{
+					shared_ptr<CTriangle> t = make_shared<CTriangle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
+						filePValues[4], filePValues[5], fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1],
+						fileBColor[2], false);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), t, isHigherLevel), t);
+				}
+			}
+			else if (strcmp(token, "FILLED_TRIANGLE") == 0)
+			{
+				int count = 0;
+				token = strtok(NULL, " \t");
+				count += readPointsValues(&token, 6, filePValues);
+				count += readColorValues(&token, fileBColor);
+				count += readColorValues(&token, fileFColor);
+				
+				if (count > 12)
+					cout << "Invalid Filled Triangle" << endl;
+				else
+				{
+					shared_ptr<CTriangle> t = make_shared<CTriangle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
+						filePValues[4], filePValues[5], fileFColor[0], fileFColor[1], fileFColor[2], fileBColor[0], fileBColor[1],
+						fileBColor[2], true);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),t, isHigherLevel), t);
+				}
+			}
+			else if (strcmp(token, "RECTANGLE") == 0)
+			{
+				int count = 0;
+				token = strtok(NULL, " \t");
+				count += readPointsValues(&token, 4, filePValues);
+				count += readColorValues(&token, fileBColor);
+
+				if (count > 7)
+					cout << "Invalid Rectangle" << endl;
+				else
+				{
+					shared_ptr<CRectangle> r = make_shared<CRectangle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
+						fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1], fileBColor[2], false);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),r, isHigherLevel), r);
+				}
+			}
+			else if (strcmp(token, "FILLED_RECTANGLE") == 0)
+			{
+				int count = 0;
+				token = strtok(NULL, " \t");
+				count += readPointsValues(&token, 4, filePValues);
+				count += readColorValues(&token, fileBColor);
+				count += readColorValues(&token, fileFColor);
+
+				if (count > 10)
+					cout << "Invalid Filled Rectangle" << endl;
+				else
+				{
+					shared_ptr<CRectangle> r = make_shared<CRectangle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
+						fileFColor[0], fileFColor[1], fileFColor[2], fileBColor[0], fileBColor[1], fileBColor[2], true);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), r, isHigherLevel), r);
+				}
+			}
+			else if (strcmp(token, "ELLIPSE") == 0)
+			{
+				int count = 0;
+				token = strtok(NULL, " \t");
+				count += readPointsValues(&token, 4, filePValues);
+				count += readColorValues(&token, fileBColor);
+
+				if (count > 7)
+					cout << "Invalid Ellipse" << endl;
+				else
+				{
+					shared_ptr<CEllipse> e = make_shared<CEllipse>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
+						fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1], fileBColor[2], false);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), e, isHigherLevel), e);
+				}
+			}
+			else if (strcmp(token, "FILLED_ELLIPSE") == 0)
+			{
+				int count = 0;
+				token = strtok(NULL, " \t");
+				count += readPointsValues(&token, 4, filePValues);
+				count += readColorValues(&token, fileBColor);
+				count += readColorValues(&token, fileFColor);
+
+				if (count > 10)
+					cout << "Invalid Filled Ellipse" << endl;
+				else
+				{
+					shared_ptr<CEllipse> e = make_shared<CEllipse>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
+						fileFColor[0], fileFColor[1], fileFColor[2], fileBColor[0], fileBColor[1], fileBColor[2], true);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), e, isHigherLevel), e);
+				}
+			}
 		}
 
 		fclose(lIn);
@@ -222,12 +370,7 @@ public:
 		tinyfd_winUtf8 = 1;
 	#endif
 
-		lTheSaveFileName = tinyfd_saveFileDialog(
-			"Save As",
-			"Scene.txt",
-			2,
-			lFilterPatterns,
-			nullptr);
+		lTheSaveFileName = tinyfd_saveFileDialog("Save As", "Scene.txt", 2, lFilterPatterns, nullptr);
 
 		if (!lTheSaveFileName)
 			return;
@@ -241,19 +384,12 @@ public:
 
 		if (!lIn)
 		{
-			tinyfd_messageBox(
-				"Error",
-				"Can not open this file in write mode",
-				"Ok",
-				"Error",
-				1);
+			tinyfd_messageBox("Error", "Can not open this file in write mode", "Ok", "Error", 1);
 			return;
 		}
 
-		std::string background = "BACKGROUND "
-			+ std::to_string(bgColor[0]) + " " 
-			+ std::to_string(bgColor[1]) + " "
-			+ std::to_string(bgColor[2]) + "\n";
+		std::string background = "BACKGROUND " + std::to_string(bgColor[0]) + " " 
+			+ std::to_string(bgColor[1]) + " " + std::to_string(bgColor[2]) + "\n";
 
 		fputs(background.c_str(), lIn);
 
@@ -262,9 +398,7 @@ public:
 			fputs(info.c_str(), lIn);
 		}
 
-
 		fclose(lIn);
-
 	}
 
 	void drawUI()
@@ -281,13 +415,20 @@ public:
 					saveScene();
 				ImGui::EndMenu();
 			}
+			if (ImGui::BeginMenu("Help"))
+			{
+				ImGui::EndMenu();
+			}
 			ImGui::EndMenuBar();
 		}
 
 		if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			// Rendering Mode Toggler
+			//ImGuiIO& io = ImGui::GetIO();
 			ImGuiStyle& style = ImGui::GetStyle();
+
+			//auto boldFont = io.Fonts->Fonts[0];
 
 			float w = ImGui::CalcItemWidth();
 			float spacing = style.ItemInnerSpacing.x;
@@ -296,6 +437,7 @@ public:
 			ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
 			if (ImGui::BeginCombo("##rendering mode", renderingModes[currentMode], ImGuiComboFlags_NoArrowButton))
 			{
+				//ImGui::PushFont(boldFont);
 				for (int n = 0; n < 2; n++)
 				{
 					bool is_selected = (currentMode == n);
@@ -304,6 +446,7 @@ public:
 					if (is_selected)
 						ImGui::SetItemDefaultFocus();
 				}
+				//ImGui::PopFont();
 				ImGui::EndCombo();
 			}
 			ImGui::PopItemWidth();
@@ -447,6 +590,6 @@ public:
 		}
 
 		ImGui::End();
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 	}
 };

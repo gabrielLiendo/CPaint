@@ -171,7 +171,6 @@
     <ClInclude Include="include\boxableShape.h" />
     <ClInclude Include="include\circle.h" />
     <ClInclude Include="include\ellipse.h" />
-    <ClInclude Include="include\file_handler.h" />
     <ClInclude Include="include\paint.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />

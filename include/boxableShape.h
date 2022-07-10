@@ -13,6 +13,8 @@ public:
 		boxPoints[1] = CtrlPoint(x0, y0);
 		boxPoints[2] = CtrlPoint(x1, y0);
 		boxPoints[3] = CtrlPoint(x1, y1);
+
+		setBoundingBox(x0, y0, x1, y1);
 	}
 
 	// Set bounding box corner points

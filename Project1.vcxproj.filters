@@ -101,9 +101,6 @@
     <ClInclude Include="include\ellipse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\file_handler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\tinyfiledialogs.h">
       <Filter>Header Files</Filter>
     </ClInclude>

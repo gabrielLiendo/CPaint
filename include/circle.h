@@ -150,12 +150,12 @@ public:
 
 		// Add border info
 		info += to_string(borderColor.r) + " " + to_string(borderColor.g) + " "
-			+ to_string(borderColor.b) + " ";
+			+ to_string(borderColor.b);
 
 		// Add filler info
 		if (filled)
 		{
-			info = "FILLED_" + info + to_string(fillColor.r) + " "
+			info = "FILLED_" + info + " " + to_string(fillColor.r) + " "
 				+ to_string(fillColor.g) + " " + to_string(fillColor.b);
 		}
 

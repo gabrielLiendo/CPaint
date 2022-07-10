@@ -25,10 +25,7 @@ shared_ptr<CShape> drawingShape = nullptr;
 
 
 //Click dragueas y sueltas, click dragueas y sueltas y listo
-bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure)
-{
-	return figure->getLayerLevel() > fig->getLayerLevel();
-}
+bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure);
 
 void createShape(int x1, int y1)
 {
@@ -284,7 +281,9 @@ int main(int argc, char** argv)
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	//io.Fonts->AddFontFromFileTTF("misc/fonts/DroidSans.ttf", 15.5f);
-	io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 15.0f);
+	//io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 15.0f);
+	//io.Fonts->AddFontFromFileTTF("misc/fonts/opensans/OpenSans-Bold.ttf", 18.0f);
+	io.FontDefault = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Regular.ttf", 16.0f);
 
 	ImGui::StyleColorsDark();
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
