@@ -186,6 +186,7 @@
     <ClInclude Include="include\tinyfiledialogs.h" />
     <ClInclude Include="include\triangle.h" />
     <ClInclude Include="include\paintUI.h" />
+    <ClInclude Include="include\vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

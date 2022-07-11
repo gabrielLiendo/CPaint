@@ -49,8 +49,10 @@ protected:
 	Color fillColor, borderColor;
 	CtrlPoint anchorPoint;
 	CtrlPoint *pointSelected = nullptr;
+	string info;
 	int level = 0;
 	bool filled = true;
+
 
 public:
 
@@ -136,7 +138,7 @@ public:
 		incNE = (dx - dy) << 1;
 
 		// Draw the initial pixel
-		putPixel(x0, y0, fillColor);
+		putPixel(x0, y0, c);
 
 		// If |m| < 1 (abs(dx) > abs(dy)) we iterate over the x-axis, otherwise we iterate over the y-axis
 		if (dy < dx)

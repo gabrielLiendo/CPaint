@@ -45,28 +45,11 @@ public:
 	{
 		int i = iPointSelected;
 
-		boxPoints[i].x = x; boxPoints[i].y = y;
+		boxPoints[i].x = x; 
+		boxPoints[i].y = y;
 
-		if (iPointSelected == 0) {
-			boxPoints[3].y = y;
-			boxPoints[1].x = x;
-		}
-
-		if (iPointSelected == 1) {
-			boxPoints[2].y = y;
-			boxPoints[0].x = x;
-		}
-
-		if (iPointSelected == 2) {
-			boxPoints[1].y = y;
-			boxPoints[3].x = x;
-		}
-
-		if (iPointSelected == 3) {
-			boxPoints[0].y = y;
-			boxPoints[2].x = x;
-		}
-			
+		boxPoints[i - ((i & 1) << 1) + 1].x = x;
+		boxPoints[-(i - 3) % 4].y = y;
 	}
 
 	void renderBox()

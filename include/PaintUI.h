@@ -20,6 +20,19 @@ bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure)
 	return figure->getLayerLevel() > fig->getLayerLevel();
 }
 
+void deleteFigure()
+{
+	if (selectedShape)
+		shapes.remove(selectedShape);
+	selectedShape = nullptr;
+}
+
+void deleteAllFigures()
+{
+	shapes.clear();
+	selectedShape = nullptr;
+}
+
 class PaintUI
 {
 private:
@@ -52,6 +65,8 @@ public:
 	bool openBGPicker = false;
 	bool openFillPicker = false;
 	bool openBorderPicker = false;
+	bool openHelp = false;
+	bool openDeleteModal = false;
 
 	PaintUI() { ; }
 
@@ -143,26 +158,15 @@ public:
 		ImGui::EndGroup();
 	}
 
-
 	int readPointsValues(char **token, int n, int *pValues)
 	{
 		int count = 0, value = 0;
 
-		for (int i = 0; i < n; i++)
-		{
-			value = atoi(*token);
-			pValues[i] = value;
-			*token = strtok(NULL, " \t");
-
-			if (value < 0)
-				return n + 1;
-			else
-				count += 1;
-		}
+		
 		return count;
 	}
 
-	int readColorValues(char **token, float* color)
+	int readColorValues(char **token, float *color)
 	{
 		int count = 0;
 		float c = 0.0f;
@@ -170,15 +174,43 @@ public:
 		for (int i = 0; i < 3; i++)
 		{
 			c = atof(*token);
-			color[i] = c;
-			*token = strtok(NULL, " \t");
 
 			if (c < 0.0f || c > 1.0f)
 				return 4;
 			else
 				count += 1;
+
+			color[i] = c;
+			*token = strtok(NULL, " \t");
 		}
 		return count;
+	}
+
+	bool readFigure(char **token, int n, int *pointValues, float *borderColor, float *fillColor, bool filled)
+	{
+		int count = 0, value;
+		*token = strtok(NULL, " \t");
+
+		// Read n integer values for points positions 
+		for (int i = 0; i < n; i++)
+		{
+			value = atoi(*token);
+			if (value < 0)
+				return false;
+			else
+				count += 1;
+			pointValues[i] = value;
+			*token = strtok(NULL, " \t");
+		}
+
+		count += readColorValues(&(*token), borderColor);
+		if(filled)
+			count += readColorValues(&(*token), fillColor);
+
+		if (count != n + 3 * (1 + filled))
+			return false;
+
+		return true;
 	}
 
 	void loadScene()
@@ -219,6 +251,7 @@ public:
 			int count = 0;
 			token = strtok(NULL, " \t");
 			count += readColorValues(&token, fileBGColor);
+
 			if (count != 3)
 				cout << "Invalid Background Color" << endl;
 			else
@@ -232,128 +265,116 @@ public:
 			token = strtok(lBuffer, " \t");
 			if (strcmp(token, "LINE") == 0)
 			{
-				int count = 0;
-				token = strtok(NULL, " \t");
-				count += readPointsValues(&token, 4, filePValues);
-				count += readColorValues(&token, fileBColor);
-
-				if (count > 8)
-					cout << "Invalid Line" << endl;
-				else
+				if (readFigure(&token, 4, filePValues, fileBColor, fileFColor, false))
 				{
 					shared_ptr<CLine> l = make_shared<CLine>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
 						fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1], fileBColor[2], false);
 
-					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),l, isHigherLevel), l);
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), l, isHigherLevel), l);
 				}
+				else
+					cout << "Invalid Line" << endl;	
 			}
 			else if (strcmp(token, "TRIANGLE") == 0)
 			{
-				int count = 0;
-				token = strtok(NULL, " \t");
-				count += readPointsValues(&token, 6, filePValues);
-				count += readColorValues(&token, fileBColor);
-
-				if (count > 9)
-					cout << "Invalid Triangle" << endl;
-				else
+				if (readFigure(&token, 6, filePValues, fileBColor, fileFColor, false))
 				{
 					shared_ptr<CTriangle> t = make_shared<CTriangle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
 						filePValues[4], filePValues[5], fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1],
 						fileBColor[2], false);
 
 					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), t, isHigherLevel), t);
-				}
+				}	
+				else
+					cout << "Invalid Triangle" << endl;
 			}
 			else if (strcmp(token, "FILLED_TRIANGLE") == 0)
 			{
-				int count = 0;
-				token = strtok(NULL, " \t");
-				count += readPointsValues(&token, 6, filePValues);
-				count += readColorValues(&token, fileBColor);
-				count += readColorValues(&token, fileFColor);
-				
-				if (count > 12)
-					cout << "Invalid Filled Triangle" << endl;
-				else
+				if (readFigure(&token, 6, filePValues, fileBColor, fileFColor, true))
 				{
 					shared_ptr<CTriangle> t = make_shared<CTriangle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
 						filePValues[4], filePValues[5], fileFColor[0], fileFColor[1], fileFColor[2], fileBColor[0], fileBColor[1],
 						fileBColor[2], true);
-
-					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),t, isHigherLevel), t);
+			
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), t, isHigherLevel), t);
 				}
+				else
+					cout << "Invalid Filled Triangle" << endl;
 			}
 			else if (strcmp(token, "RECTANGLE") == 0)
 			{
-				int count = 0;
-				token = strtok(NULL, " \t");
-				count += readPointsValues(&token, 4, filePValues);
-				count += readColorValues(&token, fileBColor);
-
-				if (count > 7)
-					cout << "Invalid Rectangle" << endl;
-				else
+				if (readFigure(&token, 4, filePValues, fileBColor, fileFColor, false))
 				{
 					shared_ptr<CRectangle> r = make_shared<CRectangle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
 						fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1], fileBColor[2], false);
 
-					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),r, isHigherLevel), r);
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), r, isHigherLevel), r);
 				}
+				else
+					cout << "Invalid Rectangle" << endl;
 			}
 			else if (strcmp(token, "FILLED_RECTANGLE") == 0)
 			{
-				int count = 0;
-				token = strtok(NULL, " \t");
-				count += readPointsValues(&token, 4, filePValues);
-				count += readColorValues(&token, fileBColor);
-				count += readColorValues(&token, fileFColor);
-
-				if (count > 10)
-					cout << "Invalid Filled Rectangle" << endl;
-				else
+				if (readFigure(&token, 4, filePValues, fileBColor, fileFColor, true))
 				{
 					shared_ptr<CRectangle> r = make_shared<CRectangle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
 						fileFColor[0], fileFColor[1], fileFColor[2], fileBColor[0], fileBColor[1], fileBColor[2], true);
 
 					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), r, isHigherLevel), r);
-				}
+				}			
+				else
+					cout << "Invalid Filled Rectangle" << endl;
 			}
 			else if (strcmp(token, "ELLIPSE") == 0)
 			{
-				int count = 0;
-				token = strtok(NULL, " \t");
-				count += readPointsValues(&token, 4, filePValues);
-				count += readColorValues(&token, fileBColor);
-
-				if (count > 7)
-					cout << "Invalid Ellipse" << endl;
-				else
+				if (readFigure(&token, 4, filePValues, fileBColor, fileFColor, false))
 				{
 					shared_ptr<CEllipse> e = make_shared<CEllipse>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
 						fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1], fileBColor[2], false);
 
 					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), e, isHigherLevel), e);
 				}
+				else
+					cout << "Invalid Ellipse" << endl;
 			}
 			else if (strcmp(token, "FILLED_ELLIPSE") == 0)
 			{
-				int count = 0;
-				token = strtok(NULL, " \t");
-				count += readPointsValues(&token, 4, filePValues);
-				count += readColorValues(&token, fileBColor);
-				count += readColorValues(&token, fileFColor);
-
-				if (count > 10)
-					cout << "Invalid Filled Ellipse" << endl;
-				else
+				if (readFigure(&token, 4, filePValues, fileBColor, fileFColor, true))
 				{
 					shared_ptr<CEllipse> e = make_shared<CEllipse>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
 						fileFColor[0], fileFColor[1], fileFColor[2], fileBColor[0], fileBColor[1], fileBColor[2], true);
 
 					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), e, isHigherLevel), e);
 				}
+				else
+					cout << "Invalid Filled Ellipse" << endl;
 			}
+			else if (strcmp(token, "CIRCLE") == 0)
+			{
+				if (readFigure(&token, 4, filePValues, fileBColor, fileFColor, false))
+				{
+					shared_ptr<CCircle> c = make_shared<CCircle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
+						fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1], fileBColor[2], false, true);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), c, isHigherLevel), c);
+				}
+				else
+					cout << "Invalid Circle" << endl;
+			}
+			else if (strcmp(token, "FILLED_CIRCLE") == 0)
+			{
+				if (readFigure(&token, 4, filePValues, fileBColor, fileFColor, true))
+				{
+					shared_ptr<CCircle> c = make_shared<CCircle>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
+						fileFColor[0], fileFColor[1], fileFColor[2], fileBColor[0], fileBColor[1], fileBColor[2], true, true);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), c, isHigherLevel), c);
+				}
+				else
+					cout << "Invalid Filled Circle" << endl;
+			}
+			else 
+				cout << "Non existing Figure" << endl;
 		}
 
 		fclose(lIn);
@@ -409,14 +430,16 @@ public:
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Open", "Ctrl+O"))
+				if (ImGui::MenuItem("Load Scene", "L"))
 					loadScene();
-				if (ImGui::MenuItem("Save", "Ctrl+S"))
+				if (ImGui::MenuItem("Save Scene", "S"))
 					saveScene();
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Help"))
 			{
+				if (ImGui::MenuItem("Shortcuts", " "))
+					openHelp = true;
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
@@ -551,20 +574,33 @@ public:
 
 				ImGui::TreePop();
 			}
+
+			if (ImGui::TreeNodeEx("Delete", nodeFlags))
+			{
+				if (ImGui::Button("Current Figure", ImVec2(100, 20)))
+				deleteFigure();
+				ImGui::SameLine();
+
+				if (ImGui::Button("All Figures", ImVec2(100, 20)) || openDeleteModal)
+				{
+					ImGui::OpenPopup("Delete All Figures?");
+				}
+				ImGui::SameLine();
+			}
 		}
 
 		// Popup Windows
-		ImGui::SetNextWindowSize(ImVec2(200, 270));
-		if (openBGPicker && ImGui::Begin("Background Color", &openBGPicker, ImGuiWindowFlags_NoResize))
+		if (openBGPicker && ImGui::Begin("Background Color", &openBGPicker, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
 		{
 			float w = ImGui::CalcItemWidth();
 			ImGui::PushItemWidth(1.35 * w);
 			ImGui::ColorPicker3("##picker", (float*)&bgColor, ImGuiColorEditFlags_NoSidePreview);
+			ImGui::PopItemWidth();
 			ImGui::End();
 		}
 
-		ImGui::SetNextWindowSize(ImVec2(200, 270));
-		if (openFillPicker && ImGui::Begin("Fill Color", &openFillPicker, ImGuiWindowFlags_NoResize))
+
+		if (openFillPicker && ImGui::Begin("Fill Color", &openFillPicker, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
 		{	
 			float w = ImGui::CalcItemWidth();
 			ImGui::PushItemWidth(1.35*w);
@@ -573,11 +609,12 @@ public:
 				if (selectedShape)
 					selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
 			}
+			ImGui::PopItemWidth();
 			ImGui::End();
 		}
 
-		ImGui::SetNextWindowSize(ImVec2(200, 270));
-		if (openBorderPicker && ImGui::Begin("Border Color", &openBorderPicker, ImGuiWindowFlags_NoResize))
+
+		if (openBorderPicker && ImGui::Begin("Border Color", &openBorderPicker, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
 		{
 			float w = ImGui::CalcItemWidth();
 			ImGui::PushItemWidth(1.35 * w);
@@ -586,10 +623,59 @@ public:
 				if (selectedShape)
 					selectedShape->setBorderColor(borderColor[0], borderColor[1], borderColor[2]);
 			}
+			ImGui::PopItemWidth();
 			ImGui::End();
 		}
 
+		if (openHelp && ImGui::Begin("Help", &openHelp, ImGuiWindowFlags_None))
+		{
+			ImGui::Text("Keyboard shortcuts list.");
+			ImGui::Separator();
+			ImGui::Text("Scene");
+			ImGui::BulletText("h : change rendering mode.");
+			ImGui::BulletText("u : unselect current figure");
+			ImGui::BulletText("Backspace: delete current figure.");
+			ImGui::BulletText("x : delete all figures.");
+			ImGui::Text("Files");
+			ImGui::BulletText("L : load scene from text file.");
+			ImGui::BulletText("S : save scene to text file.");
+			ImGui::Text("Shapes");
+			ImGui::BulletText("1: select line.");
+			ImGui::BulletText("2: select circle.");
+			ImGui::BulletText("3: select ellipse.");
+			ImGui::BulletText("4: select rectangle.");
+			ImGui::BulletText("5: select triangle.");
+			ImGui::BulletText("6 : select bezier curve");
+			ImGui::Text("Colors");
+			ImGui::BulletText("B : change background color.");
+			ImGui::BulletText("F : change filler color.");
+			ImGui::BulletText("C : change border color.");
+			ImGui::Text("Control layer");
+			ImGui::BulletText("- : push figure one layer below.");
+			ImGui::BulletText("+ : bring figure one layer forward.");
+			ImGui::BulletText("b : push figure to the lowest layer.");
+			ImGui::BulletText("f : bring figure to the highest layer.");
+			ImGui::End();
+		}
+
+		if (ImGui::BeginPopupModal("Delete All Figures?", &openDeleteModal, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::Text("All the figures in the scene will be deleted \nThis operation cannot be undone!\n\n");
+			ImGui::Separator();
+
+			if (ImGui::Button("OK", ImVec2(120, 0))) 
+			{
+				deleteAllFigures(); 
+				openDeleteModal = false;
+				ImGui::CloseCurrentPopup(); 
+			}
+
+			ImGui::SetItemDefaultFocus();
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel", ImVec2(120, 0))) { openDeleteModal = false;  ImGui::CloseCurrentPopup(); }
+			ImGui::EndPopup();
+		}
 		ImGui::End();
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 	}
 };

@@ -63,11 +63,24 @@ public:
 	// Draw border and filler in the same iteration
 	void render(const bool mode)
 	{
-		int x, y, d, ap2, bp2;
-		ap2 = a * a; bp2 = b * b;
+		int x, y, d;
+
 		x = 0;
 		y = b;
+
+		int ap2, bp2;
+		int  incE, incS, incSE, varE, varSE,  varS;
+		ap2 = a * a; bp2 = b * b;
+		
+
+		// Initial values
 		d = b * ((b - ap2) << 2) + ap2;
+		incE = 12 * bp2;
+		incSE = (3 * bp2 - (ap2 * (b - 1)) << 1) << 2;
+
+		varE = bp2  << 3;
+		varSE = (ap2 + bp2) << 3;
+		varS = ap2 << 3;
 
 		if (filled)
 		{
@@ -78,30 +91,41 @@ public:
 			while (((bp2 * (x + 1)) << 1) < ap2 * ((y << 1) - 1))
 			{
 				if (d < 0)
-					d += (bp2 * ((x << 1) + 3)) << 2;
+				{
+					d += incE;	
+					incSE += varE;
+				}
 				else
 				{
-					d += (bp2 * ((x + 3) << 1) + (ap2 * (1 - y) << 1)) << 2;
+					d += incSE;
+					incSE += varSE;
 					y -= 1;
 					fillEllipse(x, y);
 				}
 				x += 1;
+				incE += varE;
 				ellipsePoints(x, y);
 			}
 
 			// Mode 2: Draw and fill while the tangent line to the point has slope (-inf,-1]
+			incS = (ap2 * (3 - (y << 1))) << 2;
+			incSE = ((bp2*(x+1)) << 3) + ((ap2*(3 - (y << 1))) << 2);
 			d = bp2 * (((x * x + x) << 2) + 1) + ap2 * ((y * y - (y << 1) + 1 - bp2) << 2);
 			while (y > 0)
 			{
 				if (d < 0)
 				{
-					d += (((bp2 * (x + 1)) << 1) + ap2 * (3 - (y << 1))) << 2;
+					d += incSE;
+					incSE += varSE;
 					x += 1;
 				}
 				else
-					d += (ap2 * (3 - (y << 1))) << 2;
+				{
+					d += incS;
+					incSE += varS;
+				}
+				incS += varS;
 				y -= 1;
-
 				fillEllipse(x, y);
 				ellipsePoints(x, y);
 			}
@@ -115,10 +139,16 @@ public:
 			while (((bp2 * (x + 1)) << 1) < ap2 * ((y << 1) - 1))
 			{
 				if (d < 0)
-					d += (bp2 * ((x << 1) + 3)) << 2;
+				{
+					d += incE;
+					incE += varE;
+					incSE += varE;
+				}
 				else
 				{
-					d += (bp2 * ((x + 3) << 1) + (ap2 * (1 - y) << 1)) << 2;
+					d += incSE;
+					incE += varE;
+					incSE += varSE;
 					y -= 1;
 				}
 				x += 1;

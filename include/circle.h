@@ -9,13 +9,23 @@ private:
 	int cx, cy; // Center;
 
 public:
-	CCircle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
+	CCircle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled, bool fromFile)
 		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled), BoxableShape(x0, y0, x1, y1)
 	{
-		r = anchorPoint.distance(x1, y1);
-		cx = x0; cy = y0;
+		if (!fromFile)
+		{
+			cx = x0; cy = y0;
+			r = anchorPoint.distance(x1, y1);
+		}
+		else
+		{
+			setBoundingBox(x0, y0, x1, y1);
+			r = (boxPoints[0].y - boxPoints[1].y) >> 1;
+			cx = boxPoints[0].x + r;
+			cy = boxPoints[0].y - r;
+		}
 	}
-
+		
 	~CCircle(){ cout << "Se destruyo un circulo" << endl; }
 
 	void update(int x1, int y1)
@@ -42,7 +52,6 @@ public:
 		}
 	}
 
-	
 	void render(const bool mode)
 	{	
 		int x = 0, y = r, d = 1 - r;
@@ -146,7 +155,7 @@ public:
 
 		// Add position
 		info += to_string(boxPoints[0].x) + " " + to_string(boxPoints[0].y) + " "
-			+ to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y);
+			+ to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y) + " ";
 
 		// Add border info
 		info += to_string(borderColor.r) + " " + to_string(borderColor.g) + " "

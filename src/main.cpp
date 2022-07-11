@@ -27,6 +27,10 @@ shared_ptr<CShape> drawingShape = nullptr;
 //Click dragueas y sueltas, click dragueas y sueltas y listo
 bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure);
 
+void deleteFigure();
+
+void deleteAllFigures();
+
 void createShape(int x1, int y1)
 {
 	const int shapeSelected = ui.shapeSelected;
@@ -43,7 +47,7 @@ void createShape(int x1, int y1)
 	else if (shapeSelected == 1)
 	{
 		shared_ptr<CCircle> c = make_shared<CCircle>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled, false);
 		drawingShape = c;
 	}
 	else if (shapeSelected == 2)
@@ -76,6 +80,17 @@ void renderScene(void)
 	glClearColor(bgColor[0], bgColor[1], bgColor[2], 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+
+	// Render every shape already in canvas
+	if (drawingShape)
+		drawingShape->render(currentMode);
+
+	for (auto const& s : shapes)
+		s->render(currentMode);
+
+	if (selectedShape)
+		selectedShape->renderCtrlPoints();
+
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL2_NewFrame();
 	ImGui_ImplGLUT_NewFrame();
@@ -85,19 +100,8 @@ void renderScene(void)
 
 	// Render GUI
 	ImGui::Render();
-	ImGuiIO& io = ImGui::GetIO();
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
-	// Render every shape already in canvas
-	if (drawingShape)
-		drawingShape->render(currentMode);
-	
-	for (auto const& s : shapes) 
-		s->render(currentMode);
-
-	if (selectedShape)
-		selectedShape->renderCtrlPoints();
-	
 	// Present frame buffer
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -109,7 +113,6 @@ void unselectFigure()
 		selectedShape->release();
 	selectedShape = nullptr;
 }
-
 
 void onResize(int w, int h)
 {	
@@ -226,34 +229,27 @@ void onMotion(int x1, int y1)
 
 void onKeyboardEntry(unsigned char c, int x, int y)
 {
-	// 1-6: Change shape to draw
-	if (c >= 49 && c <= 54)
-		ui.shapeSelected = c - 49;
-	// Change rendering mode
-	if (c == 'h')
-		ui.currentMode = !ui.currentMode;
-	// Open color windows 
-	else if (c == 'B')
-		ui.openBGPicker = !ui.openBGPicker;
-	else if (c == 'c')
-		ui.openBorderPicker = !ui.openBorderPicker;
-	else if (c == 'f')
-		ui.openFillPicker = !ui.openFillPicker;
-	// Unselect current figure
-	else if (c == 'u')
-		unselectFigure();
-	// Toggle current figure layer level
-	else if (c == 'b')
-		ui.toggleLevel(-2);
-	else if (c == '-')
-		ui.toggleLevel(-1);
-	else if (c == '+')
-		ui.toggleLevel(1);
-	else if (c == 'f')
-		ui.toggleLevel(2);
-	// Redirect input to ImGui
-	else
-		ImGui_ImplGLUT_KeyboardFunc(c, x, y);
+	switch (c)
+	{
+		case '1':	ui.shapeSelected = 0;						break;  // 1-6: Change shape to draw
+		case '2':	ui.shapeSelected = 1;						break;
+		case '3':	ui.shapeSelected = 2;						break;
+		case '4':	ui.shapeSelected = 3;						break;
+		case '5':	ui.shapeSelected = 4;						break;
+		case '6':	ui.shapeSelected = 5;						break;
+		case 'h':	ui.currentMode = !ui.currentMode;			break;  // h: Change rendering mode
+		case 'B':   ui.openBGPicker = !ui.openBGPicker;			break;  // B,C,F: Open color windows 
+		case 'C':   ui.openBorderPicker = !ui.openBorderPicker; break;
+		case 'F':   ui.openFillPicker = !ui.openFillPicker;		break;
+		case 'u':	unselectFigure();							break;	// u: Unselect current figure
+		case 'b':   ui.toggleLevel(-2);							break;	// f, b, -, + : Toggle current figure layer level
+		case '-':   ui.toggleLevel(-1);							break;
+		case '+':   ui.toggleLevel(1);							break;
+		case 'f':   ui.toggleLevel(2);							break;  
+		case 'x':   ui.openDeleteModal = true;					break;  // x: Delete all figures
+		case   8:   deleteFigure();								break;  // backspace: Delete current figure
+		default:    ImGui_ImplGLUT_KeyboardFunc(c, x, y);		break;  // Give control to ImGui
+	}
 }
 
 int main(int argc, char** argv)
@@ -301,8 +297,6 @@ int main(int argc, char** argv)
 	glutMouseFunc(onClick);
 	glutMotionFunc(onMotion);
 	glutKeyboardFunc(onKeyboardEntry);
-	
-	//glutSpecialFunc(onSpecialEntry);
 
 	glutMainLoop();
 

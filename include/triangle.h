@@ -9,9 +9,7 @@ private:
 	CtrlPoint points[3];
 	CtrlPoint divide;
 	int currentIndex = 1;
-
 	float leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0;
-	float ixLeft, ixRight, ixLeft2, ixRight2;
 
 public:
 	CTriangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
@@ -72,10 +70,10 @@ public:
 		}
 		else
 		{
-			rightInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
-			rightInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
 			leftInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
 			leftInc2 = leftInc1;
+			rightInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
+			rightInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
 		}
 	}
 
@@ -108,36 +106,28 @@ public:
 			// Draw Content
 			if (currentIndex == 3 && filled)
 			{
-				int ymin = points[0].y, ymid = points[1].y, ymax = points[2].y;
+				float ixLeft = (float)points[0].x, ixRight = (float)points[0].x;
 
-				ixLeft = (float)points[0].x, ixRight = (float)points[0].x;
 				// Draw lower semi-triangle filler
-				for (int y = ymin+1; y <= ymid; y++) 
+				for (int y = points[0].y +1; y <= points[1].y; y++)
 				{
 					ixLeft += leftInc1;
 					ixRight += rightInc1;
 					hLine(ceil(ixLeft), floor(ixRight), y, fillColor);
 				}
 
-				if(divide.x < points[1].x)
-					ixLeft = divide.x, ixRight = points[1].x;
-				else 
-					ixLeft = points[1].x, ixRight = divide.x;
-
 				// Draw upper semi-triangle filler
-				for (int y = ymid + 1; y < ymax-1; y++) 
+				for (int y = points[1].y + 1; y < points[2].y; y++)
 				{
 					ixLeft += leftInc2;
 					ixRight += rightInc2;
 					hLine(ceil(ixLeft), floor(ixRight), y, fillColor);
 				}
 			}
-
 			// Draw Border
 			for (int i = 0; i < currentIndex; i++)
 				drawLine(points[i % 3].x, points[i % 3].y, points[(i + 1) % 3].x, points[(i + 1) % 3].y, borderColor);
 		}
-		
 	}
 
 	bool onClick(int x, int y)

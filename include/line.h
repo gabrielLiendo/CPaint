@@ -29,21 +29,18 @@ public:
 		points[1].renderCtrlPoint();
 	}
 
-	void render(const bool modeHardware)
+	void render(const bool hardwareMode)
 	{	
-		int x0 = points[0].x, y0 = points[0].y;
-		int x1 = points[1].x, y1 = points[1].y;
-
-		if(modeHardware) // Hardware
+		if(hardwareMode)
 		{
 			glColor3f(fillColor.r, fillColor.g, fillColor.b);
 			glBegin(GL_LINES);
-				glVertex2i(x0, y0);
-				glVertex2i(x1, y1);
+				glVertex2i(points[0].x, points[0].y);
+				glVertex2i(points[1].x, points[1].y);
 			glEnd();
 		}
 		else 
-			drawLine(x0, y0, x1, y1, fillColor);
+			drawLine(points[0].x, points[0].y, points[1].x, points[1].y, fillColor);
 	}
 
 	bool onClick(int x, int y) 
