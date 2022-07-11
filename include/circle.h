@@ -15,7 +15,7 @@ public:
 		if (!fromFile)
 		{
 			cx = x0; cy = y0;
-			r = anchorPoint.distance(x1, y1);
+			r = (int)sqrt(pow(x1 - anchorPoint.x, 2) + pow(y1 - anchorPoint.y, 2) * 1.0);
 		}
 		else
 		{
@@ -30,7 +30,7 @@ public:
 
 	void update(int x1, int y1)
 	{
-		r = anchorPoint.distance(x1, y1);
+		r = (int)sqrt(pow(x1 - anchorPoint.x, 2) + pow(y1 - anchorPoint.y, 2) * 1.0);
 		setBoundingBox(anchorPoint.x-r, anchorPoint.y+r, anchorPoint.x+r , anchorPoint.y-r);
 	}
 
@@ -61,7 +61,7 @@ public:
 
 			// Draw initial 8 points and middle line filler
 			circlePoints(x, y);
-			hLine(cx - r, cx + r, cy, fillColor);
+			horizontalLine(cx - r, cx + r, cy, fillColor);
 
 			// Draw one octant and reflect it's points
 			for (; y > x; x++)
@@ -73,12 +73,12 @@ public:
 					d += ((x - y) << 1) + 5;
 					y--;
 
-					hLine(cx - x, cx + x, cy + y, fillColor);
-					hLine(cx - x, cx + x, cy - y, fillColor);
+					horizontalLine(cx - x, cx + x, cy + y, fillColor);
+					horizontalLine(cx - x, cx + x, cy - y, fillColor);
 				}
 
-				hLine(cx - y, cx + y, cy - x, fillColor);
-				hLine(cx - y, cx + y, cy + x, fillColor);
+				horizontalLine(cx - y, cx + y, cy - x, fillColor);
+				horizontalLine(cx - y, cx + y, cy + x, fillColor);
 				circlePoints(x, y);
 			}
 		}

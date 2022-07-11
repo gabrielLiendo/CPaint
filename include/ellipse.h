@@ -56,8 +56,8 @@ public:
 
 	void fillEllipse(int x, int y)
 	{
-		hLine(cx - x, cx + x, cy + y, fillColor);
-		hLine(cx - x, cx + x, cy - y, fillColor);
+		horizontalLine(cx - x, cx + x, cy + y, fillColor);
+		horizontalLine(cx - x, cx + x, cy - y, fillColor);
 	}
 
 	// Draw border and filler in the same iteration
@@ -141,33 +141,39 @@ public:
 				if (d < 0)
 				{
 					d += incE;
-					incE += varE;
 					incSE += varE;
 				}
 				else
 				{
 					d += incSE;
-					incE += varE;
 					incSE += varSE;
 					y -= 1;
 				}
+				incE += varE;
 				x += 1;
 				ellipsePoints(x, y);
 			}
 
 			// Mode 2: Draw and fill while the tangent line to the point has slope (-inf,-1]
+			incS = (ap2 * (3 - (y << 1))) << 2;
+			incSE = ((bp2 * (x + 1)) << 3) + ((ap2 * (3 - (y << 1))) << 2);
 			d = bp2 * (((x * x + x) << 2) + 1) + ap2 * ((y * y - (y << 1) + 1 - bp2) << 2);
+
 			while (y > 0)
 			{
 				if (d < 0)
 				{
-					d += (((bp2 * (x + 1)) << 1) + ap2 * (3 - (y << 1))) << 2;
+					d += incSE;
+					incSE += varSE;
 					x += 1;
 				}
 				else
-					d += (ap2 * (3 - (y << 1))) << 2;
+				{
+					d += incS;
+					incSE += varS;
+				}
+				incS += varS;
 				y -= 1;
-
 				ellipsePoints(x, y);
 			}
 		}

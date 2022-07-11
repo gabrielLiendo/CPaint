@@ -6,8 +6,7 @@
 class CTriangle : public CShape
 {
 private:	
-	CtrlPoint points[3];
-	CtrlPoint divide;
+	CtrlPoint points[4];
 	int currentIndex = 1;
 	float leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0;
 
@@ -35,7 +34,8 @@ public:
 	void update(int x1, int y1)
 	{	
 		// Update current vertex positions
-		points[currentIndex].x = x1; points[currentIndex].y = y1;
+		points[currentIndex].x = x1; 
+		points[currentIndex].y = y1;
 	}
 
 	void renderCtrlPoints()
@@ -45,35 +45,35 @@ public:
 			points[i].renderCtrlPoint();
 	}
 
-	void setPointsOrder()
-	{
-		sort(begin(points), end(points));
-	}
 
 	void setRenderValues()
 	{
-		setPointsOrder();
+		// Order points by y-axis, p[0] is the lowest, p[2] is the highest
+		if (points[1].y < points[0].y) { swap(points[1], points[0]); }
+		if (points[2].y < points[0].y) { swap(points[2], points[0]); }
+		if (points[2].y < points[1].y) { swap(points[2], points[1]); }
 
 		int xmin = points[0].x, ymin = points[0].y;
 		int xmid = points[1].x, ymid = points[1].y;
 		int xmax = points[2].x, ymax = points[2].y;
 
-		divide.x = (int)(((float)(xmax - xmin) / (float)(ymax - ymin) * (ymid - ymax)) + xmax);
-		divide.y = points[1].y;
+		// Set values of the point that separates one side into two lines 
+		points[3].x = (int)(((float)(xmax - xmin) / (float)(ymax - ymin) * (ymid - ymax)) + xmax);
+		points[3].y = points[1].y;
 
-		if (divide.x > points[1].x)
-		{
+		if (points[3].x > points[1].x)
+		{	// The left side of the triangle has two slopes, the right side has one
 			leftInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
 			leftInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
 			rightInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
 			rightInc2 = rightInc1;
 		}
 		else
-		{
-			leftInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
-			leftInc2 = leftInc1;
+		{	// The right side of the triangle has two slopes, the left side has one
 			rightInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
 			rightInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
+			leftInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
+			leftInc2 = leftInc1;
 		}
 	}
 
@@ -113,7 +113,7 @@ public:
 				{
 					ixLeft += leftInc1;
 					ixRight += rightInc1;
-					hLine(ceil(ixLeft), floor(ixRight), y, fillColor);
+					horizontalLine(ceil(ixLeft), floor(ixRight), y, fillColor);
 				}
 
 				// Draw upper semi-triangle filler
@@ -121,7 +121,7 @@ public:
 				{
 					ixLeft += leftInc2;
 					ixRight += rightInc2;
-					hLine(ceil(ixLeft), floor(ixRight), y, fillColor);
+					horizontalLine(ceil(ixLeft), floor(ixRight), y, fillColor);
 				}
 			}
 			// Draw Border
@@ -141,31 +141,49 @@ public:
 		y2 = (int)(((float)(xmax - xmid) / (float)(ymax - ymid) * (y - ymax)) + (xmax - x));
 		y3 = (int)(((float)(xmin - xmax) / (float)(ymin - ymax) * (y - ymin)) + (xmin - x));
 
-		cout << y1 << " " << y2 << " " << y3 << endl;;
 		return (y1 > 0 && y2 > 0 && y3 < 0) || (y1 < 0 && y2 < 0 && y3 > 0);
 	}
 
 	void clickedCtrlPoint(int x, int y)
 	{
-
+		// We check if the click fell on a vertex
+		int dx, dy;
+		for (int i = 0; i < 3; i++)
+		{
+			dx = (x - points[i].x);
+			dy = (y - points[i].y);
+			// Check squared distance between vertex i and the click, threshold: 5 pixels
+			if ((dx * dx + dy * dy) <= 25)
+			{
+				pointSelected = &points[i];
+				return;
+			}
+		}
 	}
 
 	void onMove(int x1, int y1)
 	{
-		// We move the whole triangle
-		int dx = x1 - anchorPoint.x;
-		int dy = y1 - anchorPoint.y;
 
-		anchorPoint.x = x1;
-		anchorPoint.y = y1;
-
-		for (int i = 0; i < 3; i++)
-		{
-			points[i].x += dx;
-			points[i].y += dy;
+		if (pointSelected)
+		{	// Only move the vertex selected
+			pointSelected->x = x1;
+			pointSelected->y = y1;
 		}
-		divide.x += dx;
-		divide.y += dy;
+		else
+		{
+			// We move the whole triangle
+			int dx = x1 - anchorPoint.x;
+			int dy = y1 - anchorPoint.y;
+
+			anchorPoint.x = x1;
+			anchorPoint.y = y1;
+
+			for (int i = 0; i < 4; i++)
+			{
+				points[i].x += dx;
+				points[i].y += dy;
+			}
+		}
 	}
 
 	bool finished() override

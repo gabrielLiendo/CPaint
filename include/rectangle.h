@@ -47,8 +47,8 @@ public:
             int xmax = boxPoints[3].x, ymax = boxPoints[3].y;
 			
 			// Draw top and bottom borders
-			hLine(xmin, xmax, ymin, borderColor);
-			hLine(xmin, xmax, ymax, borderColor);
+			horizontalLine(xmin, xmax, ymin, borderColor);
+			horizontalLine(xmin, xmax, ymax, borderColor);
 
 			// Draw middle lines, filled or empty
 			if (filled)
@@ -57,7 +57,7 @@ public:
 				for (int y = ymin + 1; y < ymax; y++)
 				{
 					putPixel(xmin, y, borderColor);
-					hLine(xmin + 1, xmax - 1, y, fillColor);
+					horizontalLine(xmin + 1, xmax - 1, y, fillColor);
 					putPixel(xmax, y, borderColor);
 				}
 			}
@@ -86,8 +86,8 @@ public:
 		{
 			dx = (x - boxPoints[i].x);
 			dy = (y - boxPoints[i].y);
-			// Check squared distance between vertex i and the click, threshold: 4 pixels
-			if ((dx * dx + dy * dy) <= 16)
+			// Check squared distance between vertex i and the click, threshold: 5 pixels
+			if ((dx * dx + dy * dy) <= 25)
 			{
 				pointSelected = &boxPoints[i];
 				iPointSelected = i;

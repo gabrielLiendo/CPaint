@@ -44,6 +44,13 @@ public:
 	void resizeBoundingBox(int x, int y)
 	{
 		int i = iPointSelected;
+		int op = (i + 2) % 4;
+
+		int dx = boxPoints[i].x - boxPoints[op].x;
+		int dy = boxPoints[i].y - boxPoints[op].y;
+
+		if (dx * dx + dy * dy <= 4)
+			return;
 
 		boxPoints[i].x = x; 
 		boxPoints[i].y = y;

@@ -583,6 +583,7 @@ public:
 
 				if (ImGui::Button("All Figures", ImVec2(100, 20)) || openDeleteModal)
 				{
+					openDeleteModal = true;
 					ImGui::OpenPopup("Delete All Figures?");
 				}
 				ImGui::SameLine();

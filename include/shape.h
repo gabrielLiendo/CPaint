@@ -32,15 +32,9 @@ struct CtrlPoint
 		glPointSize(1.0f);
 	}
 
-	int distance(int x, int y)
-	{
-		return (int)sqrt(pow(x - this->x, 2) + pow(y - this->y, 2) * 1.0);
-	}
-
 	bool operator<(CtrlPoint const& point) {
 		return y < point.y;
 	}
-
 };
 
 class CShape
@@ -111,8 +105,9 @@ public:
 		glEnd();
 	}
 
+
 	// Display horizontal line from xmin to xmax with the color c
-	void hLine(int xmin, int xmax, int y, Color c)
+	void horizontalLine(int xmin, int xmax, int y, Color c)
 	{
 		for (int x = xmin; x <= xmax; x++)
 			putPixel(x, y, c);

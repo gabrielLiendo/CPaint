@@ -54,7 +54,10 @@ public:
 		int c = x0 * y1 - x1 * y0;
 		int distance = (int) abs(a * x + b * y + c) / sqrt(a * a + b * b);
 
-		return distance <= 4;
+		if (points[0].x > points[1].x)
+			return  distance <= 4 && x <= points[0].x && x >= points[1].x;
+		else
+			return  distance <= 4 && x >= points[0].x && x <= points[1].x;
 	}
 
 	void clickedCtrlPoint(int x, int y)
@@ -66,7 +69,7 @@ public:
 			dx = (x - points[i].x);
 			dy = (y - points[i].y);
 			// Check squared distance between vertex i and the click
-			if ((dx * dx + dy * dy) <= 16)
+			if ((dx * dx + dy * dy) <= 25)
 			{
 				pointSelected = &points[i];
 				return;
@@ -74,22 +77,22 @@ public:
 		}
 	}
 
-	void onMove(int x1, int y1)
+	void onMove(int x, int y)
 	{
 		if (pointSelected)
 		{	// Only move the vertex selected
-			pointSelected->x = x1;
-			pointSelected->y = y1;
+			pointSelected->x = x;
+			pointSelected->y = y;
 		}
 		else
 		{	// Move the whole line
-			int dx = x1 - anchorPoint.x;
-			int dy = y1 - anchorPoint.y;
+			int dx = x - anchorPoint.x;
+			int dy = y - anchorPoint.y;
 
 			points[0].x += dx; points[0].y += dy;
 			points[1].x += dx; points[1].y += dy;
 
-			anchorPoint.x = x1; anchorPoint.y = y1;
+			anchorPoint.x = x; anchorPoint.y = y;
 		}
 	}
 
