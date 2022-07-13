@@ -3,16 +3,16 @@
 class BoxableShape
 {
 protected:
-	CtrlPoint boxPoints[4];
+	Point boxPoints[4];
 	int iPointSelected = -1;
 
 public:
 	BoxableShape(int x0, int y0, int x1, int y1)
 	{
-		boxPoints[0] = CtrlPoint(x0, y1);
-		boxPoints[1] = CtrlPoint(x0, y0);
-		boxPoints[2] = CtrlPoint(x1, y0);
-		boxPoints[3] = CtrlPoint(x1, y1);
+		boxPoints[0] = Point(x0, y1);
+		boxPoints[1] = Point(x0, y0);
+		boxPoints[2] = Point(x1, y0);
+		boxPoints[3] = Point(x1, y1);
 
 		setBoundingBox(x0, y0, x1, y1);
 	}

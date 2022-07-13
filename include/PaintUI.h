@@ -36,16 +36,12 @@ void deleteAllFigures()
 class PaintUI
 {
 private:
+	// Const char strings to display
 	const char* renderingModes[2] = { "Software", "Hardware" };
 	const char* shapeTypes[6] = { "Line", "Circle", "Ellipse", "Rectangle", "Triangle", "Bezier Curve" };
 
 	// Color Palette
-	bool saved_palette_init = true;
 	ImVec4 saved_palette[26];
-
-	// Color test
-	ImVec4 color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
-	ImVec4 backup_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// UI Widgets flags
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar;
@@ -83,6 +79,24 @@ public:
 		}
 	}
 
+	void initStyle()
+	{
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		//io.Fonts->AddFontFromFileTTF("misc/fonts/DroidSans.ttf", 15.5f);
+		//io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 15.0f);
+		//io.Fonts->AddFontFromFileTTF("misc/fonts/opensans/OpenSans-Bold.ttf", 18.0f);
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Regular.ttf", 16.0f);
+
+		ImGui::StyleColorsDark();
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 5));
+		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
+
+		initPalette();
+	}
+
 	void toggleLevel(int option)
 	{
 		if (selectedShape)
@@ -111,61 +125,30 @@ public:
 		}
 	}
 
+	// Initialize color palette
 	void initPalette()
 	{
-		saved_palette[0] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f); 
-		saved_palette[1] = ImVec4(0.75f, 0.75f, 0.75f, 1.0f);
-		saved_palette[2] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-		saved_palette[3] = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
-		saved_palette[4] = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
-		saved_palette[5] = ImVec4(0.5f, 1.0f, 0.0f, 1.0f);
-		saved_palette[6] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-		saved_palette[7] = ImVec4(0.0f, 1.0f, 0.5f, 1.0f);
-		saved_palette[8] = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
-		saved_palette[9] = ImVec4(0.0f, 0.5f, 1.0f, 1.0f);
+		saved_palette[0] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);		saved_palette[13] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		saved_palette[1] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);		saved_palette[14] = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+		saved_palette[2] = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);		saved_palette[15] = ImVec4(1.0f, 0.7f, 0.4f, 1.0f);
+		saved_palette[3] = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);		saved_palette[16] = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
+		saved_palette[4] = ImVec4(0.5f, 1.0f, 0.0f, 1.0f);		saved_palette[17] = ImVec4(0.7f, 1.0f, 0.4f, 1.0f);
+		saved_palette[5] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);		saved_palette[18] = ImVec4(0.4f, 1.0f, 0.4f, 1.0f);
+		saved_palette[6] = ImVec4(0.0f, 1.0f, 0.5f, 1.0f);		saved_palette[19] = ImVec4(0.4f, 1.0f, 0.7f, 1.0f);
+		saved_palette[7] = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);		saved_palette[20] = ImVec4(0.4f, 1.0f, 1.0f, 1.0f);
+		saved_palette[8] = ImVec4(0.0f, 0.5f, 1.0f, 1.0f);		saved_palette[21] = ImVec4(0.4f, 0.7f, 1.0f, 1.0f);
+		saved_palette[9] = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);		saved_palette[22] = ImVec4(0.4f, 0.4f, 1.0f, 1.0f);
+		saved_palette[10] = ImVec4(0.5f, 0.0f, 1.0f, 1.0f);		saved_palette[23] = ImVec4(0.7f, 0.4f, 1.0f, 1.0f);
+		saved_palette[11] = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);		saved_palette[24] = ImVec4(1.0f, 0.4f, 1.0f, 1.0f);
+		saved_palette[12] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);		saved_palette[25] = ImVec4(0.75f, 0.75f, 0.75f, 1.0f);
 	}
 
 	void drawPalette()
 	{
-		if (saved_palette_init)
-		{
-			
-			saved_palette[0] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-			saved_palette[1] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
-			saved_palette[2] = ImVec4(0.8f, 0.0f, 0.0f, 1.0f);
-			saved_palette[3] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-			saved_palette[4] = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
-
-			saved_palette[6] = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
-
-			saved_palette[5] = ImVec4(1.0f, 0.7f, 0.4f, 1.0f);
-			saved_palette[7] = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
-
-			
-			
-			saved_palette[8] = ImVec4(0.5f, 1.0f, 0.0f, 1.0f);
-			saved_palette[9] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-
-			saved_palette[10] = ImVec4(0.0f, 0.4f, 0.0f, 1.0f);
-			saved_palette[11] = ImVec4(0.0f, 1.0f, 0.5f, 1.0f);
-			
-			saved_palette[13] = ImVec4(0.5f, 1.0f, 1.0f, 1.0f);
-
-			saved_palette[12] = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
-			saved_palette[14] = ImVec4(0.0f, 0.5f, 1.0f, 1.0f);
-			saved_palette[15] = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
-			saved_palette[16] = ImVec4(0.5f, 0.0f, 1.0f, 1.0f);
-			saved_palette[17] = ImVec4(0.7f, 0.4f, 1.0f, 1.0f);
-			saved_palette[18] = ImVec4(1.0f, 0.4f, 0.7f, 1.0f);
-			saved_palette[19] = ImVec4(1.0f, 0.0f, 0.5f, 1.0f);
-			
-			saved_palette_init = false;
-		}
-
 		ImGui::BeginGroup();
-		for (int n = 0; n < IM_ARRAYSIZE(saved_palette); n++)
+		for (int n = 0; n < 26; n++)
 		{
-			if ((n % 10) != 0)
+			if ((n % 13) != 0)
 				ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
 
 			ImGui::PushID(n);
@@ -254,8 +237,7 @@ public:
 		deleteAllFigures();
 
 		// File Variables
-		char const* lTheOpenFileName;
-		char const* lFilterPatterns[2] = { "*.txt", "*.text" };
+		char const *lTheOpenFileName, *lFilterPatterns[2] = { "*.txt", "*.text" };
 		FILE* lIn;
 		char lBuffer[1024];
 		// Read Figures Variables 
@@ -485,11 +467,7 @@ public:
 
 		if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			// Rendering Mode Toggler
-			//ImGuiIO& io = ImGui::GetIO();
 			ImGuiStyle& style = ImGui::GetStyle();
-
-			//auto boldFont = io.Fonts->Fonts[0];
 
 			float w = ImGui::CalcItemWidth();
 			float spacing = style.ItemInnerSpacing.x;
@@ -498,7 +476,6 @@ public:
 			ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
 			if (ImGui::BeginCombo("##rendering mode", renderingModes[currentMode], ImGuiComboFlags_NoArrowButton))
 			{
-				//ImGui::PushFont(boldFont);
 				for (int n = 0; n < 2; n++)
 				{
 					bool is_selected = (currentMode == n);
@@ -507,7 +484,6 @@ public:
 					if (is_selected)
 						ImGui::SetItemDefaultFocus();
 				}
-				//ImGui::PopFont();
 				ImGui::EndCombo();
 			}
 			ImGui::PopItemWidth();
@@ -715,6 +691,6 @@ public:
 			ImGui::EndPopup();
 		}
 		ImGui::End();
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 	}
 };

@@ -4,14 +4,14 @@
 class CLine : public CShape
 {
 private:
-	CtrlPoint points[2];
+	Point points[2];
 	
 public:
 	CLine(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
 		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled)
 	{
-		points[0] = CtrlPoint(x0, y0);
-		points[1] = CtrlPoint(x1, y1);
+		points[0] = Point(x0, y0);
+		points[1] = Point(x1, y1);
 	}
 
 	~CLine(){ cout << "Se destruyo una linea" << endl; }

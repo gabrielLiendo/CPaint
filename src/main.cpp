@@ -313,21 +313,10 @@ int main(int argc, char** argv)
 	// Setup GLUT display function
 	glutDisplayFunc(renderScene);
 
-	// Setup Dear ImGui context
+	// Setup Dear ImGui context and style
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	//io.Fonts->AddFontFromFileTTF("misc/fonts/DroidSans.ttf", 15.5f);
-	//io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 15.0f);
-	//io.Fonts->AddFontFromFileTTF("misc/fonts/opensans/OpenSans-Bold.ttf", 18.0f);
-	io.FontDefault = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Regular.ttf", 16.0f);
-
-	ImGui::StyleColorsDark();
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 5));
-	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
+	ui.initStyle();
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplGLUT_Init();

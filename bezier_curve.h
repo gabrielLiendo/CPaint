@@ -6,7 +6,7 @@
 class CBezier : public CShape
 {
 private:
-	std::vector<CtrlPoint> points;
+	std::vector<Point> points;
 
 public:
 	CBezier(int x0, int y0, float r1, float g1, float b1, float r2, float g2, float b2)
@@ -22,7 +22,7 @@ public:
 	// Add new point to bezier curve
 	void newPoint(int x, int y) override
 	{
-		points.push_back(CtrlPoint(x, y));
+		points.push_back(Point(x, y));
 	}
 
 	// Update last point value

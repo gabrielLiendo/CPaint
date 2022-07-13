@@ -6,7 +6,7 @@
 class CTriangle : public CShape
 {
 private:	
-	CtrlPoint points[4];
+	Point points[4];
 	int currentIndex = 1;
 	double leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0;
 	bool closed = false;
@@ -15,16 +15,16 @@ public:
 	CTriangle(int x, int y, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
 		: CShape(x, y, r1, g1, b1, r2, g2, b2, filled)
 	{
-		points[0] = CtrlPoint(x, y);
-		points[1] = CtrlPoint(x, y);
+		points[0] = Point(x, y);
+		points[1] = Point(x, y);
 	}
 
 	CTriangle(int x0, int y0, int x1, int y1, int x2, int y2, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
 		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled)
 	{
-		points[0] = CtrlPoint(x0, y0);
-		points[1] = CtrlPoint(x1, y1);
-		points[2] = CtrlPoint(x2, y2);
+		points[0] = Point(x0, y0);
+		points[1] = Point(x1, y1);
+		points[2] = Point(x2, y2);
 
 		currentIndex = 3;
 		setRenderValues();

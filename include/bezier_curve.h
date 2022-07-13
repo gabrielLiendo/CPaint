@@ -1,12 +1,12 @@
 #pragma once
 #include <vector>
-#include "line.h"
+#include "shape.h"
 
 
 class CBezier : public CShape
 {
 private:
-	vector<CtrlPoint> points;
+	vector<Point> points;
 	bool addPoint = false;
 	bool closed = false;
 

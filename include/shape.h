@@ -10,13 +10,13 @@ struct Color
 	float r, g, b;
 };
 
-struct CtrlPoint
+struct Point
 {
 	int x, y;
 
-	CtrlPoint() {}
+	Point() {}
 
-	CtrlPoint(int x, int y)
+	Point(int x, int y)
 	{
 		this->x = x;
 		this->y = y;
@@ -31,22 +31,17 @@ struct CtrlPoint
 		glEnd();
 		glPointSize(1.0f);
 	}
-
-	bool operator<(CtrlPoint const& point) {
-		return y < point.y;
-	}
 };
 
 class CShape
 {
 protected:
 	Color fillColor, borderColor;
-	CtrlPoint anchorPoint;
-	CtrlPoint *pointSelected = nullptr;
+	Point anchorPoint;
+	Point *pointSelected = nullptr;
 	string info;
 	int level = 0;
 	bool filled = true;
-
 
 public:
 
