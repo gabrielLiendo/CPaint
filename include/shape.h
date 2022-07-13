@@ -194,8 +194,12 @@ public:
 
 	virtual std::string getInfo() = 0;
 
-	virtual bool finished()
-	{
-		return true;
-	}
+	// Overridden by Triangle and Bezier Curve methods
+	virtual void newPoint(int x, int y){ return; }
+
+	// Overridden by Triangle and Bezier Curve methods
+	virtual bool finished(){ return true; }
+
+	// Overridden by Bezier Curve's method
+	virtual void forceFinish(int x, int y) { return; }
 };

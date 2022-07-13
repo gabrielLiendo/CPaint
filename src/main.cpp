@@ -12,6 +12,7 @@
 #include "ellipse.h"
 #include "rectangle.h"
 #include "triangle.h"
+#include "bezier_curve.h"
 #include "paintUI.h"
 
 PaintUI ui;
@@ -64,13 +65,19 @@ void createShape(int x1, int y1)
 	}
 	else if (shapeSelected == 4)
 	{
-		shared_ptr<CTriangle> s = make_shared<CTriangle>(x0, y0, x1, y1,
+		shared_ptr<CTriangle> s = make_shared<CTriangle>(x1, y1,
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
 		drawingShape = s;
 	}
+	else if (shapeSelected == 5)
+	{
+		cout << "crear" << endl;
+		shared_ptr<CBezier> b = make_shared<CBezier>(x1, y1,
+			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
+		drawingShape = b;
+	}
 }
 
-//Al pasar el mouse encima de una figura 
 void renderScene(void) 
 {	
 	float *bgColor = ui.bgColor;
@@ -79,7 +86,6 @@ void renderScene(void)
 	//Clear Frame
 	glClearColor(bgColor[0], bgColor[1], bgColor[2], 1);
 	glClear(GL_COLOR_BUFFER_BIT);
-
 
 	// Render every shape already in canvas
 	if (drawingShape)
@@ -116,14 +122,20 @@ void unselectFigure()
 
 void onResize(int w, int h)
 {	
+	ImGuiIO& io = ImGui::GetIO();
+	io.DisplaySize = ImVec2((float)w, (float)h);
+
 	width = w;
 	height = h;
+
+	if (h == 0)
+		h = 1;
 
 	// Set the viewport to be the entire new window
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-0.5, width - 0.5, height - 0.5, -0.5, -1, 1);
 	glViewport(0, 0, width, height);
+	glOrtho(-0.5, width - 0.5, height - 0.5, -0.5, -1, 1);
 }
 
 void onClickShape(int x, int y)
@@ -141,6 +153,19 @@ void onClickShape(int x, int y)
 	selectedShape = nullptr;
 }
 
+void saveShape()
+{
+	// We finisish the figure, and it's marked as 'selected'
+	selectedShape = drawingShape;
+
+	shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),
+		drawingShape, isHigherLevel), drawingShape);
+
+	drawingShape = nullptr;
+	drawing = false;
+}
+
+
 void onClickCanvas(int button, int state, int x, int y)
 {	
 	// Manage clicked button (left, rigth, middle)
@@ -150,41 +175,52 @@ void onClickCanvas(int button, int state, int x, int y)
 		if(state== GLUT_DOWN)
 		// Left-click was pressed
 		{	
+			// Check if click fell on figure
 			unselectFigure();
 			onClickShape(x, y);
 			
 			// A shape was selected
-			if (selectedShape) {
-				cout << "FIGURA SELECCIONADA" << endl;
+			if (selectedShape) 
+			{
 				selectedShape->setAnchorPoint(x, y);
 				drawing = false;
 			}
+			else if (ui.shapeSelected > 3)
+			{
+				if (!drawingShape)
+					createShape(x, y);
+				else 
+					drawingShape->newPoint(x, y);
+			}
 			else // We can draw
 			{	
-				cout << "ESPACIO EN BLANCO " << x << " " << y << endl;
 				drawing = true;
 				firstX0 = x; firstY0 = y;
 			}
 		}
 		else // GLUT_UP
 		{
-			if (drawing && drawingShape && drawingShape->finished())
-			{
-				// We finisish the figure, and it's marked as 'selected'
-				selectedShape = drawingShape;
-
-				shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),
-					drawingShape, isHigherLevel), drawingShape);
-
-				drawingShape = nullptr;
-				drawing = false;
-				cout << "FIGURA DIBUJADA" << endl;
-			}
+			if (drawingShape && drawingShape->finished())
+				saveShape();
 			glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
+		}
+		break;
+	case GLUT_RIGHT_BUTTON:
+		if (state == GLUT_DOWN && drawingShape && ui.shapeSelected == 5)
+		{
+			drawingShape->forceFinish(x, y);
+			saveShape();
+		}
+		else if(ui.shapeSelected != 5)
+		{
+			unselectFigure();
+			drawingShape = nullptr;
+			drawing = false;
 		}
 		break;
 	default:
 		unselectFigure();
+		drawingShape = nullptr;
 		drawing = false;
 		break;
 	}
@@ -203,28 +239,36 @@ void onClick(int button, int state, int x, int y)
 	}
 }
 
-void onMotion(int x1, int y1)
+void onMotion(int x, int y)
 {	
 	ImGuiIO& io = ImGui::GetIO();
 
 	if (io.WantCaptureMouse)
-		ImGui_ImplGLUT_MotionFunc(x1, y1);
+		ImGui_ImplGLUT_MotionFunc(x, y);
 	else
 	{
 		if (drawing)
 		{
 			if (!drawingShape)
-				createShape(x1, y1);
+				createShape(x, y);
 			else
-				drawingShape->update(x1, y1);
+				drawingShape->update(x, y);
 		}
-		else if (selectedShape) {
-			// Draggin shape position
-			selectedShape->onMove(x1, y1);
+		else if (selectedShape) 
+		{	// Drag shape position
+			selectedShape->onMove(x, y);
 			glutSetCursor(GLUT_CURSOR_CYCLE);
 		}
-			
 	}
+}
+
+void onPassiveMotion(int x, int y)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	io.AddMousePosEvent((float)x, (float)y);
+
+	if(drawingShape)
+		drawingShape->update(x, y);
 }
 
 void onKeyboardEntry(unsigned char c, int x, int y)
@@ -254,18 +298,16 @@ void onKeyboardEntry(unsigned char c, int x, int y)
 
 int main(int argc, char** argv)
 {	
-	//ui = PaintUI(selectedShape);
-
 	// Initialize GLUT and create Window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(width, height);
 	glutCreateWindow("Proyecto 1 - Gabriel Carrizo");
-
-	glViewport(0, 0, width, height);	
+	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	glViewport(0, 0, width, height);
 	glOrtho(-0.5, width - 0.5, height - 0.5, -0.5, -1, 1);
 	
 	// Setup GLUT display function
@@ -296,7 +338,9 @@ int main(int argc, char** argv)
 	// NOTE: This will overwrite some of bindings set by ImGui_ImplGLUT_InstallFuncs() 
 	glutMouseFunc(onClick);
 	glutMotionFunc(onMotion);
+	glutPassiveMotionFunc(onPassiveMotion);
 	glutKeyboardFunc(onKeyboardEntry);
+	glutReshapeFunc(onResize);
 
 	glutMainLoop();
 

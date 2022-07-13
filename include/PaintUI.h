@@ -111,25 +111,61 @@ public:
 		}
 	}
 
+	void initPalette()
+	{
+		saved_palette[0] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f); 
+		saved_palette[1] = ImVec4(0.75f, 0.75f, 0.75f, 1.0f);
+		saved_palette[2] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+		saved_palette[3] = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+		saved_palette[4] = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+		saved_palette[5] = ImVec4(0.5f, 1.0f, 0.0f, 1.0f);
+		saved_palette[6] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+		saved_palette[7] = ImVec4(0.0f, 1.0f, 0.5f, 1.0f);
+		saved_palette[8] = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
+		saved_palette[9] = ImVec4(0.0f, 0.5f, 1.0f, 1.0f);
+	}
+
 	void drawPalette()
 	{
 		if (saved_palette_init)
 		{
-			saved_palette[0] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-			saved_palette[1] = ImVec4(0.75f, 0.75f, 0.75f, 0.75f);
+			
+			saved_palette[0] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+			saved_palette[1] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+			saved_palette[2] = ImVec4(0.8f, 0.0f, 0.0f, 1.0f);
+			saved_palette[3] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+			saved_palette[4] = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
 
-			for (int n = 0; n < IM_ARRAYSIZE(saved_palette); n++)
-			{
-				ImGui::ColorConvertHSVtoRGB(n / 27.0f, 0.8f, 0.8f, saved_palette[n].x, saved_palette[n].y, saved_palette[n].z);
-				saved_palette[n].w = 1.0f; 
-			}
+			saved_palette[6] = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
+
+			saved_palette[5] = ImVec4(1.0f, 0.7f, 0.4f, 1.0f);
+			saved_palette[7] = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+
+			
+			
+			saved_palette[8] = ImVec4(0.5f, 1.0f, 0.0f, 1.0f);
+			saved_palette[9] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+
+			saved_palette[10] = ImVec4(0.0f, 0.4f, 0.0f, 1.0f);
+			saved_palette[11] = ImVec4(0.0f, 1.0f, 0.5f, 1.0f);
+			
+			saved_palette[13] = ImVec4(0.5f, 1.0f, 1.0f, 1.0f);
+
+			saved_palette[12] = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
+			saved_palette[14] = ImVec4(0.0f, 0.5f, 1.0f, 1.0f);
+			saved_palette[15] = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
+			saved_palette[16] = ImVec4(0.5f, 0.0f, 1.0f, 1.0f);
+			saved_palette[17] = ImVec4(0.7f, 0.4f, 1.0f, 1.0f);
+			saved_palette[18] = ImVec4(1.0f, 0.4f, 0.7f, 1.0f);
+			saved_palette[19] = ImVec4(1.0f, 0.0f, 0.5f, 1.0f);
+			
 			saved_palette_init = false;
 		}
 
 		ImGui::BeginGroup();
 		for (int n = 0; n < IM_ARRAYSIZE(saved_palette); n++)
 		{
-			if ((n % 13) != 0)
+			if ((n % 10) != 0)
 				ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
 
 			ImGui::PushID(n);
@@ -215,6 +251,8 @@ public:
 
 	void loadScene()
 	{
+		deleteAllFigures();
+
 		// File Variables
 		char const* lTheOpenFileName;
 		char const* lFilterPatterns[2] = { "*.txt", "*.text" };

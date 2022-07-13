@@ -8,14 +8,15 @@ class CTriangle : public CShape
 private:	
 	CtrlPoint points[4];
 	int currentIndex = 1;
-	float leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0;
+	double leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0;
+	bool closed = false;
 
 public:
-	CTriangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled)
+	CTriangle(int x, int y, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
+		: CShape(x, y, r1, g1, b1, r2, g2, b2, filled)
 	{
-		points[0] = CtrlPoint(x0, y0);
-		points[1] = CtrlPoint(x1, y1);
+		points[0] = CtrlPoint(x, y);
+		points[1] = CtrlPoint(x, y);
 	}
 
 	CTriangle(int x0, int y0, int x1, int y1, int x2, int y2, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
@@ -31,9 +32,24 @@ public:
 
 	~CTriangle(){ cout << "Se destruyo un triangulo" << endl;}
 
+	void newPoint(int x, int y) override
+	{
+		currentIndex++;
+		if (currentIndex != 3)
+		{
+			points[currentIndex].x = points[currentIndex - 1].x;
+			points[currentIndex].y = points[currentIndex - 1].y;
+		}
+		else
+		{
+			closed = true;
+			setRenderValues();
+		}
+	}
+
+	// Update current vertex position
 	void update(int x1, int y1)
 	{	
-		// Update current vertex positions
 		points[currentIndex].x = x1; 
 		points[currentIndex].y = y1;
 	}
@@ -44,7 +60,6 @@ public:
 		for (int i = 0; i < 3; i++)
 			points[i].renderCtrlPoint();
 	}
-
 
 	void setRenderValues()
 	{
@@ -58,21 +73,21 @@ public:
 		int xmax = points[2].x, ymax = points[2].y;
 
 		// Set values of the point that separates one side into two lines 
-		points[3].x = (int)(((float)(xmax - xmin) / (float)(ymax - ymin) * (ymid - ymax)) + xmax);
+		points[3].x = (int)(((double)(xmax - xmin) / (double)(ymax - ymin) * (double)(ymid - ymax)) + (double)xmax);
 		points[3].y = points[1].y;
 
 		if (points[3].x > points[1].x)
 		{	// The left side of the triangle has two slopes, the right side has one
-			leftInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
-			leftInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
-			rightInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
+			leftInc1 = (double)((double)(xmid - xmin) / (double)(ymid - ymin));
+			leftInc2 = (double)((double)(xmax - xmid) / (double)(ymax - ymid));
+			rightInc1 = (double)((double)(xmax - xmin) / (double)(ymax - ymin));
 			rightInc2 = rightInc1;
 		}
 		else
 		{	// The right side of the triangle has two slopes, the left side has one
-			rightInc1 = (float)(xmid - xmin) / (float)(ymid - ymin);
-			rightInc2 = (float)(xmax - xmid) / (float)(ymax - ymid);
-			leftInc1 = (float)(xmax - xmin) / (float)(ymax - ymin);
+			rightInc1 = (double)((double)(xmid - xmin) / (double)(ymid - ymin));
+			rightInc2 = (double)((double)(xmax - xmid) / (double)(ymax - ymid));
+			leftInc1 = (double)((double)(xmax - xmin) / (double)(ymax - ymin));
 			leftInc2 = leftInc1;
 		}
 	}
@@ -106,7 +121,7 @@ public:
 			// Draw Content
 			if (currentIndex == 3 && filled)
 			{
-				float ixLeft = (float)points[0].x, ixRight = (float)points[0].x;
+				double ixLeft = (double)points[0].x, ixRight = (double)points[0].x;
 
 				// Draw lower semi-triangle filler
 				for (int y = points[0].y +1; y <= points[1].y; y++)
@@ -188,18 +203,7 @@ public:
 
 	bool finished() override
 	{
-		currentIndex ++;
-		if (currentIndex != 3)
-		{
-			points[currentIndex].x = points[currentIndex-1].x;
-			points[currentIndex].y = points[currentIndex-1].y;
-			return false;
-		}
-		else
-		{
-			setRenderValues();
-			return true;
-		}
+		return closed;
 	}
 
 	std::string getInfo()

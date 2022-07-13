@@ -168,6 +168,7 @@
     <ClCompile Include="src\tinyfiledialogs.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bezier_curve.h" />
     <ClInclude Include="include\boxableShape.h" />
     <ClInclude Include="include\circle.h" />
     <ClInclude Include="include\ellipse.h" />
