@@ -47,12 +47,41 @@ public:
 			points[i].renderCtrlPoint();
 	}
 
+	Point nextCurvePoint(vector<Point> points, float t)
+	{	
+		if (points.size() == 1)
+			return points[0];
+		else
+		{	
+			int x, y;
+			vector<Point> newPoints;
+			for (int i = 0; i < points.size() - 1; i++)
+			{
+				x = (1 - t) * points[i].x + t * points[i + 1].x;
+				y = (1 - t) * points[i].y + t * points[i + 1].y;
+				newPoints.push_back({ x, y });
+			}
+			return nextCurvePoint(newPoints, t);
+		}
+	}
+
 	void render(const bool modeHardware)
 	{
 		int n = points.size();
 		// Draw Border
 		for (int i = 1; i < n; i++)
 			drawLine(points[i - 1].x, points[i - 1].y, points[i].x, points[i].y, borderColor);
+
+		if (closed)
+		{	
+			Point oldPoint = points[0], newPoint;
+			for (float t = 0; t < 1; t += 0.01)
+			{
+				newPoint = nextCurvePoint(points, t);
+				drawLine(oldPoint.x, oldPoint.y, newPoint.x, newPoint.y, fillColor);
+				oldPoint = newPoint;
+			}
+		}
 	}
 
 	bool onClick(int x, int y)

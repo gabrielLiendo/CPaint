@@ -79,8 +79,13 @@ public:
 		}
 	}
 
-	void initStyle()
+	void init()
 	{
+		// Setup Dear ImGui context and style of window
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+
+		// Setup Style
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		//io.Fonts->AddFontFromFileTTF("misc/fonts/DroidSans.ttf", 15.5f);
@@ -95,6 +100,23 @@ public:
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
 
 		initPalette();
+
+		// Setup Platform/Renderer backends
+		ImGui_ImplGLUT_Init();
+		ImGui_ImplGLUT_InstallFuncs();
+		ImGui_ImplOpenGL2_Init();
+	}
+	void renderWindow()
+	{
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL2_NewFrame();
+		ImGui_ImplGLUT_NewFrame();
+
+		drawUI();
+
+		// Render GUI
+		ImGui::Render();
+		ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	void toggleLevel(int option)
@@ -591,6 +613,7 @@ public:
 
 			if (ImGui::TreeNodeEx("Delete", nodeFlags))
 			{
+				ImGui::TreePush();
 				if (ImGui::Button("Current Figure", ImVec2(100, 20)))
 				deleteFigure();
 				ImGui::SameLine();
@@ -600,7 +623,7 @@ public:
 					openDeleteModal = true;
 					ImGui::OpenPopup("Delete All Figures?");
 				}
-				ImGui::SameLine();
+				ImGui::TreePop();
 			}
 		}
 
@@ -692,5 +715,12 @@ public:
 		}
 		ImGui::End();
 		//ImGui::ShowDemoWindow();
+	}
+
+	void close()
+	{
+		ImGui_ImplOpenGL2_Shutdown();
+		ImGui_ImplGLUT_Shutdown();
+		ImGui::DestroyContext();
 	}
 };

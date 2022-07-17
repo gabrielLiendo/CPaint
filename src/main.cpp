@@ -24,15 +24,13 @@ bool drawing = true;
 list<shared_ptr<CShape>> shapes;
 shared_ptr<CShape> drawingShape = nullptr;
 
-
-//Click dragueas y sueltas, click dragueas y sueltas y listo
 bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure);
 
 void deleteFigure();
 
 void deleteAllFigures();
 
-void createShape(int x1, int y1)
+void createFigure(int x1, int y1)
 {
 	const int shapeSelected = ui.shapeSelected;
 	const bool filled = ui.allowFill;
@@ -71,11 +69,38 @@ void createShape(int x1, int y1)
 	}
 	else if (shapeSelected == 5)
 	{
-		cout << "crear" << endl;
 		shared_ptr<CBezier> b = make_shared<CBezier>(x1, y1,
 			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = b;
 	}
+}
+
+void unselectFigure()
+{
+	if (selectedShape)
+		selectedShape->release();
+	selectedShape = nullptr;
+}
+
+void saveFigure()
+{
+	// We finisish the figure, and it's marked as 'selected'
+	selectedShape = drawingShape;
+
+	shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),
+		drawingShape, isHigherLevel), drawingShape);
+
+	drawingShape = nullptr;
+	drawing = false;
+}
+
+void setViewport()
+{
+	// Set the viewport to be the entire new window
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glViewport(0, 0, width, height);
+	glOrtho(-0.5, width - 0.5, height - 0.5, -0.5, -1, 1);
 }
 
 void renderScene(void) 
@@ -87,7 +112,7 @@ void renderScene(void)
 	glClearColor(bgColor[0], bgColor[1], bgColor[2], 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Render every shape already in canvas
+	// Render every shape in canvas
 	if (drawingShape)
 		drawingShape->render(currentMode);
 
@@ -97,27 +122,12 @@ void renderScene(void)
 	if (selectedShape)
 		selectedShape->renderCtrlPoints();
 
-	// Start the Dear ImGui frame
-	ImGui_ImplOpenGL2_NewFrame();
-	ImGui_ImplGLUT_NewFrame();
-
-	//Draw the ImGui frame
-	ui.drawUI();
-
-	// Render GUI
-	ImGui::Render();
-	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-
+	// ImGui window rendering
+	ui.renderWindow();
+	
 	// Present frame buffer
 	glutSwapBuffers();
 	glutPostRedisplay();
-}
-
-void unselectFigure()
-{
-	if (selectedShape)
-		selectedShape->release();
-	selectedShape = nullptr;
 }
 
 void onResize(int w, int h)
@@ -125,17 +135,13 @@ void onResize(int w, int h)
 	ImGuiIO& io = ImGui::GetIO();
 	io.DisplaySize = ImVec2((float)w, (float)h);
 
+	if (h == 0)
+		return;
+
 	width = w;
 	height = h;
-
-	if (h == 0)
-		h = 1;
-
-	// Set the viewport to be the entire new window
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glViewport(0, 0, width, height);
-	glOrtho(-0.5, width - 0.5, height - 0.5, -0.5, -1, 1);
+	
+	setViewport();
 }
 
 void onClickShape(int x, int y)
@@ -153,19 +159,6 @@ void onClickShape(int x, int y)
 	selectedShape = nullptr;
 }
 
-void saveShape()
-{
-	// We finisish the figure, and it's marked as 'selected'
-	selectedShape = drawingShape;
-
-	shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),
-		drawingShape, isHigherLevel), drawingShape);
-
-	drawingShape = nullptr;
-	drawing = false;
-}
-
-
 void onClickCanvas(int button, int state, int x, int y)
 {	
 	// Manage clicked button (left, rigth, middle)
@@ -173,35 +166,34 @@ void onClickCanvas(int button, int state, int x, int y)
 	{
 	case GLUT_LEFT_BUTTON:
 		if(state== GLUT_DOWN)
-		// Left-click was pressed
-		{	
+		{	// Left-click was pressed
+
 			// Check if click fell on figure
 			unselectFigure();
 			onClickShape(x, y);
 			
-			// A shape was selected
 			if (selectedShape) 
-			{
+			{	// A shape was selected
 				selectedShape->setAnchorPoint(x, y);
 				drawing = false;
 			}
 			else if (ui.shapeSelected > 3)
 			{
 				if (!drawingShape)
-					createShape(x, y);
+					createFigure(x, y);
 				else 
 					drawingShape->newPoint(x, y);
 			}
-			else // We can draw
-			{	
+			else 
+			{	// We can draw
 				drawing = true;
 				firstX0 = x; firstY0 = y;
 			}
 		}
-		else // GLUT_UP
-		{
+		else 
+		{	// Left-click was lifted
 			if (drawingShape && drawingShape->finished())
-				saveShape();
+				saveFigure();
 			glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
 		}
 		break;
@@ -209,7 +201,7 @@ void onClickCanvas(int button, int state, int x, int y)
 		if (state == GLUT_DOWN && drawingShape && ui.shapeSelected == 5)
 		{
 			drawingShape->forceFinish(x, y);
-			saveShape();
+			saveFigure();
 		}
 		else if(ui.shapeSelected != 5)
 		{
@@ -225,7 +217,6 @@ void onClickCanvas(int button, int state, int x, int y)
 		break;
 	}
 }
-	
 
 void onClick(int button, int state, int x, int y)
 {	
@@ -250,7 +241,7 @@ void onMotion(int x, int y)
 		if (drawing)
 		{
 			if (!drawingShape)
-				createShape(x, y);
+				createFigure(x, y);
 			else
 				drawingShape->update(x, y);
 		}
@@ -304,27 +295,14 @@ int main(int argc, char** argv)
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(width, height);
 	glutCreateWindow("Proyecto 1 - Gabriel Carrizo");
+	setViewport();
 	
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glViewport(0, 0, width, height);
-	glOrtho(-0.5, width - 0.5, height - 0.5, -0.5, -1, 1);
-	
-	// Setup GLUT display function
-	glutDisplayFunc(renderScene);
-
-	// Setup Dear ImGui context and style
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ui.initStyle();
-
-	// Setup Platform/Renderer backends
-	ImGui_ImplGLUT_Init();
-	ImGui_ImplGLUT_InstallFuncs();
-	ImGui_ImplOpenGL2_Init();
+	// Initialize ImGui
+	ui.init();
 
 	// Set GLUT custom event callbacks
 	// NOTE: This will overwrite some of bindings set by ImGui_ImplGLUT_InstallFuncs() 
+	glutDisplayFunc(renderScene);
 	glutMouseFunc(onClick);
 	glutMotionFunc(onMotion);
 	glutPassiveMotionFunc(onPassiveMotion);
@@ -333,10 +311,8 @@ int main(int argc, char** argv)
 
 	glutMainLoop();
 
-	// Cleanup
-	ImGui_ImplOpenGL2_Shutdown();
-	ImGui_ImplGLUT_Shutdown();
-	ImGui::DestroyContext();
+	// Cleanup ImGui
+	ui.close();
 
 	return 0;
 }
