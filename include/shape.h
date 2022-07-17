@@ -57,6 +57,12 @@ public:
 		this->info = info;
 	}
 
+	CShape(float r, float g, float b, string info)
+	{
+		borderColor.r = r; borderColor.g = g; borderColor.b = b;
+		this->info = info;
+	}
+
 	virtual ~CShape(){ cout << "Se destruyo un shape" << endl; }
 
 	int getLayerLevel()

@@ -40,8 +40,7 @@ void createFigure(int x1, int y1)
 
 	if (shapeSelected == 0)
 	{
-		shared_ptr<CLine> l = make_shared<CLine>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
+		shared_ptr<CLine> l = make_shared<CLine>(x0, y0, x1, y1, borderColor[0], borderColor[1], borderColor[2]);
 		drawingShape = l;
 	}
 	else if (shapeSelected == 1)
@@ -153,8 +152,7 @@ void onClickShape(int x, int y)
 	{
 		if (s->onClick(x, y))
 		{
-			cout << x << " " << y << endl;
-			s->clickedCtrlPoint(x, y);
+			//cout << x << " " << y << endl;
 			selectedShape = s; 
 			return;
 		}
@@ -170,7 +168,7 @@ void onClickCanvas(int button, int state, int x, int y)
 	case GLUT_LEFT_BUTTON:
 		if(state== GLUT_DOWN)
 		{	// Left-click was pressed
-			//cout << x << " " << y << endl;
+			cout << x << " " << y << endl;
 			// Check if click fell on figure
 			unselectFigure();
 			onClickShape(x, y);

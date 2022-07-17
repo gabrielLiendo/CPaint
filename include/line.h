@@ -7,8 +7,7 @@ private:
 	Point points[2];
 	
 public:
-	CLine(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled, "LINE ")
+	CLine(int x0, int y0, int x1, int y1, float r, float g, float b): CShape(r, g, b,"LINE ")
 	{
 		points[0] = Point(x0, y0);
 		points[1] = Point(x1, y1);
@@ -16,6 +15,7 @@ public:
 
 	~CLine(){ cout << "Se destruyo una linea" << endl; }
 
+	// Update end point when drawing
 	void update(int x1, int y1)
 	{
 		points[1].x = x1; 
@@ -33,43 +33,46 @@ public:
 	{	
 		if(hardwareMode)
 		{
-			glColor3f(fillColor.r, fillColor.g, fillColor.b);
+			glColor3f(borderColor.r, borderColor.g, borderColor.b);
 			glBegin(GL_LINES);
 				glVertex2i(points[0].x, points[0].y);
 				glVertex2i(points[1].x, points[1].y);
 			glEnd();
 		}
 		else 
-			drawLine(points[0].x, points[0].y, points[1].x, points[1].y, fillColor);
+			drawLine(points[0].x, points[0].y, points[1].x, points[1].y, borderColor);
 	}
 
+	// We check if the click fell close to the line, threshold: 4 pixels
 	bool onClick(int x, int y) 
 	{
-		// We check if the click fell close to the line, threshold: 6 pixels
 		int x0 = points[0].x, y0 = points[0].y;
 		int x1 = points[1].x, y1 = points[1].y;
 
-		if ((x1 > x0 && (x > x1 || x < x0)) || (x1 <= x0 && (x > x0 || x < x1)))
+		if ((x1 > x0 && (x > x1 + 3 || x < x0 - 3)) || (x1 <= x0 && (x > x0 + 3 || x < x1 - 3)))
 			return false;
 			
-		int a = y0 - y1;
-		int b = x1 - x0;
-		int c = x0 * y1 - x1 * y0;
-		int distance = (int) abs(a * x + b * y + c) / sqrt(a * a + b * b);
+		int a = y0 - y1, b = x1 - x0,  c = x0 * y1 - x1 * y0;
+		int distance = static_cast<int>(abs(a * x + b * y + c) / sqrt(a * a + b * b));
 
-		return  distance <= 6;
+		if (distance <= 4)
+		{
+			clickedCtrlPoint(x, y);
+			return true;
+		}
+		return false;
 	}
 
+	// We check if the click fell on a vertex
 	void clickedCtrlPoint(int x, int y)
 	{
-		// We check if the click fell on a vertex
 		int dx, dy;
 		for (int i = 0; i < 2; i++)
 		{
 			dx = (x - points[i].x);
 			dy = (y - points[i].y);
 			// Check squared distance between vertex i and the click
-			if ((dx * dx + dy * dy) <= 25)
+			if ((dx * dx + dy * dy) <= 16)
 			{
 				pointSelected = &points[i];
 				return;
@@ -96,14 +99,10 @@ public:
 		}
 	}
 
+	// Form string with position and border color
 	std::string getInfo() override
 	{
-		// Add position
-		info += to_string(points[0].x) + " " + to_string(points[0].y) + " "
-			+ to_string(points[1].x) + " " + to_string(points[1].y) + " ";
-
-		info += to_string(fillColor.r) + " " + to_string(fillColor.g) + " " + to_string(fillColor.b) + "\n";
-	
-		return info;
+		return info + to_string(points[0].x) + " " + to_string(points[0].y) + " " + to_string(points[1].x) + " " + to_string(points[1].y) + " "
+			+ to_string(borderColor.r) + " " + to_string(borderColor.g) + " " + to_string(borderColor.b) + "\n";
 	}
 };

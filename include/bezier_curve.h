@@ -108,7 +108,7 @@ public:
 		int n = ctrlPoints.size();
 		// Draw Border
 		for (int i = 1; i < n; i++)
-			drawLine(ctrlPoints[i - 1].x, ctrlPoints[i - 1].y, ctrlPoints[i].x, ctrlPoints[i].y, borderColor);
+			drawLine(ctrlPoints[i - 1].x, ctrlPoints[i - 1].y, ctrlPoints[i].x, ctrlPoints[i].y, Color({ 0.0, 0.0, 0.0 }));
 	}
 
 	Point nextCurvePoint(vector<Point> points, float t)
@@ -135,7 +135,7 @@ public:
 		{	
 			int n = segmentsPoints.size();
 			for (int i = 1; i < n; i++)
-				drawLine(segmentsPoints[i-1].x, segmentsPoints[i-1].y,	segmentsPoints[i].x, segmentsPoints[i].y, fillColor);
+				drawLine(segmentsPoints[i-1].x, segmentsPoints[i-1].y,	segmentsPoints[i].x, segmentsPoints[i].y, borderColor);
 		}
 		else 
 			drawCtrlPolygon();

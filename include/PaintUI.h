@@ -310,7 +310,7 @@ public:
 				if (readFigure(&token, 4, filePValues, fileBColor, fileFColor, false))
 				{
 					shared_ptr<CLine> l = make_shared<CLine>(filePValues[0], filePValues[1], filePValues[2], filePValues[3],
-						fileBColor[0], fileBColor[1], fileBColor[2], fileBColor[0], fileBColor[1], fileBColor[2], false);
+						fileBColor[0], fileBColor[1], fileBColor[2]);
 
 					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), l, isHigherLevel), l);
 				}
