@@ -256,8 +256,6 @@ public:
 
 	void loadScene()
 	{
-		deleteAllFigures();
-
 		// File Variables
 		char const *lTheOpenFileName, *lFilterPatterns[2] = { "*.txt", "*.text" };
 		FILE* lIn;
@@ -271,6 +269,8 @@ public:
 
 		if (!lTheOpenFileName)
 			return;
+
+		deleteAllFigures();
 
 	#ifdef _WIN32
 		if (tinyfd_winUtf8)

@@ -1,8 +1,7 @@
 #pragma once
 #include "shape.h"
-#include "boxableShape.h"
 
-class CCircle : public CShape, public BoxableShape
+class CCircle : public CShape
 {
 private:
 	int r;      // Radius
@@ -10,7 +9,7 @@ private:
 
 public:
 	CCircle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled, bool fromFile)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled), BoxableShape(x0, y0, x1, y1)
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled)
 	{
 		if (!fromFile)
 		{
@@ -113,7 +112,6 @@ public:
 			if ((dx * dx + dy * dy) <= 16)
 			{
 				pointSelected = &boxPoints[i];
-				iPointSelected = i;
 				return true;
 			}
 		}

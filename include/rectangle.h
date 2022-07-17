@@ -1,12 +1,11 @@
 #pragma once
 #include "shape.h"
-#include "boxableShape.h"
 
-class CRectangle : public CShape, public BoxableShape
+class CRectangle : public CShape
 {
 public:
 	CRectangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled), BoxableShape(x0, y0, x1, y1) {}
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled){}
 
 	~CRectangle(){ cout << "Se destruyo un cuadrado" << endl;}
 
@@ -90,7 +89,6 @@ public:
 			if ((dx * dx + dy * dy) <= 25)
 			{
 				pointSelected = &boxPoints[i];
-				iPointSelected = i;
 				return;
 			}
 		}
@@ -98,18 +96,14 @@ public:
 
 	void onMove(int x1, int y1)
 	{	
-		if (pointSelected)
-			resizeBoundingBox(x1, y1);
-		else {
-			// We move the whole rectangle
-			int dx = x1 - anchorPoint.x;
-			int dy = y1 - anchorPoint.y;
+		// We move the whole rectangle
+		int dx = x1 - anchorPoint.x;
+		int dy = y1 - anchorPoint.y;
 
-			anchorPoint.x = x1;
-			anchorPoint.y = y1;
+		anchorPoint.x = x1;
+		anchorPoint.y = y1;
 
-			moveBoundingBox(dx, dy);
-		}
+		moveBoundingBox(dx, dy);
 	}
 
 	std::string getInfo()

@@ -1,7 +1,5 @@
 #pragma once
-#include "line.h"
-#include <algorithm>
-#include <math.h>
+#include "shape.h"
 
 class CTriangle : public CShape
 {

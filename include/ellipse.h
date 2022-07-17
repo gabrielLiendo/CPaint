@@ -1,8 +1,7 @@
 #pragma once
 #include "shape.h"
-#include "boxableShape.h"
 
-class CEllipse : public CShape, public BoxableShape
+class CEllipse : public CShape
 {
 private:
 	int a; // Radius in x-axis
@@ -11,7 +10,7 @@ private:
 
 public:
 	CEllipse(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled), BoxableShape(x0, y0, x1, y1) 
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled)
 	{
 		update(x1, y1);
 	}

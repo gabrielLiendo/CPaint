@@ -45,19 +45,19 @@ public:
 
 	bool onClick(int x, int y) 
 	{
-		// We check if the click fell close to the line, threshold: 4 pixels
+		// We check if the click fell close to the line, threshold: 6 pixels
 		int x0 = points[0].x, y0 = points[0].y;
 		int x1 = points[1].x, y1 = points[1].y;
 
+		if ((x1 > x0 && (x > x1 || x < x0)) || (x1 <= x0 && (x > x0 || x < x1)))
+			return false;
+			
 		int a = y0 - y1;
 		int b = x1 - x0;
 		int c = x0 * y1 - x1 * y0;
 		int distance = (int) abs(a * x + b * y + c) / sqrt(a * a + b * b);
 
-		if (points[0].x > points[1].x)
-			return  distance <= 4 && x <= points[0].x && x >= points[1].x;
-		else
-			return  distance <= 4 && x >= points[0].x && x <= points[1].x;
+		return  distance <= 6;
 	}
 
 	void clickedCtrlPoint(int x, int y)

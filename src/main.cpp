@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <list>
+#include <algorithm>
 
 #include "line.h"
 #include "circle.h"
@@ -167,7 +168,7 @@ void onClickCanvas(int button, int state, int x, int y)
 	case GLUT_LEFT_BUTTON:
 		if(state== GLUT_DOWN)
 		{	// Left-click was pressed
-
+			//cout << x << " " << y << endl;
 			// Check if click fell on figure
 			unselectFigure();
 			onClickShape(x, y);
