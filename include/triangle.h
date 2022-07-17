@@ -11,14 +11,14 @@ private:
 
 public:
 	CTriangle(int x, int y, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x, y, r1, g1, b1, r2, g2, b2, filled)
+		: CShape(x, y, r1, g1, b1, r2, g2, b2, filled, "TRIANGLE ")
 	{
 		points[0] = Point(x, y);
 		points[1] = Point(x, y);
 	}
 
 	CTriangle(int x0, int y0, int x1, int y1, int x2, int y2, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled)
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled, "TRIANGLE ")
 	{
 		points[0] = Point(x0, y0);
 		points[1] = Point(x1, y1);
@@ -204,10 +204,8 @@ public:
 		return closed;
 	}
 
-	std::string getInfo()
+	std::string getInfo() override
 	{
-		string info = "TRIANGLE ";
-
 		// Add position
 		info += to_string(points[0].x) + " " + to_string(points[0].y) + " "
 			 + to_string(points[1].x) + " " + to_string(points[1].y) + " "

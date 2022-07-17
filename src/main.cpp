@@ -145,6 +145,8 @@ void onResize(int w, int h)
 	setViewport();
 }
 
+// Deberiamos revisar esto al revez, para revisar primero la lista que esta en el nivel 
+// superior
 void onClickShape(int x, int y)
 {
 	for (auto const& s : shapes)

@@ -8,7 +8,7 @@ private:
 	
 public:
 	CLine(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled)
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled, "LINE ")
 	{
 		points[0] = Point(x0, y0);
 		points[1] = Point(x1, y1);
@@ -96,17 +96,13 @@ public:
 		}
 	}
 
-	std::string getInfo()
+	std::string getInfo() override
 	{
-		string info = "LINE ";
-
 		// Add position
 		info += to_string(points[0].x) + " " + to_string(points[0].y) + " "
 			+ to_string(points[1].x) + " " + to_string(points[1].y) + " ";
 
-		info += to_string(fillColor.r) + " " + to_string(fillColor.g) + " " + to_string(fillColor.b);
-
-		info += "\n";
+		info += to_string(fillColor.r) + " " + to_string(fillColor.g) + " " + to_string(fillColor.b) + "\n";
 	
 		return info;
 	}

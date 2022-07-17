@@ -48,12 +48,13 @@ protected:
 
 public:
 
-	CShape(int x0, int y0, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
+	CShape(int x0, int y0, float r1, float g1, float b1, float r2, float g2, float b2, bool filled, string info)
 	{	
 		anchorPoint.x = x0; anchorPoint.y = y0;
 		fillColor.r = r1; fillColor.g = g1; fillColor.b = b1;
 		borderColor.r = r2; borderColor.g = g2; borderColor.b = b2;
 		this->filled = filled;
+		this->info = info;
 	}
 
 	virtual ~CShape(){ cout << "Se destruyo un shape" << endl; }
@@ -247,7 +248,24 @@ public:
 	
 	virtual void onMove(int x1, int y1) = 0;
 
-	virtual std::string getInfo() = 0;
+	virtual std::string getInfo()
+	{
+		// Add position info
+		info += to_string(boxPoints[0].x) + " " + to_string(boxPoints[0].y) + " "
+			+ to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y) + " ";
+
+		// Add border info
+		info += to_string(borderColor.r) + " " + to_string(borderColor.g) + " "
+			+ to_string(borderColor.b);
+
+		// Add filler info
+		if (filled)
+			info = "FILLED_" + info + " " + to_string(fillColor.r) + " " + to_string(fillColor.g) + " " + to_string(fillColor.b);
+
+		info += "\n";
+
+		return info;
+	};
 
 	// Overridden by Triangle and Bezier Curve methods
 	virtual void newPoint(int x, int y){ return; }

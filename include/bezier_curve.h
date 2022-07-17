@@ -11,10 +11,20 @@ private:
 
 public:
 	CBezier(int x, int y, float r1, float g1, float b1, float r2, float g2, float b2)
-		: CShape(x, y, r1, g1, b1, r2, g2, b2, true)
+		: CShape(x, y, r1, g1, b1, r2, g2, b2, true, "BEZIER")
 	{
 		ctrlPoints.push_back({ x, y });
 		ctrlPoints.push_back({ x, y });
+	}
+
+	CBezier(int *points, int n, float r, float g, float b)
+		: CShape(points[0], points[1], r, g, b, r, g, b, true, "BEZIER")
+	{
+		for (int i=0; i < n; i++)
+			ctrlPoints.push_back({ points[i*2], points[(i*2)+1]});
+
+		closed = true;
+		setRenderValues();
 	}
 
 	~CBezier() { cout << "Se destruyo una curva de bezier" << endl; }
@@ -214,8 +224,22 @@ public:
 		return closed;
 	}
 
-	std::string getInfo()
+	std::string getInfo() override
 	{
-		return "BEZIER";
+		int n = ctrlPoints.size();
+
+		// Add number of ctrl points
+		info += to_string(n) + " ";
+
+		for (int i = 0; i < n; i++)
+			info += to_string(ctrlPoints[i].x) + " " + to_string(ctrlPoints[i].y) + " ";
+
+		// Add border info
+		info += to_string(borderColor.r) + " " + to_string(borderColor.g) + " "
+			+ to_string(borderColor.b);
+
+		info += "\n";
+
+		return info;
 	}
 };

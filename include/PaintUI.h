@@ -262,7 +262,7 @@ public:
 		char lBuffer[1024];
 		// Read Figures Variables 
 		char* token;
-		int  filePValues[6];
+		int  filePValues[60];
 		float color, fileBGColor[3], fileBColor[3], fileFColor[3];
 
 		lTheOpenFileName = tinyfd_openFileDialog("Open", "", 2, lFilterPatterns, NULL, 0);
@@ -414,6 +414,18 @@ public:
 				}
 				else
 					cout << "Invalid Filled Circle" << endl;
+			}
+			else if (strncmp(token, "BEZIER", 5) == 0)
+			{	
+				int n = atoi(token + 6);
+				if (readFigure(&token, n*2, filePValues, fileBColor, fileFColor, false))
+				{
+					shared_ptr<CBezier> b = make_shared<CBezier>(filePValues, n, fileBColor[0], fileBColor[1], fileBColor[2]);
+
+					shapes.insert(std::upper_bound(shapes.begin(), shapes.end(), b, isHigherLevel), b);
+				}
+				else
+					cout << "Invalid Bezier Curve" << endl;
 			}
 			else 
 				cout << "Non existing Figure" << endl;

@@ -5,7 +5,7 @@ class CRectangle : public CShape
 {
 public:
 	CRectangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled){}
+		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled, "RECTANGLE ") {}
 
 	~CRectangle(){ cout << "Se destruyo un cuadrado" << endl;}
 
@@ -104,29 +104,5 @@ public:
 		anchorPoint.y = y1;
 
 		moveBoundingBox(dx, dy);
-	}
-
-	std::string getInfo()
-	{
-		string info = "RECTANGLE ";
-
-		// Add position info
-		info += to_string(boxPoints[0].x) + " " + to_string(boxPoints[0].y) + " "
-			 + to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y) + " ";
-		
-		// Add border info
-		info += to_string(borderColor.r) + " " + to_string(borderColor.g) + " "
-			+ to_string(borderColor.b);
-
-		// Add filler info
-		if (filled)
-		{
-			info = "FILLED_" + info + " " + to_string(fillColor.r) + " "
-				+ to_string(fillColor.g) + " " + to_string(fillColor.b);
-		}
-
-		info += "\n";
-
-		return info;
 	}
 };
