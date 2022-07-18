@@ -71,7 +71,7 @@ public:
 		{
 			dx = (x - points[i].x);
 			dy = (y - points[i].y);
-			// Check squared distance between vertex i and the click
+			// Check squared distance between vertex i and the click, threshold: 4 pixels
 			if ((dx * dx + dy * dy) <= 16)
 			{
 				pointSelected = &points[i];

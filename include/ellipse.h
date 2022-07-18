@@ -10,31 +10,32 @@ private:
 
 public:
 	CEllipse(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled, "ELLIPSE ")
+		: CShape(r1, g1, b1, r2, g2, b2, filled, "ELLIPSE ")
 	{
+		anchorPoint.x = x0; anchorPoint.y = y0;
 		update(x1, y1);
 	}
 
 	~CEllipse(){ cout << "Se destruyo un elipse" << endl; }
 
-	void update(int x1, int y1)
+	void update(int x, int y)
 	{
 		int x0 = anchorPoint.x;
 		int y0 = anchorPoint.y;
 
-		if (y1 >= y0)
-			swap(y0, y1);
+		if (y >= y0)
+			swap(y0, y);
 
 		// Update radii values
-		a = ((x1 - x0) >> 1);
-		b = ((y0 - y1) >> 1);
+		a = ((x - x0) >> 1);
+		b = ((y0 - y) >> 1);
 
 		// Update the center of the ellipse
-		cy = y1 + b;
+		cy = y + b;
 		cx = x0 + a;
 
 		// Update position of the bounding box
-		setBoundingBox(cx + a, cy - b, cx - a, cy + b);
+		setBoundingBox(cx - a, cy - b, cx + a, cy + b);
 	}
 
 	// Render the bounding box
@@ -42,7 +43,6 @@ public:
 	{
 		renderBox();
 	}
-
 
 	// Draw the 4 symmetrical points of the point (x,y)
 	void ellipsePoints(int x, int y)
@@ -180,34 +180,56 @@ public:
 
 	bool onClick(int x, int y)
 	{
-		int dx = x - cx;
-		int dy = y - cy;
+		if (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[0].y - 3 && y < boxPoints[2].y + 3)
+		{
+			int dx, dy;
+			for (int i = 0; i < 4; i++)
+			{
+				dx = (x - boxPoints[i].x);
+				dy = (y - boxPoints[i].y);
+				// Check squared distance between vertex i and the click, threshold: 4 pixels
+				if ((dx * dx + dy * dy) <= 16)
+				{
+					pointSelected = &boxPoints[i];
+					indexSelected = i;
+					return true;
+				}
+			}
+			dx = x - cx;
+			dy = y - cy;
 
-		return (((float)(dx * dx)/(a * a)) + ((float)(dy * dy) / (b * b))) <= 1.2;
+			return (((float)(dx * dx) / (a * a)) + ((float)(dy * dy) / (b * b))) <= 1.2;
+		}
+		return false;
 	}
 
-	void clickedCtrlPoint(int x, int y)
-	{
-	}
 
-	void onMove(int x1, int y1)
+	void onMove(int x, int y)
 	{
 		if (pointSelected)
 		{
-			//int dx = x1 - anchorPoint.x;
-			//anchorPoint.x = x1;
-			//anchorPoint.y = y1;
-			//r = r + dx;
+			int x0 = boxPoints[0].x, y0 = boxPoints[0].y;
+			int i = indexSelected;
+			int op = (i + 2) % 4;
 
-			//setBoundingBox(boxPoints[0].x - r, boxPoints[0].y + r, boxPoints[2].y + r, boxPoints[2].y - r);
+			resizeBoxX(i, op, x);
+			resizeBoxY(i, op, y);
+
+			// Update radii values
+			a = ((x - x0) >> 1);
+			b = ((y0 - y) >> 1);
+
+			// Update the center of the ellipse
+			cy = y + b;
+			cx = x0 + a;
 		}
 		else
 		{	// Move the whole ellipse
-			int dx = x1 - anchorPoint.x;
-			int dy = y1 - anchorPoint.y;
+			int dx = x - anchorPoint.x;
+			int dy = y - anchorPoint.y;
 
-			anchorPoint.x = x1;
-			anchorPoint.y = y1;
+			anchorPoint.x = x;
+			anchorPoint.y = y;
 
 			cx += dx; cy += dy;
 			moveBoundingBox(dx, dy);

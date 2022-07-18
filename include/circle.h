@@ -4,39 +4,46 @@
 class CCircle : public CShape
 {
 private:
-	int r;      // Radius
-	int cx, cy; // Center;
+	int r;				// Radius
+	int cx, cy;			// Center
+	Point ctrlRadius;
 
 public:
 	CCircle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled, bool fromFile)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled, "CIRCLE ")
+		: CShape(r1, g1, b1, r2, g2, b2, filled, "CIRCLE ")
 	{
 		if (!fromFile)
 		{
 			cx = x0; cy = y0;
-			r = (int)sqrt(pow(x1 - anchorPoint.x, 2) + pow(y1 - anchorPoint.y, 2) * 1.0);
+			r = (int)sqrt(pow(x1 - cx, 2) + pow(y1 - cy, 2));
 		}
 		else
 		{
-			setBoundingBox(x0, y0, x1, y1);
-			r = (boxPoints[0].y - boxPoints[1].y) >> 1;
-			cx = boxPoints[0].x + r;
-			cy = boxPoints[0].y - r;
+			r = (boxPoints[2].x - boxPoints[0].x) >> 1;
+			cx = boxPoints[0].x + r; cy = boxPoints[0].y + r;
 		}
+		ctrlRadius = Point(cx + r, cy - r);
 	}
 		
 	~CCircle(){ cout << "Se destruyo un circulo" << endl; }
 
 	void update(int x1, int y1)
 	{
-		r = (int)sqrt(pow(x1 - anchorPoint.x, 2) + pow(y1 - anchorPoint.y, 2) * 1.0);
-		setBoundingBox(anchorPoint.x-r, anchorPoint.y+r, anchorPoint.x+r , anchorPoint.y-r);
+		r = (int)sqrt(pow(x1 - cx, 2) + pow(y1 - cy, 2));
+		ctrlRadius = { cx + r, cy - r };
 	}
 
 	// Render the bounding box
 	void renderCtrlPoints()
 	{
-		renderBox();
+		drawLine(cx, cy, ctrlRadius.x, ctrlRadius.y, borderColor);
+
+		glColor3f(borderColor.r, borderColor.g, borderColor.b);
+		glPointSize(5.0f);
+		glBegin(GL_POINTS);
+			glVertex2i(ctrlRadius.x, ctrlRadius.y);
+		glEnd();
+		glPointSize(1.0f);
 	}
 
 	void circlePoints(int x, int y)
@@ -102,48 +109,35 @@ public:
 
 	bool onClick(int x, int y)
 	{
-		// We check if the click fell on a vertex
-		int dx, dy;
-		for (int i = 0; i < 4; i++)
+		int dx = (x - ctrlRadius.x);
+		int dy = (y - ctrlRadius.y);
+		// Check squared distance between vertex i and the click, threshold: 4 pixels
+		if ((dx * dx + dy * dy) <= 16)
 		{
-			dx = (x - boxPoints[i].x);
-			dy = (y - boxPoints[i].y);
-			// Check squared distance between vertex i and the click, threshold: 4 pixels
-			if ((dx * dx + dy * dy) <= 16)
-			{
-				pointSelected = &boxPoints[i];
-				return true;
-			}
+			pointSelected = &ctrlRadius;
+			return true;
 		}
 
-		return (int)sqrt(pow(x - cx, 2) + pow(y - cy, 2) * 1.0) <= r + 3;
+		return ((int)sqrt(pow(x - cx, 2) + pow(y - cy, 2)) <= r + 3);
 	}
 
-	void clickedCtrlPoint(int x, int y)
-	{
-	}
-
-	void onMove(int x1, int y1)
+	void onMove(int x, int y)
 	{
 		if (pointSelected)
 		{
-			//int dx = x1 - anchorPoint.x;
-			//anchorPoint.x = x1;
-			//anchorPoint.y = y1;
-			//r = r + dx;
+			pointSelected->x = x;
+			pointSelected->y = y;
 
-			//setBoundingBox(boxPoints[0].x - r, boxPoints[0].y + r, boxPoints[2].y + r, boxPoints[2].y - r);
+			r = ((int)sqrt(pow(x - cx, 2) + pow(y - cy, 2))) * 0.75;
 		}
 		else
 		{	// Move the whole circle
-			int dx = x1 - anchorPoint.x;
-			int dy = y1 - anchorPoint.y;
-
-			anchorPoint.x = x1; 
-			anchorPoint.y = y1;
+			int dx = x - anchorPoint.x;
+			int dy = y - anchorPoint.y;
 
 			cx += dx; cy += dy;
-			moveBoundingBox(dx, dy);
+			ctrlRadius.x += dx; ctrlRadius.y += dy;
+			anchorPoint.x = x; anchorPoint.y = y;
 		}
 	}
 };

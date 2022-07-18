@@ -43,23 +43,23 @@ protected:
 	Point *pointSelected = nullptr;
 	string info;
 
-	int level = 0;
+	int level = 0, indexSelected;
 	bool filled = true;
 
 public:
-
-	CShape(int x0, int y0, float r1, float g1, float b1, float r2, float g2, float b2, bool filled, string info)
-	{	
-		anchorPoint.x = x0; anchorPoint.y = y0;
-		fillColor.r = r1; fillColor.g = g1; fillColor.b = b1;
-		borderColor.r = r2; borderColor.g = g2; borderColor.b = b2;
-		this->filled = filled;
-		this->info = info;
-	}
-
+	// Contructor for figures without a filler (ex. line and bezier curves)
 	CShape(float r, float g, float b, string info)
 	{
 		borderColor.r = r; borderColor.g = g; borderColor.b = b;
+		this->info = info;
+	}
+
+	// Contructor for figures with filler
+	CShape(float r1, float g1, float b1, float r2, float g2, float b2, bool filled, string info)
+	{	
+		fillColor.r = r1; fillColor.g = g1; fillColor.b = b1;
+		borderColor.r = r2; borderColor.g = g2; borderColor.b = b2;
+		this->filled = filled;
 		this->info = info;
 	}
 
@@ -191,10 +191,10 @@ public:
 		if (y1 < y0)
 			swap(y1, y0);
 
-		boxPoints[0].x = x0; boxPoints[0].y = y1;
-		boxPoints[1].x = x0; boxPoints[1].y = y0;
-		boxPoints[2].x = x1; boxPoints[2].y = y0;
-		boxPoints[3].x = x1; boxPoints[3].y = y1;
+		boxPoints[0].x = x0; boxPoints[0].y = y0;
+		boxPoints[1].x = x0; boxPoints[1].y = y1;
+		boxPoints[2].x = x1; boxPoints[2].y = y1;
+		boxPoints[3].x = x1; boxPoints[3].y = y0;
 	}
 
 	// Move the 4 points of the box by 'dx' and 'dy' respectably
@@ -207,23 +207,26 @@ public:
 		}
 	}
 
-	/*void resizeBoundingBox(int x, int y)
+	void resizeBoxX(int i, int op, int x)
 	{
-		int i = iPointSelected;
-		int op = (i + 2) % 4;
+		int dx = x - boxPoints[op].x;
 
-		int dx = boxPoints[i].x - boxPoints[op].x;
-		int dy = boxPoints[i].y - boxPoints[op].y;
-
-		if (dx * dx + dy * dy <= 4)
+		if ((i > 1 && dx < 2) || (i < 2 && dx > -2))
 			return;
 
 		boxPoints[i].x = x;
-		boxPoints[i].y = y;
-
 		boxPoints[i - ((i & 1) << 1) + 1].x = x;
+	}
+
+	void resizeBoxY(int i, int op, int y)
+	{
+		int dy = boxPoints[op].y - y;
+		if ((i % 3 == 0 && dy < 2) || (i % 3 != 0 && dy > -2))
+			return;
+
+		boxPoints[i].y = y;
 		boxPoints[-(i - 3) % 4].y = y;
-	}*/
+	}
 
 	void renderBox()
 	{
@@ -242,6 +245,25 @@ public:
 			boxPoints[i].renderCtrlPoint();
 	}
 
+	// We check if the click fell on a vertex of the bounding box
+	bool clickedBoxPoint(int x, int y)
+	{
+		int dx, dy;
+		for (int i = 0; i < 4; i++)
+		{
+			dx = (x - boxPoints[i].x);
+			dy = (y - boxPoints[i].y);
+			// Check squared distance between vertex i and the click, threshold: 4 pixels
+			if ((dx * dx + dy * dy) <= 16)
+			{
+				pointSelected = &boxPoints[i];
+				indexSelected = i;
+				return true;
+			}
+		}
+		return false;
+	}
+
 	virtual void update(int x, int y) = 0;
 
 	virtual void renderCtrlPoints() = 0;
@@ -249,8 +271,6 @@ public:
 	virtual void render(const bool modeHardware) = 0;
 
 	virtual bool onClick(int x, int y) = 0;
-
-	virtual void clickedCtrlPoint(int x, int y) = 0;
 	
 	virtual void onMove(int x1, int y1) = 0;
 

@@ -5,13 +5,17 @@ class CRectangle : public CShape
 {
 public:
 	CRectangle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
-		: CShape(x0, y0, r1, g1, b1, r2, g2, b2, filled, "RECTANGLE ") {}
+		: CShape(r1, g1, b1, r2, g2, b2, filled, "RECTANGLE ") 
+	{
+		anchorPoint.x = x0; anchorPoint.y = y0;
+		setBoundingBox(x0, y0, x1, y1);
+	}
 
 	~CRectangle(){ cout << "Se destruyo un cuadrado" << endl;}
 
-	void update(int x1, int y1)
+	void update(int x, int y)
 	{
-		setBoundingBox(anchorPoint.x, anchorPoint.y, x1, y1);
+		setBoundingBox(anchorPoint.x, anchorPoint.y, x, y);
 	}
 	
 	// Render the bounding box
@@ -42,8 +46,8 @@ public:
 		}
 		else // Software
 		{
-			int xmin = boxPoints[1].x, ymin = boxPoints[1].y;
-            int xmax = boxPoints[3].x, ymax = boxPoints[3].y;
+			int xmin = boxPoints[0].x, ymin = boxPoints[0].y;
+            int xmax = boxPoints[2].x, ymax = boxPoints[2].y;
 			
 			// Draw top and bottom borders
 			horizontalLine(xmin, xmax, ymin, borderColor);
@@ -51,8 +55,7 @@ public:
 
 			// Draw middle lines, filled or empty
 			if (filled)
-			{
-				// Draw border and filler in the same iteration
+			{	// Draw border and filler in the same iteration
 				for (int y = ymin + 1; y < ymax; y++)
 				{
 					putPixel(xmin, y, borderColor);
@@ -61,7 +64,7 @@ public:
 				}
 			}
 			else
-			{
+			{	// Draw border rest of the border
 				for (int y = ymin + 1; y < ymax; y++)
 				{
 					putPixel(xmin, y, borderColor);
@@ -71,38 +74,35 @@ public:
 		}
 	}
 
+	// We check if the click fell inside the rectangle, threshold: 3 pixels
 	bool onClick(int x, int y)
 	{	
-		// We check if the click fell inside the rectangle, threshold: 3 pixels
-		return (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[2].y -3 && y < boxPoints[0].y + 3);
-	}
-
-	void clickedCtrlPoint(int x, int y)
-	{
-		// We check if the click fell on a vertex
-		int dx, dy;
-		for (int i = 0; i < 4; i++)
+		if (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[0].y - 3 && y < boxPoints[2].y + 3)
 		{
-			dx = (x - boxPoints[i].x);
-			dy = (y - boxPoints[i].y);
-			// Check squared distance between vertex i and the click, threshold: 5 pixels
-			if ((dx * dx + dy * dy) <= 25)
-			{
-				pointSelected = &boxPoints[i];
-				return;
-			}
+			clickedBoxPoint(x, y);
+			return true;
 		}
+		else
+			return false;
 	}
 
-	void onMove(int x1, int y1)
+	void onMove(int x, int y)
 	{	
-		// We move the whole rectangle
-		int dx = x1 - anchorPoint.x;
-		int dy = y1 - anchorPoint.y;
+		if (pointSelected)
+		{
+			int i = indexSelected;
+			int op = (i + 2) % 4;
 
-		anchorPoint.x = x1;
-		anchorPoint.y = y1;
+			resizeBoxX(i, op, x);
+			resizeBoxY(i, op, y);
+		}
+		else
+		{	// We move the whole rectangle
+			int dx = x - anchorPoint.x;
+			int dy = y - anchorPoint.y;
 
-		moveBoundingBox(dx, dy);
+			anchorPoint.x = x; anchorPoint.y = y;
+			moveBoundingBox(dx, dy);
+		}
 	}
 };

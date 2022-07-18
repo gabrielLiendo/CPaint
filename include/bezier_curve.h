@@ -11,14 +11,14 @@ private:
 
 public:
 	CBezier(int x, int y, float r1, float g1, float b1, float r2, float g2, float b2)
-		: CShape(x, y, r1, g1, b1, r2, g2, b2, true, "BEZIER")
+		: CShape(r1, g1, b1, r2, g2, b2, true, "BEZIER")
 	{
 		ctrlPoints.push_back({ x, y });
 		ctrlPoints.push_back({ x, y });
 	}
 
 	CBezier(int *points, int n, float r, float g, float b)
-		: CShape(points[0], points[1], r, g, b, r, g, b, true, "BEZIER")
+		: CShape(r, g, b, r, g, b, true, "BEZIER")
 	{
 		for (int i=0; i < n; i++)
 			ctrlPoints.push_back({ points[i*2], points[(i*2)+1]});
@@ -143,7 +143,7 @@ public:
 
 	bool onClick(int x, int y)
 	{	// We check if the click fell close to one of the segments, threshold: 6 pixels
-		int x0, y0, x1, y1, dy, dx, c, distance;
+		int x0, y0, x1, y1, dy, dx, c;
 		int n = segmentsPoints.size();
 
 		for (int i = 1; i < n; i++)
