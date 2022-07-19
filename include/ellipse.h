@@ -182,46 +182,76 @@ public:
 	{
 		if (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[0].y - 3 && y < boxPoints[2].y + 3)
 		{
-			int dx, dy;
-			for (int i = 0; i < 4; i++)
-			{
-				dx = (x - boxPoints[i].x);
-				dy = (y - boxPoints[i].y);
-				// Check squared distance between vertex i and the click, threshold: 4 pixels
-				if ((dx * dx + dy * dy) <= 16)
-				{
-					pointSelected = &boxPoints[i];
-					indexSelected = i;
-					return true;
-				}
-			}
-			dx = x - cx;
-			dy = y - cy;
+			int dx = x - cx;
+			int dy = y - cy;
 
 			return (((float)(dx * dx) / (a * a)) + ((float)(dy * dy) / (b * b))) <= 1.2;
 		}
 		return false;
 	}
 
+	// We check if the click fell on a vertex
+	bool clickedCtrlPoint(int x, int y)
+	{
+		int dx, dy;
+		for (int i = 0; i < 4; i++)
+		{
+			dx = (x - boxPoints[i].x);
+			dy = (y - boxPoints[i].y);
+			// Check squared distance between vertex i and the click, threshold: 4 pixels
+			if ((dx * dx + dy * dy) <= 16)
+			{
+				pointSelected = &boxPoints[i];
+				indexSelected = i;
+				return true ;
+			}
+		}
+		return false;
+	}
+
+	bool xResize(int i, int op, int x)
+	{
+		int dx = x - boxPoints[op].x;
+
+		if ((i > 1 && dx < 5) || (i < 2 && dx > -5))
+			return false;
+
+		boxPoints[i].x = x;
+		boxPoints[i - ((i & 1) << 1) + 1].x = x;
+
+		return true;
+	}
+
+	bool yResize(int i, int op, int y)
+	{
+		int dy = boxPoints[op].y - y;
+		if ((i % 3 == 0 && dy < 5) || (i % 3 != 0 && dy > -5))
+			return false;
+
+		boxPoints[i].y = y;
+		boxPoints[-(i - 3) % 4].y = y;
+
+		return true;
+	}
 
 	void onMove(int x, int y)
 	{
 		if (pointSelected)
 		{
-			int x0 = boxPoints[0].x, y0 = boxPoints[0].y;
 			int i = indexSelected;
 			int op = (i + 2) % 4;
 
-			resizeBoxX(i, op, x);
-			resizeBoxY(i, op, y);
+			bool resize = false;
+			resize |= xResize(i, op, x);
+			resize |= yResize(i, op, y);
 
-			// Update radii values
-			a = ((x - x0) >> 1);
-			b = ((y0 - y) >> 1);
-
-			// Update the center of the ellipse
-			cy = y + b;
-			cx = x0 + a;
+			if (resize)
+			{
+				a = (boxPoints[2].x - boxPoints[0].x) >> 1;
+				b = (boxPoints[2].y - boxPoints[0].y) >> 1;
+				cx = boxPoints[0].x + a;
+				cy = boxPoints[0].y + b;
+			}
 		}
 		else
 		{	// Move the whole ellipse

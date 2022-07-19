@@ -77,13 +77,47 @@ public:
 	// We check if the click fell inside the rectangle, threshold: 3 pixels
 	bool onClick(int x, int y)
 	{	
-		if (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[0].y - 3 && y < boxPoints[2].y + 3)
+		return  (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[0].y - 3 && y < boxPoints[2].y + 3);
+	}
+
+	// We check if the click fell on a vertex
+	bool clickedCtrlPoint(int x, int y)
+	{
+		int dx, dy;
+		for (int i = 0; i < 4; i++)
 		{
-			clickedBoxPoint(x, y);
-			return true;
+			dx = (x - boxPoints[i].x);
+			dy = (y - boxPoints[i].y);
+			// Check squared distance between vertex i and the click, threshold: 4 pixels
+			if ((dx * dx + dy * dy) <= 16)
+			{
+				pointSelected = &boxPoints[i];
+				indexSelected = i;
+				return true;
+			}
 		}
-		else
-			return false;
+		return false;
+	}
+
+	void xResize(int i, int op, int x)
+	{
+		int dx = x - boxPoints[op].x;
+
+		if ((i > 1 && dx < 2) || (i < 2 && dx > -2))
+			return;
+
+		boxPoints[i].x = x;
+		boxPoints[i - ((i & 1) << 1) + 1].x = x;
+	}
+
+	void yResize(int i, int op, int y)
+	{
+		int dy = boxPoints[op].y - y;
+		if ((i % 3 == 0 && dy < 2) || (i % 3 != 0 && dy > -2))
+			return;
+
+		boxPoints[i].y = y;
+		boxPoints[-(i - 3) % 4].y = y;
 	}
 
 	void onMove(int x, int y)
@@ -93,8 +127,8 @@ public:
 			int i = indexSelected;
 			int op = (i + 2) % 4;
 
-			resizeBoxX(i, op, x);
-			resizeBoxY(i, op, y);
+			xResize(i, op, x);
+			yResize(i, op, y);
 		}
 		else
 		{	// We move the whole rectangle

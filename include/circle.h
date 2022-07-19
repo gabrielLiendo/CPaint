@@ -19,8 +19,14 @@ public:
 		}
 		else
 		{
-			r = (boxPoints[2].x - boxPoints[0].x) >> 1;
-			cx = boxPoints[0].x + r; cy = boxPoints[0].y + r;
+			if (x0 > x1)
+			{
+				swap(x0, x1); 
+				swap(y0, y1);
+			}
+
+			r =  (x1 - x0) >> 1;
+			cx = x0 + r; cy = y0 + r;
 		}
 		ctrlRadius = Point(cx + r, cy - r);
 	}
@@ -109,16 +115,23 @@ public:
 
 	bool onClick(int x, int y)
 	{
+		return ((int)sqrt(pow(x - cx, 2) + pow(y - cy, 2)) <= r + 3);
+	}
+
+	// We check if the click fell on the control point
+	bool clickedCtrlPoint(int x, int y)
+	{
 		int dx = (x - ctrlRadius.x);
 		int dy = (y - ctrlRadius.y);
+
 		// Check squared distance between vertex i and the click, threshold: 4 pixels
 		if ((dx * dx + dy * dy) <= 16)
 		{
 			pointSelected = &ctrlRadius;
 			return true;
 		}
-
-		return ((int)sqrt(pow(x - cx, 2) + pow(y - cy, 2)) <= r + 3);
+			
+		return false;
 	}
 
 	void onMove(int x, int y)
@@ -128,7 +141,7 @@ public:
 			pointSelected->x = x;
 			pointSelected->y = y;
 
-			r = ((int)sqrt(pow(x - cx, 2) + pow(y - cy, 2))) * 0.75;
+			r = static_cast<int>(sqrt(pow(x - cx, 2) + pow(y - cy, 2)) * 0.75);
 		}
 		else
 		{	// Move the whole circle
@@ -139,5 +152,20 @@ public:
 			ctrlRadius.x += dx; ctrlRadius.y += dy;
 			anchorPoint.x = x; anchorPoint.y = y;
 		}
+	}
+
+	std::string getInfo() override
+	{
+		info += to_string(cx - r) + " " + to_string(cy - r) + " " + to_string(cx + r) + " " + to_string(cy + r) + " ";
+		
+		// Add border info
+		info += to_string(borderColor.r) + " " + to_string(borderColor.g) + " "
+			+ to_string(borderColor.b);
+
+		// Add filler info
+		if (filled)
+			info = "FILLED_" + info + " " + to_string(fillColor.r) + " " + to_string(fillColor.g) + " " + to_string(fillColor.b);
+
+		return info + "\n";
 	}
 };

@@ -55,16 +55,11 @@ public:
 		int a = y0 - y1, b = x1 - x0,  c = x0 * y1 - x1 * y0;
 		int distance = static_cast<int>(abs(a * x + b * y + c) / sqrt(a * a + b * b));
 
-		if (distance <= 4)
-		{
-			clickedCtrlPoint(x, y);
-			return true;
-		}
-		return false;
+		return distance <= 4;
 	}
 
 	// We check if the click fell on a vertex
-	void clickedCtrlPoint(int x, int y)
+	bool clickedCtrlPoint(int x, int y)
 	{
 		int dx, dy;
 		for (int i = 0; i < 2; i++)
@@ -75,9 +70,11 @@ public:
 			if ((dx * dx + dy * dy) <= 16)
 			{
 				pointSelected = &points[i];
-				return;
+				cout << "LINEA" << endl;
+				return true;
 			}
 		}
+		return false;
 	}
 
 	void onMove(int x, int y)

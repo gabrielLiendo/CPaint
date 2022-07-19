@@ -6,12 +6,13 @@
 #include <string>
 
 #ifdef _MSC_VER
-#pragma warning(disable:4996) // Silences warnings about strcpy strcat fopen
+#pragma warning(disable:4996) // Silences warnings about fopen
 #endif
 
 using namespace std;
 
 // Pointer to current selected shape on main app
+shared_ptr<CShape> hoveredShape;
 shared_ptr<CShape> selectedShape;
 extern list<shared_ptr<CShape>> shapes;
 
@@ -53,18 +54,37 @@ public:
 	float fillColor[3] = { 1.0f, 1.0f, 1.0f };
 	float borderColor[3] = { 0.0f, 0.0f, 0.0f };
 	
-	// Current State
-	int shapeSelected = -1; 
-	bool currentMode = 0; // 0->Software, 1->Hardware
-	bool allowFill = 1;
+	// Current State variables
+	int shapeSelected; 
+	bool currentMode, allowFill;
+	bool openBGPicker, openFillPicker,openBorderPicker, openHelp, openDeleteModal;
 
-	bool openBGPicker = false;
-	bool openFillPicker = false;
-	bool openBorderPicker = false;
-	bool openHelp = false;
-	bool openDeleteModal = false;
+	PaintUI() 
+	{
+		// Initialize State variables
+		currentMode = false;
+		allowFill = true;
+		openBGPicker = false;
+		openFillPicker = false;
+		openBorderPicker = false;
+		openHelp = false;
+		openDeleteModal = false;
 
-	PaintUI() { ; }
+		// Initialize Color Palette
+		saved_palette[0] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);		saved_palette[13] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		saved_palette[1] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);		saved_palette[14] = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+		saved_palette[2] = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);		saved_palette[15] = ImVec4(1.0f, 0.7f, 0.4f, 1.0f);
+		saved_palette[3] = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);		saved_palette[16] = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
+		saved_palette[4] = ImVec4(0.5f, 1.0f, 0.0f, 1.0f);		saved_palette[17] = ImVec4(0.7f, 1.0f, 0.4f, 1.0f);
+		saved_palette[5] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);		saved_palette[18] = ImVec4(0.4f, 1.0f, 0.4f, 1.0f);
+		saved_palette[6] = ImVec4(0.0f, 1.0f, 0.5f, 1.0f);		saved_palette[19] = ImVec4(0.4f, 1.0f, 0.7f, 1.0f);
+		saved_palette[7] = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);		saved_palette[20] = ImVec4(0.4f, 1.0f, 1.0f, 1.0f);
+		saved_palette[8] = ImVec4(0.0f, 0.5f, 1.0f, 1.0f);		saved_palette[21] = ImVec4(0.4f, 0.7f, 1.0f, 1.0f);
+		saved_palette[9] = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);		saved_palette[22] = ImVec4(0.4f, 0.4f, 1.0f, 1.0f);
+		saved_palette[10] = ImVec4(0.5f, 0.0f, 1.0f, 1.0f);		saved_palette[23] = ImVec4(0.7f, 0.4f, 1.0f, 1.0f);
+		saved_palette[11] = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);		saved_palette[24] = ImVec4(1.0f, 0.4f, 1.0f, 1.0f);
+		saved_palette[12] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);		saved_palette[25] = ImVec4(0.75f, 0.75f, 0.75f, 1.0f);
+	}
 
 	static void HelpMarker(const char* desc)
 	{
@@ -88,9 +108,6 @@ public:
 		// Setup Style
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-		//io.Fonts->AddFontFromFileTTF("misc/fonts/DroidSans.ttf", 15.5f);
-		//io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 15.0f);
-		//io.Fonts->AddFontFromFileTTF("misc/fonts/opensans/OpenSans-Bold.ttf", 18.0f);
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Regular.ttf", 16.0f);
 
 		ImGui::StyleColorsDark();
@@ -99,13 +116,12 @@ public:
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.5f, 0.5f));
 
-		initPalette();
-
 		// Setup Platform/Renderer backends
 		ImGui_ImplGLUT_Init();
 		ImGui_ImplGLUT_InstallFuncs();
 		ImGui_ImplOpenGL2_Init();
 	}
+
 	void renderWindow()
 	{
 		// Start the Dear ImGui frame
@@ -147,24 +163,6 @@ public:
 		}
 	}
 
-	// Initialize color palette
-	void initPalette()
-	{
-		saved_palette[0] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);		saved_palette[13] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-		saved_palette[1] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);		saved_palette[14] = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
-		saved_palette[2] = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);		saved_palette[15] = ImVec4(1.0f, 0.7f, 0.4f, 1.0f);
-		saved_palette[3] = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);		saved_palette[16] = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
-		saved_palette[4] = ImVec4(0.5f, 1.0f, 0.0f, 1.0f);		saved_palette[17] = ImVec4(0.7f, 1.0f, 0.4f, 1.0f);
-		saved_palette[5] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);		saved_palette[18] = ImVec4(0.4f, 1.0f, 0.4f, 1.0f);
-		saved_palette[6] = ImVec4(0.0f, 1.0f, 0.5f, 1.0f);		saved_palette[19] = ImVec4(0.4f, 1.0f, 0.7f, 1.0f);
-		saved_palette[7] = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);		saved_palette[20] = ImVec4(0.4f, 1.0f, 1.0f, 1.0f);
-		saved_palette[8] = ImVec4(0.0f, 0.5f, 1.0f, 1.0f);		saved_palette[21] = ImVec4(0.4f, 0.7f, 1.0f, 1.0f);
-		saved_palette[9] = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);		saved_palette[22] = ImVec4(0.4f, 0.4f, 1.0f, 1.0f);
-		saved_palette[10] = ImVec4(0.5f, 0.0f, 1.0f, 1.0f);		saved_palette[23] = ImVec4(0.7f, 0.4f, 1.0f, 1.0f);
-		saved_palette[11] = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);		saved_palette[24] = ImVec4(1.0f, 0.4f, 1.0f, 1.0f);
-		saved_palette[12] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);		saved_palette[25] = ImVec4(0.75f, 0.75f, 0.75f, 1.0f);
-	}
-
 	void drawPalette()
 	{
 		ImGui::BeginGroup();
@@ -194,17 +192,8 @@ public:
 			}
 			ImGui::PopStyleColor(3);
 			ImGui::PopID();
-
 		}
 		ImGui::EndGroup();
-	}
-
-	int readPointsValues(char **token, int n, int *pValues)
-	{
-		int count = 0, value = 0;
-
-		
-		return count;
 	}
 
 	int readColorValues(char **token, float *color)
@@ -260,10 +249,11 @@ public:
 		char const *lTheOpenFileName, *lFilterPatterns[2] = { "*.txt", "*.text" };
 		FILE* lIn;
 		char lBuffer[1024];
+
 		// Read Figures Variables 
 		char* token;
 		int  filePValues[60];
-		float color, fileBGColor[3], fileBColor[3], fileFColor[3];
+		float fileBGColor[3], fileBColor[3], fileFColor[3];
 
 		lTheOpenFileName = tinyfd_openFileDialog("Open", "", 2, lFilterPatterns, NULL, 0);
 
@@ -439,7 +429,6 @@ public:
 		char const* lTheSaveFileName;
 		char const* lFilterPatterns[2] = { "*.txt", "*.text" };
 		FILE* lIn;
-		char lBuffer[1024];
 
 	#ifdef _WIN32
 		tinyfd_winUtf8 = 1;
@@ -468,11 +457,12 @@ public:
 
 		fputs(background.c_str(), lIn);
 
-		for (auto const& s : shapes) {
+		for (auto const& s : shapes)
+		{
 			string info = s->getInfo();
 			fputs(info.c_str(), lIn);
 		}
-
+			
 		fclose(lIn);
 	}
 
@@ -572,16 +562,11 @@ public:
 					selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
 				}
 					
-				if (ImGui::ColorEdit3("Fill Color", fillColor))
-				{
-					if (selectedShape)
-						selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
-				}
-				if (ImGui::ColorEdit3("Border Color", borderColor))
-				{
-					if (selectedShape)
-						selectedShape->setBorderColor(borderColor[0], borderColor[1], borderColor[2]);
-				}
+				if (ImGui::ColorEdit3("Fill Color", fillColor) && selectedShape)
+					selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+
+				if (ImGui::ColorEdit3("Border Color", borderColor) && selectedShape)
+					selectedShape->setBorderColor(borderColor[0], borderColor[1], borderColor[2]);
 				
 				ImGui::Separator();
 				ImGui::Text("Default Palette:");
@@ -627,12 +612,11 @@ public:
 			{
 				ImGui::TreePush();
 				if (ImGui::Button("Current Figure", ImVec2(100, 20)))
-				deleteFigure();
+					deleteFigure();
 				ImGui::SameLine();
 
-				if (ImGui::Button("All Figures", ImVec2(100, 20)) || openDeleteModal)
+				if (ImGui::Button("All Figures", ImVec2(100, 20)))
 				{
-					openDeleteModal = true;
 					ImGui::OpenPopup("Delete All Figures?");
 				}
 				ImGui::TreePop();
@@ -708,7 +692,7 @@ public:
 			ImGui::End();
 		}
 
-		if (ImGui::BeginPopupModal("Delete All Figures?", &openDeleteModal, ImGuiWindowFlags_AlwaysAutoResize))
+		if (ImGui::BeginPopupModal("Delete All Figures?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			ImGui::Text("All the figures in the scene will be deleted \nThis operation cannot be undone!\n\n");
 			ImGui::Separator();
@@ -726,7 +710,7 @@ public:
 			ImGui::EndPopup();
 		}
 		ImGui::End();
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 	}
 
 	void close()

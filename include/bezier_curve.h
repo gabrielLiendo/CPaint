@@ -74,9 +74,9 @@ public:
 			else if(ctrlPoints[i].x > maxX)
 				maxX = ctrlPoints[i].x;
 
-			if (ctrlPoints[i].y > minY)
+			if (ctrlPoints[i].y < minY)
 				minY = ctrlPoints[i].y;
-			else if (ctrlPoints[i].y < maxY)
+			else if (ctrlPoints[i].y > maxY)
 				maxY = ctrlPoints[i].y;
 		}
 
@@ -90,7 +90,7 @@ public:
 		// candidatas = (float)1 / ((float) n * 5.0);
 		Point newPoint;
 		int dx = maxX - minX, dy = maxY - maxY, maxD = max(dx, dy);
-		float step = (float)1 / ((float) n * 5.0);
+		float step = (float)25 / ((float)maxD * 1.5);
 		cout << dx << " " << dy << " " <<  step << endl;
 		
 
@@ -142,30 +142,34 @@ public:
 	}
 
 	bool onClick(int x, int y)
-	{	// We check if the click fell close to one of the segments, threshold: 6 pixels
-		int x0, y0, x1, y1, dy, dx, c;
-		int n = segmentsPoints.size();
-
-		for (int i = 1; i < n; i++)
+	{	
+		// If the clicked fell inside the bounding box
+		if (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[0].y - 3 && y < boxPoints[2].y + 3)
 		{
-			x0 = segmentsPoints[i-1].x, y0 = segmentsPoints[i-1].y;
-			x1 = segmentsPoints[i].x, y1 = segmentsPoints[i].y;
+			// We check if the click fell close to one of the segments, threshold: 6 pixels
+			int x0, y0, x1, y1, dy, dx, c;
+			int n = segmentsPoints.size();
 
-			if ((x1 > x0 && (x > x1 || x < x0)) || (x1 <= x0 && (x > x0 || x < x1)))
-				continue;
+			for (int i = 1; i < n; i++)
+			{
+				x0 = segmentsPoints[i - 1].x, y0 = segmentsPoints[i - 1].y;
+				x1 = segmentsPoints[i].x, y1 = segmentsPoints[i].y;
 
-			dy = y0 - y1;
-			dx = x1 - x0;
-			c = x0 * y1 - x1 * y0;
+				if ((x1 > x0 && (x > x1 || x < x0)) || (x1 <= x0 && (x > x0 || x < x1)))
+					continue;
 
-			if ((int)abs(dy * x + dx * y + c) / sqrt(dy * dy + dx * dx) <= 6)
-				return true;
+				dy = y0 - y1;
+				dx = x1 - x0;
+				c = x0 * y1 - x1 * y0;
+
+				if ((int)abs(dy * x + dx * y + c) / sqrt(dy * dy + dx * dx) <= 6)
+					return true;
+			}
 		}
-
 		return false;
 	}
 
-	void clickedCtrlPoint(int x, int y)
+	bool clickedCtrlPoint(int x, int y)
 	{
 		// We check if the click fell on a vertex
 		int dx, dy;
@@ -178,9 +182,11 @@ public:
 			if ((dx * dx + dy * dy) <= 25)
 			{
 				pointSelected = &ctrlPoints[i];
-				return;
+				cout << "VERTEX" << endl;
+				return true;
 			}
 		}
+		return false;
 	}
 
 	void onMove(int x1, int y1)
@@ -190,6 +196,8 @@ public:
 		{	// Only move the vertex selected
 			pointSelected->x = x1;
 			pointSelected->y = y1;
+			segmentsPoints.clear();
+			setRenderValues();
 		}
 		else
 		{
@@ -238,8 +246,6 @@ public:
 		info += to_string(borderColor.r) + " " + to_string(borderColor.g) + " "
 			+ to_string(borderColor.b);
 
-		info += "\n";
-
-		return info;
+		return info + "\n";
 	}
 };

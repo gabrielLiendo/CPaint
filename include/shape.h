@@ -207,27 +207,6 @@ public:
 		}
 	}
 
-	void resizeBoxX(int i, int op, int x)
-	{
-		int dx = x - boxPoints[op].x;
-
-		if ((i > 1 && dx < 2) || (i < 2 && dx > -2))
-			return;
-
-		boxPoints[i].x = x;
-		boxPoints[i - ((i & 1) << 1) + 1].x = x;
-	}
-
-	void resizeBoxY(int i, int op, int y)
-	{
-		int dy = boxPoints[op].y - y;
-		if ((i % 3 == 0 && dy < 2) || (i % 3 != 0 && dy > -2))
-			return;
-
-		boxPoints[i].y = y;
-		boxPoints[-(i - 3) % 4].y = y;
-	}
-
 	void renderBox()
 	{
 		// Set color and style of the line
@@ -245,25 +224,6 @@ public:
 			boxPoints[i].renderCtrlPoint();
 	}
 
-	// We check if the click fell on a vertex of the bounding box
-	bool clickedBoxPoint(int x, int y)
-	{
-		int dx, dy;
-		for (int i = 0; i < 4; i++)
-		{
-			dx = (x - boxPoints[i].x);
-			dy = (y - boxPoints[i].y);
-			// Check squared distance between vertex i and the click, threshold: 4 pixels
-			if ((dx * dx + dy * dy) <= 16)
-			{
-				pointSelected = &boxPoints[i];
-				indexSelected = i;
-				return true;
-			}
-		}
-		return false;
-	}
-
 	virtual void update(int x, int y) = 0;
 
 	virtual void renderCtrlPoints() = 0;
@@ -271,6 +231,8 @@ public:
 	virtual void render(const bool modeHardware) = 0;
 
 	virtual bool onClick(int x, int y) = 0;
+
+	virtual bool clickedCtrlPoint(int x, int y) = 0;
 	
 	virtual void onMove(int x1, int y1) = 0;
 
@@ -288,9 +250,7 @@ public:
 		if (filled)
 			info = "FILLED_" + info + " " + to_string(fillColor.r) + " " + to_string(fillColor.g) + " " + to_string(fillColor.b);
 
-		info += "\n";
-
-		return info;
+		return info + "\n";
 	};
 
 	// Overridden by Triangle and Bezier Curve methods

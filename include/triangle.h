@@ -6,7 +6,7 @@ class CTriangle : public CShape
 private:	
 	Point points[4];
 	int currentIndex = 1;
-	double leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0;
+	double leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0, ixLeft2 = 0, ixRight2 = 0;
 	bool closed = false;
 
 public:
@@ -57,6 +57,8 @@ public:
 		// Render each vertex
 		for (int i = 0; i < 3; i++)
 			points[i].renderCtrlPoint();
+
+		renderBox();
 	}
 
 	void setRenderValues()
@@ -80,14 +82,39 @@ public:
 			leftInc2 = (double)((double)(xmax - xmid) / (double)(ymax - ymid));
 			rightInc1 = (double)((double)(xmax - xmin) / (double)(ymax - ymin));
 			rightInc2 = rightInc1;
+			ixLeft2 = points[1].x; ixRight2 = points[3].x;
 		}
-		else
+		else if(points[3].x < points[1].x)
 		{	// The right side of the triangle has two slopes, the left side has one
 			rightInc1 = (double)((double)(xmid - xmin) / (double)(ymid - ymin));
 			rightInc2 = (double)((double)(xmax - xmid) / (double)(ymax - ymid));
 			leftInc1 = (double)((double)(xmax - xmin) / (double)(ymax - ymin));
 			leftInc2 = leftInc1;
+			ixLeft2 = points[3].x; ixRight2 = points[1].x;
 		}
+
+		// Set bounding box values
+		int minX = points[0].x, minY = points[0].y;
+		int maxX = points[0].x, maxY = points[0].y;
+
+		for (int i = 1; i < 3; i++)
+		{
+			if (points[i].x < minX)
+				minX = points[i].x;
+			else if (points[i].x > maxX)
+				maxX = points[i].x;
+
+			if (points[i].y < minY)
+				minY = points[i].y;
+			else if (points[i].y > maxY)
+				maxY = points[i].y;
+		}
+
+		boxPoints[0].x = minX; boxPoints[0].y = minY;
+		boxPoints[1].x = minX; boxPoints[1].y = maxY;
+		boxPoints[2].x = maxX; boxPoints[2].y = maxY;
+		boxPoints[3].x = maxX; boxPoints[3].y = minY;
+
 	}
 
 	void render(const bool modeHardware)
@@ -121,7 +148,7 @@ public:
 			{
 				double ixLeft = (double)points[0].x, ixRight = (double)points[0].x;
 
-				// Draw lower semi-triangle filler
+				// Draw upper semi-triangle filler
 				for (int y = points[0].y +1; y <= points[1].y; y++)
 				{
 					ixLeft += leftInc1;
@@ -129,7 +156,8 @@ public:
 					horizontalLine(ceil(ixLeft), floor(ixRight), y, fillColor);
 				}
 
-				// Draw upper semi-triangle filler
+				ixLeft = ixLeft2; ixRight = ixRight2;
+				// Draw lower semi-triangle filler
 				for (int y = points[1].y + 1; y < points[2].y; y++)
 				{
 					ixLeft += leftInc2;
@@ -145,19 +173,25 @@ public:
 
 	bool onClick(int x, int y)
 	{
-		int y1, y2, y3;
-		int xmin = points[0].x, ymin = points[0].y;
-		int xmid = points[1].x, ymid = points[1].y;
-		int xmax = points[2].x, ymax = points[2].y;
+		if (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[0].y - 3 && y < boxPoints[2].y + 3)
+		{
+			clickedCtrlPoint(x, y);
 
-		y1 = (int)(((float)(xmid - xmin) / (float)(ymid - ymin) * (y - ymid)) + (xmid - x));
-		y2 = (int)(((float)(xmax - xmid) / (float)(ymax - ymid) * (y - ymax)) + (xmax - x));
-		y3 = (int)(((float)(xmin - xmax) / (float)(ymin - ymax) * (y - ymin)) + (xmin - x));
+			int y1, y2, y3;
+			int xmin = points[0].x, ymin = points[0].y;
+			int xmid = points[1].x, ymid = points[1].y;
+			int xmax = points[2].x, ymax = points[2].y;
 
-		return (y1 > 0 && y2 > 0 && y3 < 0) || (y1 < 0 && y2 < 0 && y3 > 0);
+			y1 = (int)(((float)(xmid - xmin) / (float)(ymid - ymin) * (y - ymid)) + (xmid - x));
+			y2 = (int)(((float)(xmax - xmid) / (float)(ymax - ymid) * (y - ymax)) + (xmax - x));
+			y3 = (int)(((float)(xmin - xmax) / (float)(ymin - ymax) * (y - ymin)) + (xmin - x));
+
+			return (y1 > 0 && y2 > 0 && y3 < 0) || (y1 < 0 && y2 < 0 && y3 > 0) || pointSelected;
+		}
+		return false;
 	}
 
-	void clickedCtrlPoint(int x, int y)
+	bool clickedCtrlPoint(int x, int y)
 	{
 		// We check if the click fell on a vertex
 		int dx, dy;
@@ -168,34 +202,38 @@ public:
 			// Check squared distance between vertex i and the click, threshold: 5 pixels
 			if ((dx * dx + dy * dy) <= 25)
 			{
+				cout << "VERTEX" << endl;
 				pointSelected = &points[i];
-				return;
+				return true;
 			}
 		}
+		return false;
 	}
 
-	void onMove(int x1, int y1)
+	void onMove(int x, int y)
 	{
-
 		if (pointSelected)
 		{	// Only move the vertex selected
-			pointSelected->x = x1;
-			pointSelected->y = y1;
+			pointSelected->x = x;
+			pointSelected->y = y;
+			setRenderValues();
 		}
 		else
 		{
 			// We move the whole triangle
-			int dx = x1 - anchorPoint.x;
-			int dy = y1 - anchorPoint.y;
+			int dx = x - anchorPoint.x;
+			int dy = y - anchorPoint.y;
 
-			anchorPoint.x = x1;
-			anchorPoint.y = y1;
+			anchorPoint.x = x; anchorPoint.y = y;
 
 			for (int i = 0; i < 4; i++)
 			{
 				points[i].x += dx;
 				points[i].y += dy;
 			}
+			ixLeft2 += dx; ixRight2 += dx;
+
+			moveBoundingBox(dx, dy);
 		}
 	}
 
@@ -222,8 +260,6 @@ public:
 				+ to_string(fillColor.g) + " " + to_string(fillColor.b);
 		}
 
-		info += "\n";
-
-		return info;
+		return info + "\n";
 	}
 };

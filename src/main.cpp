@@ -146,18 +146,17 @@ void onResize(int w, int h)
 
 // Deberiamos revisar esto al revez, para revisar primero la lista que esta en el nivel 
 // superior
-void onClickShape(int x, int y)
+void onHoverShape(int x, int y)
 {
 	for (auto const& s : shapes)
 	{
 		if (s->onClick(x, y))
 		{
-			//cout << x << " " << y << endl;
-			selectedShape = s; 
+			hoveredShape = s; 
 			return;
 		}
 	}
-	selectedShape = nullptr;
+	hoveredShape = nullptr;
 }
 
 void onClickCanvas(int button, int state, int x, int y)
@@ -169,13 +168,19 @@ void onClickCanvas(int button, int state, int x, int y)
 		if(state== GLUT_DOWN)
 		{	// Left-click was pressed
 			cout << x << " " << y << endl;
+			
+			// Check if click fell on a ctrl point of the selected figure
+			if (selectedShape && selectedShape->clickedCtrlPoint(x, y))
+				break;
+
 			// Check if click fell on figure
 			unselectFigure();
-			onClickShape(x, y);
 			
-			if (selectedShape) 
-			{	// A shape was selected
+			if (hoveredShape) 
+			{	// The click fell on top of a figure
+				selectedShape = hoveredShape;
 				selectedShape->setAnchorPoint(x, y);
+				selectedShape->clickedCtrlPoint(x, y);
 				drawing = false;
 			}
 			else if (ui.shapeSelected > 3)
@@ -195,7 +200,7 @@ void onClickCanvas(int button, int state, int x, int y)
 		{	// Left-click was lifted
 			if (drawingShape && drawingShape->finished())
 				saveFigure();
-			glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
+			
 		}
 		break;
 	case GLUT_RIGHT_BUTTON:
@@ -249,7 +254,6 @@ void onMotion(int x, int y)
 		else if (selectedShape) 
 		{	// Drag shape position
 			selectedShape->onMove(x, y);
-			glutSetCursor(GLUT_CURSOR_CYCLE);
 		}
 	}
 }
@@ -259,8 +263,18 @@ void onPassiveMotion(int x, int y)
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddMousePosEvent((float)x, (float)y);
 
-	if(drawingShape)
+	if (drawingShape)
+	{	// We are drawing a Triangle or a Bezier curve
 		drawingShape->update(x, y);
+	}
+	else
+	{	// We are freely hovering over the canvas
+		onHoverShape(x, y);
+		if (hoveredShape)
+			glutSetCursor(GLUT_CURSOR_CYCLE);
+		else
+			glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
+	}
 }
 
 void onKeyboardEntry(unsigned char c, int x, int y)
