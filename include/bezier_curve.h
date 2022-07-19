@@ -86,21 +86,19 @@ public:
 		boxPoints[3].x = maxX; boxPoints[3].y = minY;
 
 		// set segment points values
-		// candidatas = (float)25 / ((float)maxD * 1.5);
-		// candidatas = (float)1 / ((float) n * 5.0);
+		// candidatas = (double)25 / ((double)maxD * 1.5);
+		// candidatas = (double)1 / ((double) n * 5.0);
 		Point newPoint;
 		int dx = maxX - minX, dy = maxY - maxY, maxD = max(dx, dy);
-		float step = (float)25 / ((float)maxD * 1.5);
-		cout << dx << " " << dy << " " <<  step << endl;
+		double step = 0.0625;
+		//cout << dx << " " << dy << " " <<  step << endl;
 		
-
-		segmentsPoints.push_back({ ctrlPoints[0].x, ctrlPoints[0].y });
-		for (float t = 0; t <= 1; t += step)
+		for (double t = 0; t <= 1; t += step)
 		{
+			cout << t << endl;
 			newPoint = nextCurvePoint(ctrlPoints, t);
 			segmentsPoints.push_back({ newPoint.x, newPoint.y });
 		}
-		segmentsPoints.push_back({ ctrlPoints.back().x, ctrlPoints.back().y, });
 	}
 
 	void drawCtrlPolygon()
@@ -111,7 +109,7 @@ public:
 			drawLine(ctrlPoints[i - 1].x, ctrlPoints[i - 1].y, ctrlPoints[i].x, ctrlPoints[i].y, Color({ 0.0, 0.0, 0.0 }));
 	}
 
-	Point nextCurvePoint(vector<Point> points, float t)
+	Point nextCurvePoint(vector<Point> points, double t)
 	{	
 		if (points.size() == 1)
 			return points[0];
@@ -121,8 +119,8 @@ public:
 			vector<Point> newPoints;
 			for (int i = 0; i < points.size() - 1; i++)
 			{
-				x = (1 - t) * points[i].x + t * points[i + 1].x;
-				y = (1 - t) * points[i].y + t * points[i + 1].y;
+				x = round((1 - t) * points[i].x + t * points[i + 1].x);
+				y = round((1 - t) * points[i].y + t * points[i + 1].y);
 				newPoints.push_back({ x, y });
 			}
 			return nextCurvePoint(newPoints, t);
@@ -135,7 +133,14 @@ public:
 		{	
 			int n = segmentsPoints.size();
 			for (int i = 1; i < n; i++)
-				drawLine(segmentsPoints[i-1].x, segmentsPoints[i-1].y,	segmentsPoints[i].x, segmentsPoints[i].y, borderColor);
+			{
+
+				glColor3f(borderColor.r, borderColor.g, borderColor.b);
+				glBegin(GL_LINES);
+					glVertex2i(segmentsPoints[i - 1].x, segmentsPoints[i - 1].y);
+					glVertex2i(segmentsPoints[i].x, segmentsPoints[i].y);
+				glEnd();
+			}
 		}
 		else 
 			drawCtrlPolygon();
