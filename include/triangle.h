@@ -6,8 +6,8 @@ class CTriangle : public CShape
 private:	
 	Point points[4];
 	int currentIndex = 1;
-	double leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0, ixLeft2 = 0, ixRight2 = 0;
 	bool closed = false;
+	double leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0;
 
 public:
 	CTriangle(int x, int y, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
@@ -63,34 +63,78 @@ public:
 
 	void setRenderValues()
 	{
-		// Order points by y-axis, p[0] is the lowest, p[2] is the highest
-		if (points[1].y < points[0].y) { swap(points[1], points[0]); }
-		if (points[2].y < points[0].y) { swap(points[2], points[0]); }
-		if (points[2].y < points[1].y) { swap(points[2], points[1]); }
-
-		int xmin = points[0].x, ymin = points[0].y;
-		int xmid = points[1].x, ymid = points[1].y;
-		int xmax = points[2].x, ymax = points[2].y;
-
-		// Set values of the point that separates one side into two lines 
-		points[3].x = (int)(((double)(xmax - xmin) / (double)(ymax - ymin) * (double)(ymid - ymax)) + (double)xmax);
-		points[3].y = points[1].y;
-
-		if (points[3].x > points[1].x)
-		{	// The left side of the triangle has two slopes, the right side has one
-			leftInc1 = (double)((double)(xmid - xmin) / (double)(ymid - ymin));
-			leftInc2 = (double)((double)(xmax - xmid) / (double)(ymax - ymid));
-			rightInc1 = (double)((double)(xmax - xmin) / (double)(ymax - ymin));
-			rightInc2 = rightInc1;
-			ixLeft2 = points[1].x; ixRight2 = points[3].x;
+		// Order points by y-axis, p[0] is the smallest, p[2] is the biggest
+		if (points[1].y <= points[0].y) 
+		{ 
+			swap(points[1], points[0]);
+			if (pointSelected == &points[1])
+				pointSelected = &points[0];
+			else if (pointSelected == &points[0])
+				pointSelected = &points[1];
 		}
-		else if(points[3].x < points[1].x)
-		{	// The right side of the triangle has two slopes, the left side has one
-			rightInc1 = (double)((double)(xmid - xmin) / (double)(ymid - ymin));
-			rightInc2 = (double)((double)(xmax - xmid) / (double)(ymax - ymid));
-			leftInc1 = (double)((double)(xmax - xmin) / (double)(ymax - ymin));
-			leftInc2 = leftInc1;
-			ixLeft2 = points[3].x; ixRight2 = points[1].x;
+		if (points[2].y <= points[0].y) 
+		{ 
+			swap(points[2], points[0]); 
+			if (pointSelected == &points[2])
+				pointSelected = &points[0];
+			else if (pointSelected == &points[0])
+				pointSelected = &points[2];
+		}
+		if (points[2].y <= points[1].y) 
+		{
+			swap(points[2], points[1]); 
+			if (pointSelected == &points[2])
+				pointSelected = &points[1];
+			else if (pointSelected == &points[1])
+				pointSelected = &points[2];
+		}
+
+		if (points[1].y == points[2].y)
+		{	// Bottom-flat triangle
+			if (points[1].x > points[2].x)
+			{
+				rightInc1 = (double)(points[1].x - points[0].x) / (double)(points[1].y - points[0].y);
+				leftInc1 = (double)(points[2].x - points[0].x) / (double)(points[2].y - points[0].y);
+			}
+			else
+			{
+				leftInc1 = (double)(points[1].x - points[0].x) / (double)(points[1].y - points[0].y);
+				rightInc1 = (double)(points[2].x - points[0].x) / (double)(points[2].y - points[0].y);
+			}
+		}
+		else if (points[0].y == points[1].y)
+		{	// Top-flat triangle
+			if (points[0].x > points[1].x)
+			{
+				leftInc2 = (double)(points[2].x - points[1].x) / (double)(points[2].y - points[1].y);
+				rightInc2 = (double)(points[2].x - points[0].x) / (double)(points[2].y - points[0].y);
+			}
+			else
+			{
+				rightInc2 = (double)(points[2].x - points[1].x) / (double)(points[2].y - points[1].y);
+				leftInc2 = (double)(points[2].x - points[0].x) / (double)(points[2].y - points[0].y);
+			}
+		}
+		else
+		{
+			// General Case, split the triangle in a topflat and bottom-flat one
+			points[3].x = (int)(((double)(points[2].x - points[0].x) / (double)(points[2].y - points[0].y) * (double)(points[1].y - points[2].y)) + (double)points[2].x);
+			points[3].y = points[1].y;
+
+			if (points[3].x > points[1].x)
+			{	// The left side of the triangle has two slopes, the right side has one
+				leftInc1 = (double)(points[1].x - points[0].x) / (double)(points[1].y - points[0].y);
+				leftInc2 = (double)(points[2].x - points[1].x) / (double)(points[2].y - points[1].y);
+				rightInc1 = (double)(points[2].x - points[0].x) / (double)(points[2].y - points[0].y);
+				rightInc2 = rightInc1;
+			}
+			else if (points[3].x < points[1].x)
+			{	// The right side of the triangle has two slopes, the left side has one
+				rightInc1 = (double)(points[1].x - points[0].x) / (double)(points[1].y - points[0].y);
+				rightInc2 = (double)(points[2].x - points[1].x) / (double)(points[2].y - points[1].y);
+				leftInc1 = (double)(points[2].x - points[0].x) / (double)(points[2].y - points[0].y);
+				leftInc2 = leftInc1;
+			}
 		}
 
 		// Set bounding box values
@@ -114,7 +158,6 @@ public:
 		boxPoints[1].x = minX; boxPoints[1].y = maxY;
 		boxPoints[2].x = maxX; boxPoints[2].y = maxY;
 		boxPoints[3].x = maxX; boxPoints[3].y = minY;
-
 	}
 
 	void render(const bool modeHardware)
@@ -146,60 +189,35 @@ public:
 			// Draw Content
 			if (currentIndex == 3 && filled)
 			{
-				double ixLeft = (double)points[0].x, ixRight = (double)points[0].x;
-
-				int left, right, oldLeft = points[0].x, oldRight = points[0].x;
-
+				double xLeft = (double)points[0].x, xRight = (double)points[0].x;
 				// Draw upper semi-triangle filler
 				for (int y = points[0].y; y <= points[1].y; y++)
 				{
-					ixLeft += leftInc1;
-					ixRight += rightInc1;
-
-					left = ceil(ixLeft);
-					right = floor(ixRight);
-
-					horizontalLine(left, right, y, fillColor);
-
-					// Left border
-					putPixel(left, y, borderColor);
-					horizontalLine(left + 1, oldLeft-1, y, borderColor);
-					
-					// Right border
-					horizontalLine(oldRight+1, right - 1, y, borderColor);
-					putPixel(right, y, borderColor);
-	
-					oldLeft = left; oldRight = right;
+					horizontalLine(ceil(xLeft),(int)xRight, y, fillColor);
+					xLeft += leftInc1;
+					xRight += rightInc1;
 				}
-
-				//ixLeft = ixLeft2; ixRight = ixRight2;
+				
 				// Draw lower semi-triangle filler
-				for (int y = points[1].y + 1; y <= points[2].y; y++)
+				xLeft = (double)points[2].x; xRight = (double)points[2].x;
+				for (int y = points[2].y; y > points[1].y; y--)
 				{
-					ixLeft += leftInc2;
-					ixRight += rightInc2;
-
-					left = ceil(ixLeft);
-					right = floor(ixRight);
-
-					// Left border
-					putPixel(left, y, borderColor);
-					horizontalLine(oldLeft+1, left-1, y, borderColor);
-
-					horizontalLine(left+1, right-1, y, fillColor);
-					
-					// Right border
-					horizontalLine(right+1, oldRight, y, borderColor);
-
-
-					oldLeft = left; oldRight = right;
+					horizontalLine(ceil(xLeft), (int)xRight, y, fillColor);
+					xLeft -= leftInc2;
+					xRight -= rightInc2;
 				}
 			}
-			else 
-			{// Just draw Border
-				for (int i = 0; i < currentIndex; i++)
-					drawLine(points[i % 3].x, points[i % 3].y, points[(i + 1) % 3].x, points[(i + 1) % 3].y, borderColor);
+
+			// Draw Current Border
+			glColor3f(borderColor.r, borderColor.g, borderColor.b);
+			glBegin(GL_LINES);
+			for (int i = 0; i < currentIndex; i++)
+			{
+				glVertex2i(points[i % 3].x, points[i % 3].y);
+				glVertex2i(points[(i + 1) % 3].x, points[(i + 1) % 3].y);
 			}
+			glEnd();
+			
 		}
 	}
 
@@ -234,7 +252,6 @@ public:
 			// Check squared distance between vertex i and the click, threshold: 5 pixels
 			if ((dx * dx + dy * dy) <= 25)
 			{
-				cout << "VERTEX" << endl;
 				pointSelected = &points[i];
 				return true;
 			}
@@ -263,7 +280,6 @@ public:
 				points[i].x += dx;
 				points[i].y += dy;
 			}
-			ixLeft2 += dx; ixRight2 += dx;
 
 			moveBoundingBox(dx, dy);
 		}

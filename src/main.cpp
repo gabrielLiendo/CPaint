@@ -253,7 +253,6 @@ void onMotion(int x, int y)
 		}
 		else if (selectedShape) 
 		{	// Drag shape position
-			cout << "mmm" << endl;
 			selectedShape->onMove(x, y);
 		}
 	}
