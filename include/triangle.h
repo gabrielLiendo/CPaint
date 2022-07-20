@@ -148,26 +148,58 @@ public:
 			{
 				double ixLeft = (double)points[0].x, ixRight = (double)points[0].x;
 
+				int left, right, oldLeft = points[0].x, oldRight = points[0].x;
+
 				// Draw upper semi-triangle filler
-				for (int y = points[0].y +1; y <= points[1].y; y++)
+				for (int y = points[0].y; y <= points[1].y; y++)
 				{
 					ixLeft += leftInc1;
 					ixRight += rightInc1;
-					horizontalLine(ceil(ixLeft), floor(ixRight), y, fillColor);
+
+					left = ceil(ixLeft);
+					right = floor(ixRight);
+
+					horizontalLine(left, right, y, fillColor);
+
+					// Left border
+					putPixel(left, y, borderColor);
+					horizontalLine(left + 1, oldLeft-1, y, borderColor);
+					
+					// Right border
+					horizontalLine(oldRight+1, right - 1, y, borderColor);
+					putPixel(right, y, borderColor);
+	
+					oldLeft = left; oldRight = right;
 				}
 
-				ixLeft = ixLeft2; ixRight = ixRight2;
+				//ixLeft = ixLeft2; ixRight = ixRight2;
 				// Draw lower semi-triangle filler
-				for (int y = points[1].y + 1; y < points[2].y; y++)
+				for (int y = points[1].y + 1; y <= points[2].y; y++)
 				{
 					ixLeft += leftInc2;
 					ixRight += rightInc2;
-					horizontalLine(ceil(ixLeft), floor(ixRight), y, fillColor);
+
+					left = ceil(ixLeft);
+					right = floor(ixRight);
+
+					// Left border
+					putPixel(left, y, borderColor);
+					horizontalLine(oldLeft+1, left-1, y, borderColor);
+
+					horizontalLine(left+1, right-1, y, fillColor);
+					
+					// Right border
+					horizontalLine(right+1, oldRight, y, borderColor);
+
+
+					oldLeft = left; oldRight = right;
 				}
 			}
-			// Draw Border
-			for (int i = 0; i < currentIndex; i++)
-				drawLine(points[i % 3].x, points[i % 3].y, points[(i + 1) % 3].x, points[(i + 1) % 3].y, borderColor);
+			else 
+			{// Just draw Border
+				for (int i = 0; i < currentIndex; i++)
+					drawLine(points[i % 3].x, points[i % 3].y, points[(i + 1) % 3].x, points[(i + 1) % 3].y, borderColor);
+			}
 		}
 	}
 

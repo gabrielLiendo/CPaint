@@ -165,7 +165,7 @@ void onClickCanvas(int button, int state, int x, int y)
 	switch (button)
 	{
 	case GLUT_LEFT_BUTTON:
-		if(state== GLUT_DOWN)
+		if(state == GLUT_DOWN)
 		{	// Left-click was pressed
 			cout << x << " " << y << endl;
 			
@@ -200,26 +200,25 @@ void onClickCanvas(int button, int state, int x, int y)
 		{	// Left-click was lifted
 			if (drawingShape && drawingShape->finished())
 				saveFigure();
-			
 		}
 		break;
 	case GLUT_RIGHT_BUTTON:
-		if (state == GLUT_DOWN && drawingShape && ui.shapeSelected == 5)
+		if (state == GLUT_UP && ui.shapeSelected == 5 && drawingShape)
 		{
 			drawingShape->forceFinish(x, y);
 			saveFigure();
 		}
-		else if(ui.shapeSelected != 5)
+		else if (ui.shapeSelected == 4)
 		{
 			unselectFigure();
 			drawingShape = nullptr;
 			drawing = false;
 		}
+		else
+			unselectFigure();
 		break;
 	default:
 		unselectFigure();
-		drawingShape = nullptr;
-		drawing = false;
 		break;
 	}
 }
@@ -238,6 +237,7 @@ void onClick(int button, int state, int x, int y)
 
 void onMotion(int x, int y)
 {	
+
 	ImGuiIO& io = ImGui::GetIO();
 
 	if (io.WantCaptureMouse)
@@ -253,6 +253,7 @@ void onMotion(int x, int y)
 		}
 		else if (selectedShape) 
 		{	// Drag shape position
+			cout << "mmm" << endl;
 			selectedShape->onMove(x, y);
 		}
 	}

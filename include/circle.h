@@ -67,7 +67,6 @@ public:
 	void render(const bool mode)
 	{	
 		int x = 0, y = r, d = 1 - r;
-		cout << "CIRCULO" << endl;
 		if (filled)
 		{	// Draw border and filler in the same iteration
 

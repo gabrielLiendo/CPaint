@@ -6,7 +6,8 @@ class CBezier : public CShape
 private:
 	vector<Point> ctrlPoints;
 	vector<Point> segmentsPoints;
-	
+	int n; // number of ctrlPoints
+	int m; // number of points for segments
 	bool closed = false;
 
 public:
@@ -15,6 +16,7 @@ public:
 	{
 		ctrlPoints.push_back({ x, y });
 		ctrlPoints.push_back({ x, y });
+		n = 2;
 	}
 
 	CBezier(int *points, int n, float r, float g, float b)
@@ -24,27 +26,38 @@ public:
 			ctrlPoints.push_back({ points[i*2], points[(i*2)+1]});
 
 		closed = true;
+		this->n = n;
 		setRenderValues();
 	}
 
-	~CBezier() { cout << "Se destruyo una curva de bezier" << endl; }
+	~CBezier() { 
+		ctrlPoints.clear();
+		ctrlPoints.shrink_to_fit();
+		segmentsPoints.clear();
+		segmentsPoints.shrink_to_fit();
+		cout << "Se destruyo una curva de bezier" << endl; 
+	}
 
 	// Add new point to bezier curve
 	void newPoint(int x, int y) override
 	{
 		ctrlPoints.push_back({ x, y });
+		n++;
 	}
 
 	// Update last point value
 	void update(int x, int y)
 	{
 		ctrlPoints.back() = { x, y };
+		segmentsPoints.clear();
+		setRenderValues();
 	}
 
 	void forceFinish(int x, int y) override
 	{ 
 		ctrlPoints.back() = { x, y };
 		closed = true;
+		segmentsPoints.clear();
 		setRenderValues();
 	}
 
@@ -55,7 +68,6 @@ public:
 		renderBox();
 
 		// Render each control points
-		int n = ctrlPoints.size();
 		for (int i = 0; i < n; i++)
 			ctrlPoints[i].renderCtrlPoint();
 	}
@@ -65,7 +77,6 @@ public:
 		// set bounding box values
 		int minX = ctrlPoints[0].x, minY = ctrlPoints[0].y;
 		int maxX = ctrlPoints[0].x, maxY = ctrlPoints[0].y;
-		int n = ctrlPoints.size();
 
 		for (int i = 1; i < n; i++)
 		{
@@ -85,26 +96,24 @@ public:
 		boxPoints[2].x = maxX; boxPoints[2].y = maxY;
 		boxPoints[3].x = maxX; boxPoints[3].y = minY;
 
-		// set segment points values
-		// candidatas = (double)25 / ((double)maxD * 1.5);
-		// candidatas = (double)1 / ((double) n * 5.0);
+		// set Segment points values
 		Point newPoint;
-		int dx = maxX - minX, dy = maxY - maxY, maxD = max(dx, dy);
-		double step = 0.0625;
-		//cout << dx << " " << dy << " " <<  step << endl;
+		int maxD = max(maxX - minX, maxY - minY);
+		double step = 1.0/(17.0 + (double)n + (double)maxD/60.0);
 		
 		for (double t = 0; t <= 1; t += step)
 		{
-			cout << t << endl;
 			newPoint = nextCurvePoint(ctrlPoints, t);
 			segmentsPoints.push_back({ newPoint.x, newPoint.y });
 		}
+
+		m = segmentsPoints.size();
+		//cout << "LISTO"  << endl;
 	}
 
+	// Draw the line strip that forms with the control points
 	void drawCtrlPolygon()
 	{
-		int n = ctrlPoints.size();
-		// Draw Border
 		for (int i = 1; i < n; i++)
 			drawLine(ctrlPoints[i - 1].x, ctrlPoints[i - 1].y, ctrlPoints[i].x, ctrlPoints[i].y, Color({ 0.0, 0.0, 0.0 }));
 	}
@@ -129,21 +138,24 @@ public:
 
 	void render(const bool modeHardware)
 	{
-		if (closed)
-		{	
-			int n = segmentsPoints.size();
-			for (int i = 1; i < n; i++)
-			{
-
-				glColor3f(borderColor.r, borderColor.g, borderColor.b);
-				glBegin(GL_LINES);
-					glVertex2i(segmentsPoints[i - 1].x, segmentsPoints[i - 1].y);
-					glVertex2i(segmentsPoints[i].x, segmentsPoints[i].y);
-				glEnd();
-			}
-		}
-		else 
+		if(!closed)
 			drawCtrlPolygon();
+
+		if (modeHardware)
+		{
+			// Draw Bezier Curve (with segments)
+			glColor3f(borderColor.r, borderColor.g, borderColor.b);
+			glBegin(GL_LINE_STRIP);
+			for (int i = 0; i < m; i++)
+				glVertex2i(segmentsPoints[i].x, segmentsPoints[i].y);
+			glEnd();
+		}
+		else
+		{
+			// Draw Bezier Curve (with segments)
+			for (int i = 1; i < m; i++)
+				drawLine(segmentsPoints[i - 1].x, segmentsPoints[i - 1].y, segmentsPoints[i].x, segmentsPoints[i].y, borderColor);
+		}
 	}
 
 	bool onClick(int x, int y)
@@ -153,9 +165,8 @@ public:
 		{
 			// We check if the click fell close to one of the segments, threshold: 6 pixels
 			int x0, y0, x1, y1, dy, dx, c;
-			int n = segmentsPoints.size();
 
-			for (int i = 1; i < n; i++)
+			for (int i = 1; i < m; i++)
 			{
 				x0 = segmentsPoints[i - 1].x, y0 = segmentsPoints[i - 1].y;
 				x1 = segmentsPoints[i].x, y1 = segmentsPoints[i].y;
@@ -178,7 +189,6 @@ public:
 	{
 		// We check if the click fell on a vertex
 		int dx, dy;
-		int n = ctrlPoints.size();
 		for (int i = 0; i < n; i++)
 		{
 			dx = (x - ctrlPoints[i].x);
@@ -187,7 +197,6 @@ public:
 			if ((dx * dx + dy * dy) <= 25)
 			{
 				pointSelected = &ctrlPoints[i];
-				cout << "VERTEX" << endl;
 				return true;
 			}
 		}
@@ -196,7 +205,6 @@ public:
 
 	void onMove(int x1, int y1)
 	{
-
 		if (pointSelected)
 		{	// Only move the vertex selected
 			pointSelected->x = x1;
@@ -205,22 +213,16 @@ public:
 			setRenderValues();
 		}
 		else
-		{
-			// We move the whole curve
+		{	// We move the whole curve with it's control structure
 			int dx = x1 - anchorPoint.x;
 			int dy = y1 - anchorPoint.y;
 
-			anchorPoint.x = x1;
-			anchorPoint.y = y1;
-
-			int n = ctrlPoints.size();
 			for (int i = 0; i < n; i++)
 			{
 				ctrlPoints[i].x += dx;
 				ctrlPoints[i].y += dy;
 			}
 
-			int m = segmentsPoints.size();
 			for (int i = 0; i < m; i++)
 			{
 				segmentsPoints[i].x += dx;
@@ -228,6 +230,7 @@ public:
 			}
 
 			moveBoundingBox(dx, dy);
+			anchorPoint.x = x1; anchorPoint.y = y1;
 		}
 		
 	}
@@ -239,8 +242,6 @@ public:
 
 	std::string getInfo() override
 	{
-		int n = ctrlPoints.size();
-
 		// Add number of ctrl points
 		info += to_string(n) + " ";
 
