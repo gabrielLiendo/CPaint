@@ -58,7 +58,15 @@ public:
 		for (int i = 0; i < 3; i++)
 			points[i].renderCtrlPoint();
 
-		renderBox();
+		// Set color and style of the line
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0xAAAA);
+		glBegin(GL_LINE_LOOP);
+			for (int i = 0; i < 4; i++)
+				glVertex2i(boxPoints[i].x, boxPoints[i].y);
+		glEnd();
+		glDisable(GL_LINE_STIPPLE);
 	}
 
 	void setRenderValues()
@@ -227,16 +235,27 @@ public:
 		{
 			clickedCtrlPoint(x, y);
 
-			int y1, y2, y3;
-			int xmin = points[0].x, ymin = points[0].y;
-			int xmid = points[1].x, ymid = points[1].y;
-			int xmax = points[2].x, ymax = points[2].y;
+			int y1 = 0, y2 = 0, y3 = 0;
 
-			y1 = (int)(((float)(xmid - xmin) / (float)(ymid - ymin) * (y - ymid)) + (xmid - x));
-			y2 = (int)(((float)(xmax - xmid) / (float)(ymax - ymid) * (y - ymax)) + (xmax - x));
-			y3 = (int)(((float)(xmin - xmax) / (float)(ymin - ymax) * (y - ymin)) + (xmin - x));
-
-			return (y1 > 0 && y2 > 0 && y3 < 0) || (y1 < 0 && y2 < 0 && y3 > 0) || pointSelected;
+			if (points[1].y == points[2].y)
+			{
+				y1 = (int)(((float)(points[1].x - points[0].x) / (float)(points[1].y - points[0].y) * (y - points[1].y)) + (points[1].x - x));
+				y3 = (int)(((float)(points[0].x - points[2].x) / (float)(points[0].y - points[2].y) * (y - points[0].y)) + (points[0].x - x));
+				return (y <= points[1].y && ( (y1 > 0 && y3 < 0) || (y1 < 0 && y3 > 0))) || pointSelected;
+			}
+			else if (points[0].y == points[1].y)
+			{
+				y2 = (int)(((float)(points[2].x - points[1].x) / (float)(points[2].y - points[1].y) * (y - points[2].y)) + (points[2].x - x));
+				y3 = (int)(((float)(points[0].x - points[2].x) / (float)(points[0].y - points[2].y) * (y - points[0].y)) + (points[0].x - x));
+				return (y >= points[1].y && ((y2 > 0 && y3 < 0) || (y2 < 0 && y3 > 0))) || pointSelected;
+			}
+			else 
+			{
+				y1 = (int)(((float)(points[1].x - points[0].x) / (float)(points[1].y - points[0].y) * (y - points[1].y)) + (points[1].x - x));
+				y2 = (int)(((float)(points[2].x - points[1].x) / (float)(points[2].y - points[1].y) * (y - points[2].y)) + (points[2].x - x));
+				y3 = (int)(((float)(points[0].x - points[2].x) / (float)(points[0].y - points[2].y) * (y - points[0].y)) + (points[0].x - x));
+				return (y1 > 0 && y2 > 0 && y3 < 0) || (y1 < 0 && y2 < 0 && y3 > 0) || pointSelected;
+			}
 		}
 		return false;
 	}

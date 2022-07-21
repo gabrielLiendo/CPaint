@@ -7,7 +7,7 @@ private:
 	vector<Point> ctrlPoints;
 	vector<Point> segmentsPoints;
 	int n; // number of ctrlPoints
-	int m; // number of points for segments
+	int m = 0; // number of points for segments
 	bool closed = false;
 
 public:
@@ -65,7 +65,16 @@ public:
 	void renderCtrlPoints()
 	{
 		drawCtrlPolygon();
-		renderBox();
+
+		// Set color and style of the line
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0xAAAA);
+		glBegin(GL_LINE_LOOP);
+			for (int i = 0; i < 4; i++)
+				glVertex2i(boxPoints[i].x, boxPoints[i].y);
+		glEnd();
+		glDisable(GL_LINE_STIPPLE);
 
 		// Render each control points
 		for (int i = 0; i < n; i++)
@@ -126,7 +135,7 @@ public:
 		{	
 			int x, y;
 			vector<Point> newPoints;
-			for (int i = 0; i < points.size() - 1; i++)
+			for (int i = 0; i < (int)points.size() - 1; i++)
 			{
 				x = round((1 - t) * points[i].x + t * points[i + 1].x);
 				y = round((1 - t) * points[i].y + t * points[i + 1].y);

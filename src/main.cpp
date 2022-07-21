@@ -148,16 +148,17 @@ void onResize(int w, int h)
 // superior
 void onHoverShape(int x, int y)
 {
-	for (auto const& s : shapes)
+	for (auto it = shapes.crbegin(); it != shapes.crend(); it++)
 	{
-		if (s->onClick(x, y))
+		if ((* it)->onClick(x, y))
 		{
-			hoveredShape = s; 
+			hoveredShape = *it;
 			return;
 		}
 	}
 	hoveredShape = nullptr;
 }
+	
 
 void onClickCanvas(int button, int state, int x, int y)
 {	
@@ -167,7 +168,6 @@ void onClickCanvas(int button, int state, int x, int y)
 	case GLUT_LEFT_BUTTON:
 		if(state == GLUT_DOWN)
 		{	// Left-click was pressed
-			cout << x << " " << y << endl;
 			
 			// Check if click fell on a ctrl point of the selected figure
 			if (selectedShape && selectedShape->clickedCtrlPoint(x, y))
@@ -227,17 +227,14 @@ void onClick(int button, int state, int x, int y)
 {	
 	ImGuiIO& io = ImGui::GetIO();
 
-	if (io.WantCaptureMouse){
+	if (io.WantCaptureMouse)
 		ImGui_ImplGLUT_MouseFunc(button, state, x, y);
-	}
-	else {
+	else
 		onClickCanvas(button, state, x, y);
-	}
 }
 
 void onMotion(int x, int y)
 {	
-
 	ImGuiIO& io = ImGui::GetIO();
 
 	if (io.WantCaptureMouse)
@@ -296,7 +293,7 @@ void onKeyboardEntry(unsigned char c, int x, int y)
 		case '-':   ui.toggleLevel(-1);							break;
 		case '+':   ui.toggleLevel(1);							break;
 		case 'f':   ui.toggleLevel(2);							break;  
-		case 'x':   ui.openDeleteModal = true;					break;  // x: Delete all figures
+		case 'x':	deleteAllFigures();							break;  // x: Delete all figures
 		case   8:   deleteFigure();								break;  // backspace: Delete current figure
 		default:    ImGui_ImplGLUT_KeyboardFunc(c, x, y);		break;  // Give control to ImGui
 	}

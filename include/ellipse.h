@@ -71,13 +71,12 @@ public:
 		int  incE, incS, incSE, varE, varSE,  varS;
 		ap2 = a * a; bp2 = b * b;
 		
-
 		// Initial values
 		d = b * ((b - ap2) << 2) + ap2;
 		incE = 12 * bp2;
-		incSE = (3 * bp2 - (ap2 * (b - 1)) << 1) << 2;
+		incSE = (3 * bp2 - ((ap2 * (b - 1)) << 1)) << 2;
 
-		varE = bp2  << 3;
+		varE = bp2 << 3;
 		varSE = (ap2 + bp2) << 3;
 		varS = ap2 << 3;
 

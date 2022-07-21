@@ -13,9 +13,9 @@ struct Color
 
 struct Point
 {
-	int x, y;
+	int x = 0, y = 0;
 
-	Point() {}
+	Point() { x = 0; y = 0; }
 
 	Point(int x, int y)
 	{
@@ -214,8 +214,8 @@ public:
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1, 0xAAAA);
 		glBegin(GL_LINE_LOOP);
-		for (int i = 0; i < 4; i++)
-			glVertex2i(boxPoints[i].x, boxPoints[i].y);
+			for (int i = 0; i < 4; i++)
+				glVertex2i(boxPoints[i].x, boxPoints[i].y);
 		glEnd();
 		glDisable(GL_LINE_STIPPLE);
 

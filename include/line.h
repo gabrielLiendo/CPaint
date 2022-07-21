@@ -70,7 +70,6 @@ public:
 			if ((dx * dx + dy * dy) <= 16)
 			{
 				pointSelected = &points[i];
-				cout << "LINEA" << endl;
 				return true;
 			}
 		}

@@ -62,6 +62,7 @@ public:
 	PaintUI() 
 	{
 		// Initialize State variables
+		shapeSelected = -1;
 		currentMode = false;
 		allowFill = true;
 		openBGPicker = false;
@@ -260,7 +261,7 @@ public:
 		if (!lTheOpenFileName)
 			return;
 
-		deleteAllFigures();
+		shapes.clear();
 
 	#ifdef _WIN32
 		if (tinyfd_winUtf8)
@@ -539,7 +540,7 @@ public:
 						if (j > 0)
 							ImGui::SameLine();
 
-						if (ImGui::Selectable(shapeTypes[(3 * i) + j], shapeSelected == ((3 * i) + j), 0, ImVec2(w/2.3, 40.0f)))
+						if (ImGui::Selectable(shapeTypes[(3 * i) + j], shapeSelected == ((3 * i) + j), 0, ImVec2(w/ (float)2.3, 40.0f)))
 							shapeSelected = (3 * i) + j;
 					}
 				}
@@ -615,10 +616,8 @@ public:
 					deleteFigure();
 				ImGui::SameLine();
 
-				if (ImGui::Button("All Figures", ImVec2(100, 20)))
-				{
-					ImGui::OpenPopup("Delete All Figures?");
-				}
+				if (ImGui::Button("All Figures", ImVec2(100, 20)) || openDeleteModal)
+					deleteAllFigures();
 				ImGui::TreePop();
 			}
 		}
@@ -627,7 +626,7 @@ public:
 		if (openBGPicker && ImGui::Begin("Background Color", &openBGPicker, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
 		{
 			float w = ImGui::CalcItemWidth();
-			ImGui::PushItemWidth(1.35 * w);
+			ImGui::PushItemWidth((float)1.35 * w);
 			ImGui::ColorPicker3("##picker", (float*)&bgColor, ImGuiColorEditFlags_NoSidePreview);
 			ImGui::PopItemWidth();
 			ImGui::End();
@@ -637,7 +636,7 @@ public:
 		if (openFillPicker && ImGui::Begin("Fill Color", &openFillPicker, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
 		{	
 			float w = ImGui::CalcItemWidth();
-			ImGui::PushItemWidth(1.35*w);
+			ImGui::PushItemWidth((float)1.35 *w);
 			if (ImGui::ColorPicker3("##picker", (float*)&fillColor, ImGuiColorEditFlags_NoSidePreview))
 			{
 				if (selectedShape)
@@ -651,7 +650,7 @@ public:
 		if (openBorderPicker && ImGui::Begin("Border Color", &openBorderPicker, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
 		{
 			float w = ImGui::CalcItemWidth();
-			ImGui::PushItemWidth(1.35 * w);
+			ImGui::PushItemWidth((float)1.35 * w);
 			if (ImGui::ColorPicker3("##picker", (float*)&borderColor, ImGuiColorEditFlags_NoSidePreview))
 			{
 				if (selectedShape)
@@ -692,23 +691,6 @@ public:
 			ImGui::End();
 		}
 
-		if (ImGui::BeginPopupModal("Delete All Figures?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-		{
-			ImGui::Text("All the figures in the scene will be deleted \nThis operation cannot be undone!\n\n");
-			ImGui::Separator();
-
-			if (ImGui::Button("OK", ImVec2(120, 0))) 
-			{
-				deleteAllFigures(); 
-				openDeleteModal = false;
-				ImGui::CloseCurrentPopup(); 
-			}
-
-			ImGui::SetItemDefaultFocus();
-			ImGui::SameLine();
-			if (ImGui::Button("Cancel", ImVec2(120, 0))) { openDeleteModal = false;  ImGui::CloseCurrentPopup(); }
-			ImGui::EndPopup();
-		}
 		ImGui::End();
 		ImGui::ShowDemoWindow();
 	}
