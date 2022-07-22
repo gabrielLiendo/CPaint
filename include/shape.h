@@ -126,15 +126,17 @@ public:
 	// Draw a line using Bresenham's algorithm
 	void drawLine(int x0, int y0, int x1, int y1, Color c)
 	{
-		int x, y, dx, dy, d, incN, incE, incNE, varX, varY;
+		int x, y, dx, dy, d, incN, incE, incNE, varX, varY, i;
 		x = x0;
 		y = y0;
-		dx = abs(x1 - x);
-		dy = abs(y1 - y);
-		d = dx - (dy << 1);
+		dx = abs(x1 - x0);
+		dy = abs(y1 - y0);
 		incN = (dx << 1);
 		incE = -(dy << 1);
 		incNE = (dx - dy) << 1;
+
+		varX = x1 < x0 ? -1 : 1;
+		varY = y1 < y0 ? -1 : 1;
 
 		// Draw the initial pixel
 		putPixel(x0, y0, c);
@@ -142,14 +144,8 @@ public:
 		// If |m| < 1 (abs(dx) > abs(dy)) we iterate over the x-axis, otherwise we iterate over the y-axis
 		if (dy < dx)
 		{
-			if (x >= x1)
-			{
-				x = x1; x1 = x0;
-				y = y1; y1 = y0;
-			}
-
-			varY = y1 > y ? 1 : -1;
-			for (; x < x1; x++)
+			d = dx - (dy << 1);
+			for (i = 0; i < dx; i++)
 			{
 				if (d < 0)
 				{
@@ -158,19 +154,14 @@ public:
 				}
 				else
 					d += incE;
+				x += varX;
 				putPixel(x, y, c);
 			}
 		}
 		else
 		{
-			if (y >= y1)
-			{
-				x = x1; x1 = x0;
-				y = y1; y1 = y0;
-			}
-
-			varX = x1 < x ? -1 : 1;
-			for (; y < y1; y++)
+			d = (dx << 1) - dy; /*I hate this line*/
+			for (i = 0; i < dy; i++)
 			{
 				if (d < 0)
 					d += incN;
@@ -178,6 +169,7 @@ public:
 					d += incNE;
 					x += varX;
 				}
+				y += varY;
 				putPixel(x, y, c);
 			}
 		}

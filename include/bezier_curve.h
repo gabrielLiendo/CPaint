@@ -108,16 +108,28 @@ public:
 		// set Segment points values
 		Point newPoint;
 		int maxD = max(maxX - minX, maxY - minY);
-		double step = 1.0/(17.0 + (double)n + (double)maxD/60.0);
-		
+		double step = (double)1.0 / (double)(17.0 + n + maxD/60.0);
+
 		for (double t = 0; t <= 1; t += step)
 		{
-			newPoint = nextCurvePoint(ctrlPoints, t);
-			segmentsPoints.push_back({ newPoint.x, newPoint.y });
-		}
+			vector<Point> tempPoints = ctrlPoints;
 
+			while (tempPoints.size() > 1)
+			{
+				vector<Point> tempPoints2;
+
+				for (int i = 0; i < tempPoints.size() - 1; i++)
+				{
+					newPoint.x = (1 - t) * tempPoints[i].x + t * tempPoints[i + 1].x;
+					newPoint.y = (1 - t) * tempPoints[i].y + t * tempPoints[i + 1].y;
+					tempPoints2.push_back(newPoint);
+				}
+				tempPoints = tempPoints2;
+			}
+			segmentsPoints.push_back(tempPoints[0]);
+		}
+		segmentsPoints.push_back(ctrlPoints.back());
 		m = segmentsPoints.size();
-		//cout << "LISTO"  << endl;
 	}
 
 	// Draw the line strip that forms with the control points

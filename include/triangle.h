@@ -215,17 +215,9 @@ public:
 					xRight -= rightInc2;
 				}
 			}
-
 			// Draw Current Border
-			glColor3f(borderColor.r, borderColor.g, borderColor.b);
-			glBegin(GL_LINES);
 			for (int i = 0; i < currentIndex; i++)
-			{
-				glVertex2i(points[i % 3].x, points[i % 3].y);
-				glVertex2i(points[(i + 1) % 3].x, points[(i + 1) % 3].y);
-			}
-			glEnd();
-			
+				drawLine(points[i % 3].x, points[i % 3].y, points[(i + 1) % 3].x, points[(i + 1) % 3].y, borderColor);
 		}
 	}
 
@@ -233,28 +225,26 @@ public:
 	{
 		if (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[0].y - 3 && y < boxPoints[2].y + 3)
 		{
-			clickedCtrlPoint(x, y);
-
 			int y1 = 0, y2 = 0, y3 = 0;
 
 			if (points[1].y == points[2].y)
 			{
 				y1 = (int)(((float)(points[1].x - points[0].x) / (float)(points[1].y - points[0].y) * (y - points[1].y)) + (points[1].x - x));
 				y3 = (int)(((float)(points[0].x - points[2].x) / (float)(points[0].y - points[2].y) * (y - points[0].y)) + (points[0].x - x));
-				return (y <= points[1].y && ( (y1 > 0 && y3 < 0) || (y1 < 0 && y3 > 0))) || pointSelected;
+				return (y <= points[1].y && ( (y1 >= 0 && y3 <= 0) || (y1 <= 0 && y3 >= 0)));
 			}
 			else if (points[0].y == points[1].y)
 			{
 				y2 = (int)(((float)(points[2].x - points[1].x) / (float)(points[2].y - points[1].y) * (y - points[2].y)) + (points[2].x - x));
 				y3 = (int)(((float)(points[0].x - points[2].x) / (float)(points[0].y - points[2].y) * (y - points[0].y)) + (points[0].x - x));
-				return (y >= points[1].y && ((y2 > 0 && y3 < 0) || (y2 < 0 && y3 > 0))) || pointSelected;
+				return (y >= points[1].y && ((y2 >= 0 && y3 <= 0) || (y2 <= 0 && y3 >= 0)));
 			}
 			else 
 			{
 				y1 = (int)(((float)(points[1].x - points[0].x) / (float)(points[1].y - points[0].y) * (y - points[1].y)) + (points[1].x - x));
 				y2 = (int)(((float)(points[2].x - points[1].x) / (float)(points[2].y - points[1].y) * (y - points[2].y)) + (points[2].x - x));
 				y3 = (int)(((float)(points[0].x - points[2].x) / (float)(points[0].y - points[2].y) * (y - points[0].y)) + (points[0].x - x));
-				return (y1 > 0 && y2 > 0 && y3 < 0) || (y1 < 0 && y2 < 0 && y3 > 0) || pointSelected;
+				return (y1 >= 0 && y2 >= 0 && y3 <= 0) || (y1 <= 0 && y2 <= 0 && y3 >= 0);
 			}
 		}
 		return false;

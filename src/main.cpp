@@ -20,6 +20,7 @@ PaintUI ui;
 int width = 1600, height = 800;
 int firstX0, firstY0;
 bool drawing = true;
+bool clickedCtrlPoint = false;
 
 // Displayed Figures 
 list<shared_ptr<CShape>> shapes;
@@ -250,6 +251,10 @@ void onMotion(int x, int y)
 		}
 		else if (selectedShape) 
 		{	// Drag shape position
+			if (clickedCtrlPoint)
+				glutSetCursor(GLUT_CURSOR_CROSSHAIR);
+			else
+				glutSetCursor(GLUT_CURSOR_CYCLE);
 			selectedShape->onMove(x, y);
 		}
 	}
