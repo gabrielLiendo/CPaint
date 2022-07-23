@@ -46,13 +46,13 @@ public:
 	// We check if the click fell close to the line, threshold: 4 pixels
 	bool onClick(int x, int y) 
 	{
-		int x0 = points[0].x, y0 = points[0].y;
-		int x1 = points[1].x, y1 = points[1].y;
-
-		if ((x1 > x0 && (x > x1 + 3 || x < x0 - 3)) || (x1 <= x0 && (x > x0 + 3 || x < x1 - 3)))
+		if ((points[1].x > points[0].x && (x > points[1].x + 3 || x < points[0].x - 3)) 
+			|| (points[1].x <= points[0].x && (x > points[0].x + 3 || x < points[1].x - 3)))
 			return false;
 			
-		int a = y0 - y1, b = x1 - x0,  c = x0 * y1 - x1 * y0;
+		int a = points[0].y - points[1].y;
+		int b = points[1].x - points[0].x;
+		int c = points[0].x * points[1].y - points[1].x * points[0].y;
 		int distance = static_cast<int>(abs(a * x + b * y + c) / sqrt(a * a + b * b));
 
 		return distance <= 4;

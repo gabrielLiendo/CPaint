@@ -24,7 +24,7 @@ public:
 		points[1] = Point(x1, y1);
 		points[2] = Point(x2, y2);
 
-		currentIndex = 3;
+		currentIndex = 3; closed = true;
 		setRenderValues();
 	}
 
@@ -72,25 +72,25 @@ public:
 	void setRenderValues()
 	{
 		// Order points by y-axis, p[0] is the smallest, p[2] is the biggest
-		if (points[1].y <= points[0].y) 
-		{ 
+		if (points[1].y <= points[0].y)
+		{
 			swap(points[1], points[0]);
 			if (pointSelected == &points[1])
 				pointSelected = &points[0];
 			else if (pointSelected == &points[0])
 				pointSelected = &points[1];
 		}
-		if (points[2].y <= points[0].y) 
-		{ 
-			swap(points[2], points[0]); 
+		if (points[2].y <= points[0].y)
+		{
+			swap(points[2], points[0]);
 			if (pointSelected == &points[2])
 				pointSelected = &points[0];
 			else if (pointSelected == &points[0])
 				pointSelected = &points[2];
 		}
-		if (points[2].y <= points[1].y) 
+		if (points[2].y <= points[1].y)
 		{
-			swap(points[2], points[1]); 
+			swap(points[2], points[1]);
 			if (pointSelected == &points[2])
 				pointSelected = &points[1];
 			else if (pointSelected == &points[1])
@@ -136,8 +136,8 @@ public:
 				rightInc1 = (double)(points[2].x - points[0].x) / (double)(points[2].y - points[0].y);
 				rightInc2 = rightInc1;
 			}
-			else if (points[3].x < points[1].x)
-			{	// The right side of the triangle has two slopes, the left side has one
+			else
+			{	// The right side of the triangle has two slopes, the left side has one, or the triangle collapsed in a straight line
 				rightInc1 = (double)(points[1].x - points[0].x) / (double)(points[1].y - points[0].y);
 				rightInc2 = (double)(points[2].x - points[1].x) / (double)(points[2].y - points[1].y);
 				leftInc1 = (double)(points[2].x - points[0].x) / (double)(points[2].y - points[0].y);
@@ -228,19 +228,24 @@ public:
 			int y1 = 0, y2 = 0, y3 = 0;
 
 			if (points[1].y == points[2].y)
-			{
+			{	// Bottom-flat triangle
+			
+				// Especial case, horizontal line
+				if (points[0].y == points[1].y)
+					return true;
+
 				y1 = (int)(((float)(points[1].x - points[0].x) / (float)(points[1].y - points[0].y) * (y - points[1].y)) + (points[1].x - x));
 				y3 = (int)(((float)(points[0].x - points[2].x) / (float)(points[0].y - points[2].y) * (y - points[0].y)) + (points[0].x - x));
 				return (y <= points[1].y && ( (y1 >= 0 && y3 <= 0) || (y1 <= 0 && y3 >= 0)));
 			}
 			else if (points[0].y == points[1].y)
-			{
+			{	// Top-flat triangle
 				y2 = (int)(((float)(points[2].x - points[1].x) / (float)(points[2].y - points[1].y) * (y - points[2].y)) + (points[2].x - x));
 				y3 = (int)(((float)(points[0].x - points[2].x) / (float)(points[0].y - points[2].y) * (y - points[0].y)) + (points[0].x - x));
 				return (y >= points[1].y && ((y2 >= 0 && y3 <= 0) || (y2 <= 0 && y3 >= 0)));
 			}
 			else 
-			{
+			{	// General case
 				y1 = (int)(((float)(points[1].x - points[0].x) / (float)(points[1].y - points[0].y) * (y - points[1].y)) + (points[1].x - x));
 				y2 = (int)(((float)(points[2].x - points[1].x) / (float)(points[2].y - points[1].y) * (y - points[2].y)) + (points[2].x - x));
 				y3 = (int)(((float)(points[0].x - points[2].x) / (float)(points[0].y - points[2].y) * (y - points[0].y)) + (points[0].x - x));
@@ -312,10 +317,7 @@ public:
 
 		// Add filler info
 		if (filled)
-		{
-			info = "FILLED_" + info + " " + to_string(fillColor.r) + " "
-				+ to_string(fillColor.g) + " " + to_string(fillColor.b);
-		}
+			info = "FILLED_" + info + " " + to_string(fillColor.r) + " " + to_string(fillColor.g) + " " + to_string(fillColor.b);
 
 		return info + "\n";
 	}

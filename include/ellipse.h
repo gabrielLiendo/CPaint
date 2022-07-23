@@ -4,15 +4,16 @@
 class CEllipse : public CShape
 {
 private:
-	int a; // Radius in x-axis
-	int b; // Radius in y-axis
+	int a;		// Radius in x-axis
+	int b;		// Radius in y-axis
 	int cx, cy; // Center of ellipse
 
 public:
 	CEllipse(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
 		: CShape(r1, g1, b1, r2, g2, b2, filled, "ELLIPSE ")
 	{
-		anchorPoint.x = x0; anchorPoint.y = y0;
+		anchorPoint.x = x0; 
+		anchorPoint.y = y0;
 		update(x1, y1);
 	}
 
@@ -20,19 +21,18 @@ public:
 
 	void update(int x, int y)
 	{
-		int x0 = anchorPoint.x;
 		int y0 = anchorPoint.y;
 
 		if (y >= y0)
 			swap(y0, y);
 
 		// Update radii values
-		a = ((x - x0) >> 1);
-		b = ((y0 - y) >> 1);
+		a = (x - anchorPoint.x) >> 1;
+		b = (y0 - y) >> 1;
 
 		// Update the center of the ellipse
 		cy = y + b;
-		cx = x0 + a;
+		cx = anchorPoint.x + a;
 
 		// Update position of the bounding box
 		setBoundingBox(cx - a, cy - b, cx + a, cy + b);
@@ -55,8 +55,8 @@ public:
 
 	void fillEllipse(int x, int y)
 	{
-		horizontalLine(cx - x, cx + x, cy + y, fillColor);
-		horizontalLine(cx - x, cx + x, cy - y, fillColor);
+		horizontalLine(cx - x + 1, cx + x - 1, cy + y, fillColor);
+		horizontalLine(cx - x + 1, cx + x - 1, cy - y, fillColor);
 	}
 
 	// Draw border and filler in the same iteration
@@ -80,11 +80,12 @@ public:
 		varSE = (ap2 + bp2) << 3;
 		varS = ap2 << 3;
 
+
+		// Draw initial 4 points
+		ellipsePoints(x, y);
+
 		if (filled)
 		{
-			// Draw initial 4 points
-			ellipsePoints(x, y);
-
 			// Mode 1: Draw and fill while the tangent line to the point has slope [-1,0]
 			while (((bp2 * (x + 1)) << 1) < ap2 * ((y << 1) - 1))
 			{
@@ -130,9 +131,6 @@ public:
 		}
 		else
 		{
-			// Draw initial 4 points
-			ellipsePoints(x, y);
-
 			// Mode 1: Draw and fill while the tangent line to the point has slope [-1,0]
 			while (((bp2 * (x + 1)) << 1) < ap2 * ((y << 1) - 1))
 			{
@@ -179,14 +177,10 @@ public:
 
 	bool onClick(int x, int y)
 	{
-		if (x > boxPoints[0].x - 3 && x < boxPoints[2].x + 3 && y > boxPoints[0].y - 3 && y < boxPoints[2].y + 3)
-		{
-			int dx = x - cx;
-			int dy = y - cy;
+		int dx = x - cx;
+		int dy = y - cy;
 
-			return (((float)(dx * dx) / (a * a)) + ((float)(dy * dy) / (b * b))) <= 1.2;
-		}
-		return false;
+		return (((float)(dx * dx) / (a * a)) + ((float)(dy * dy) / (b * b))) <= 1.2;
 	}
 
 	// We check if the click fell on a vertex

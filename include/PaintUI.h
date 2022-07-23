@@ -261,7 +261,7 @@ public:
 		if (!lTheOpenFileName)
 			return;
 
-		shapes.clear();
+		deleteAllFigures();
 
 	#ifdef _WIN32
 		if (tinyfd_winUtf8)

@@ -6,7 +6,7 @@ class CCircle : public CShape
 private:
 	int r;				// Radius
 	int cx, cy;			// Center
-	Point ctrlRadius;
+	Point ctrlRadius;	// Control point for resize
 
 public:
 	CCircle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled, bool fromFile)
@@ -14,7 +14,8 @@ public:
 	{
 		if (!fromFile)
 		{
-			cx = x0; cy = y0;
+			cx = x0; 
+			cy = y0;
 			r = (int)sqrt(pow(x1 - cx, 2) + pow(y1 - cy, 2));
 		}
 		else
@@ -26,9 +27,10 @@ public:
 			}
 
 			r =  (x1 - x0) >> 1;
-			cx = x0 + r; cy = y0 + r;
+			cx = x0 + r; 
+			cy = y0 + r;
 		}
-		ctrlRadius = Point(cx + r, cy - r);
+		ctrlRadius = Point(cx + r, cy);
 	}
 		
 	~CCircle(){ cout << "Se destruyo un circulo" << endl; }
@@ -36,10 +38,10 @@ public:
 	void update(int x1, int y1)
 	{
 		r = (int)sqrt(pow(x1 - cx, 2) + pow(y1 - cy, 2));
-		ctrlRadius = { cx + r, cy - r };
+		ctrlRadius.x = cx + r;
 	}
 
-	// Render the bounding box
+	// Render the ctrl radius line and point
 	void renderCtrlPoints()
 	{
 		drawLine(cx, cy, ctrlRadius.x, ctrlRadius.y, borderColor);
@@ -52,6 +54,7 @@ public:
 		glPointSize(1.0f);
 	}
 
+	// Draw 8 symetrical points
 	void circlePoints(int x, int y)
 	{	
 		for(int i=0; i<2; i++)
@@ -66,13 +69,15 @@ public:
 
 	void render(const bool mode)
 	{	
-		int x = 0, y = r, d = 1 - r;
+		int x = 1, y = r, d = 1 - r;
+
+		// Draw initial 8 points 
+		circlePoints(0, r);
+
 		if (filled)
 		{	// Draw border and filler in the same iteration
 
-			// Draw initial 8 points and middle line filler
-			circlePoints(x, y);
-			horizontalLine(cx - r, cx + r, cy, fillColor);
+			horizontalLine(cx - r + 1, cx + r - 1, cy, fillColor);
 
 			// Draw one octant and reflect it's points
 			for (; y > x; x++)
@@ -84,19 +89,17 @@ public:
 					d += ((x - y) << 1) + 5;
 					y--;
 
-					horizontalLine(cx - x, cx + x, cy + y, fillColor);
-					horizontalLine(cx - x, cx + x, cy - y, fillColor);
+					horizontalLine(cx - x + 1, cx + x - 1, cy + y, fillColor);
+					horizontalLine(cx - x + 1, cx + x - 1, cy - y, fillColor);
 				}
 
-				horizontalLine(cx - y, cx + y, cy - x, fillColor);
-				horizontalLine(cx - y, cx + y, cy + x, fillColor);
+				horizontalLine(cx - y + 1, cx + y - 1, cy - x, fillColor);
+				horizontalLine(cx - y + 1, cx + y - 1, cy + x, fillColor);
 				circlePoints(x, y);
 			}
 		}
 		else
-		{	// Draw initial 8 points 
-			circlePoints(x, y);
-
+		{	
 			// Draw one octant and reflect it's points
 			for (; y > x; x++)
 			{
@@ -137,10 +140,15 @@ public:
 	{
 		if (pointSelected)
 		{
+			int oldR = static_cast<int>(sqrt(pow(pointSelected->x - cx, 2) + pow(pointSelected->y - cy, 2)));
+			int newR = static_cast<int>(sqrt(pow(x - cx, 2) + pow(y - cy, 2)));
+			int diff = newR - oldR;
+
+			if(r + diff >= 1)
+				r += diff;
+
 			pointSelected->x = x;
 			pointSelected->y = y;
-
-			r = static_cast<int>(sqrt(pow(x - cx, 2) + pow(y - cy, 2)) * 0.75);
 		}
 		else
 		{	// Move the whole circle

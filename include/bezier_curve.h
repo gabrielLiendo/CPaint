@@ -106,30 +106,27 @@ public:
 		boxPoints[3].x = maxX; boxPoints[3].y = minY;
 
 		// set Segment points values
-		Point newPoint;
 		int maxD = max(maxX - minX, maxY - minY);
-		double step = (double)1.0 / (double)(17.0 + n + maxD/60.0);
+		double step = (double)1.0 / (double)(17.0 + n*4.0 + maxD/60.0);
 
 		for (double t = 0; t <= 1; t += step)
-		{
-			vector<Point> tempPoints = ctrlPoints;
-
-			while (tempPoints.size() > 1)
-			{
-				vector<Point> tempPoints2;
-
-				for (int i = 0; i < tempPoints.size() - 1; i++)
-				{
-					newPoint.x = (1 - t) * tempPoints[i].x + t * tempPoints[i + 1].x;
-					newPoint.y = (1 - t) * tempPoints[i].y + t * tempPoints[i + 1].y;
-					tempPoints2.push_back(newPoint);
-				}
-				tempPoints = tempPoints2;
-			}
-			segmentsPoints.push_back(tempPoints[0]);
-		}
-		segmentsPoints.push_back(ctrlPoints.back());
+			segmentsPoints.push_back(bezierPoint(ctrlPoints, n, t));
+			
 		m = segmentsPoints.size();
+	}
+
+	Point bezierPoint(vector<Point> ctrlPoints, int n, double t)
+	{
+		while (n > 1)
+		{
+			n--;
+			for (int i = 0; i < n; i++)
+			{
+				ctrlPoints[i].x = ctrlPoints[i].x + t * ctrlPoints[i + 1].x - t*ctrlPoints[i].x;
+				ctrlPoints[i].y = ctrlPoints[i].y + t * ctrlPoints[i + 1].y - t*ctrlPoints[i].y;
+			}
+		}
+		return ctrlPoints[0];
 	}
 
 	// Draw the line strip that forms with the control points
@@ -139,24 +136,6 @@ public:
 			drawLine(ctrlPoints[i - 1].x, ctrlPoints[i - 1].y, ctrlPoints[i].x, ctrlPoints[i].y, Color({ 0.0, 0.0, 0.0 }));
 	}
 
-	Point nextCurvePoint(vector<Point> points, double t)
-	{	
-		if (points.size() == 1)
-			return points[0];
-		else
-		{	
-			int x, y;
-			vector<Point> newPoints;
-			for (int i = 0; i < (int)points.size() - 1; i++)
-			{
-				x = round((1 - t) * points[i].x + t * points[i + 1].x);
-				y = round((1 - t) * points[i].y + t * points[i + 1].y);
-				newPoints.push_back({ x, y });
-			}
-			return nextCurvePoint(newPoints, t);
-		}
-	}
-
 	void render(const bool modeHardware)
 	{
 		if(!closed)
@@ -164,7 +143,6 @@ public:
 
 		if (modeHardware)
 		{
-			// Draw Bezier Curve (with segments)
 			glColor3f(borderColor.r, borderColor.g, borderColor.b);
 			glBegin(GL_LINE_STRIP);
 			for (int i = 0; i < m; i++)
@@ -173,7 +151,6 @@ public:
 		}
 		else
 		{
-			// Draw Bezier Curve (with segments)
 			for (int i = 1; i < m; i++)
 				drawLine(segmentsPoints[i - 1].x, segmentsPoints[i - 1].y, segmentsPoints[i].x, segmentsPoints[i].y, borderColor);
 		}

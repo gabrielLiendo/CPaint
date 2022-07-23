@@ -87,10 +87,7 @@ void saveFigure()
 {
 	// We finisish the figure, and it's marked as 'selected'
 	selectedShape = drawingShape;
-
-	shapes.insert(std::upper_bound(shapes.begin(), shapes.end(),
-		drawingShape, isHigherLevel), drawingShape);
-
+	shapes.push_back(drawingShape);
 	drawingShape = nullptr;
 	drawing = false;
 }
@@ -101,7 +98,7 @@ void setViewport()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glViewport(0, 0, width, height);
-	glOrtho(-0.5, width - 0.5, height - 0.5, -0.5, -1, 1);
+	glOrtho(-0.5, width - 0.5,  - 0.5, height - 0.5, -1, 1);
 }
 
 void renderScene(void) 
@@ -114,14 +111,14 @@ void renderScene(void)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Render every shape in canvas
-	if (drawingShape)
-		drawingShape->render(currentMode);
-
 	for (auto const& s : shapes)
 		s->render(currentMode);
 
 	if (selectedShape)
 		selectedShape->renderCtrlPoints();
+
+	if (drawingShape)
+		drawingShape->render(currentMode);
 
 	// ImGui window rendering
 	ui.renderWindow();
@@ -163,6 +160,7 @@ void onHoverShape(int x, int y)
 
 void onClickCanvas(int button, int state, int x, int y)
 {	
+	y = height - y - 1;
 	// Manage clicked button (left, rigth, middle)
 	switch (button)
 	{
@@ -242,6 +240,7 @@ void onMotion(int x, int y)
 		ImGui_ImplGLUT_MotionFunc(x, y);
 	else
 	{
+		y = height - y - 1;
 		if (drawing)
 		{
 			if (!drawingShape)
@@ -265,6 +264,7 @@ void onPassiveMotion(int x, int y)
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddMousePosEvent((float)x, (float)y);
 
+	y = height - y - 1;
 	if (drawingShape)
 	{	// We are drawing a Triangle or a Bezier curve
 		drawingShape->update(x, y);
