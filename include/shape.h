@@ -101,6 +101,19 @@ public:
 		fillColor.r = r; fillColor.g = g; fillColor.b = b;
 	}
 
+	/*
+	float *getFillColor()
+	{
+		float color[3] = { fillColor.r, fillColor.g, fillColor.b };
+		return color;
+	}
+
+	float *getBorderColor()
+	{
+		float color[3] = { borderColor.r, borderColor.g, borderColor.b };
+		return color;
+	}*/
+
 	// Display one pixel in the position (x, y) with the color c
 	void putPixel(int x, int y, Color c)
 	{	

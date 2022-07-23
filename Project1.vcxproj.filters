@@ -107,8 +107,5 @@
     <ClInclude Include="include\vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bezier_curve.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
