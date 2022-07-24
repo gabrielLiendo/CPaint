@@ -33,7 +33,7 @@ public:
 	// Current State variables
 	int shapeSelected; 
 	bool currentMode, allowFill;
-	bool openBGPicker, openFillPicker, openBorderPicker, openHelp;
+	bool openMainWindow, openBGPicker, openFillPicker, openBorderPicker, openHelp;
 
 	PaintUI() 
 	{
@@ -45,6 +45,7 @@ public:
 		openFillPicker = false;
 		openBorderPicker = false;
 		openHelp = false;
+		openMainWindow = true;
 
 		// Initialize Color Palette
 		saved_palette[0] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);		saved_palette[13] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -60,19 +61,6 @@ public:
 		saved_palette[10] = ImVec4(0.5f, 0.0f, 1.0f, 1.0f);		saved_palette[23] = ImVec4(0.7f, 0.4f, 1.0f, 1.0f);
 		saved_palette[11] = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);		saved_palette[24] = ImVec4(1.0f, 0.4f, 1.0f, 1.0f);
 		saved_palette[12] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);		saved_palette[25] = ImVec4(0.75f, 0.75f, 0.75f, 1.0f);
-	}
-
-	static void HelpMarker(const char* desc)
-	{
-		ImGui::TextDisabled("(?)");
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::BeginTooltip();
-			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-			ImGui::TextUnformatted(desc);
-			ImGui::PopTextWrapPos();
-			ImGui::EndTooltip();
-		}
 	}
 
 	void init()
@@ -96,6 +84,19 @@ public:
 		ImGui_ImplGLUT_Init();
 		ImGui_ImplGLUT_InstallFuncs();
 		ImGui_ImplOpenGL2_Init();
+	}
+
+	static void HelpMarker(const char* desc)
+	{
+		ImGui::TextDisabled("(?)");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::BeginTooltip();
+			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+			ImGui::TextUnformatted(desc);
+			ImGui::PopTextWrapPos();
+			ImGui::EndTooltip();
+		}
 	}
 
 	void renderWindow()
@@ -183,7 +184,7 @@ public:
 			if (!(*token))
 				return false;
 
-			c = atof(*token);
+			c = (float)atof(*token);
 
 			if (c < 0.0f || c > 1.0f)
 				return 4;
@@ -407,165 +408,159 @@ public:
 
 	void drawUI()
 	{	
-		ImGui::Begin("Configuration", 0, ImGuiWindowFlags_MenuBar);
-
-		if (ImGui::BeginMenuBar())
+		if (openMainWindow && ImGui::Begin("Configuration", 0, ImGuiWindowFlags_MenuBar))
 		{
-			if (ImGui::BeginMenu("File"))
+			if (ImGui::BeginMenuBar())
 			{
-				if (ImGui::MenuItem("Load Scene", "L"))
-					loadScene();
-				if (ImGui::MenuItem("Save Scene", "S"))
-					saveScene();
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Help"))
-			{
-				if (ImGui::MenuItem("Shortcuts", " "))
-					openHelp = true;
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenuBar();
-		}
-
-		if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGuiStyle& style = ImGui::GetStyle();
-
-			float w = ImGui::CalcItemWidth();
-			float spacing = style.ItemInnerSpacing.x;
-			float button_sz = ImGui::GetFrameHeight();
-
-			ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
-			if (ImGui::BeginCombo("##rendering mode", renderingModes[currentMode], ImGuiComboFlags_NoArrowButton))
-			{
-				for (int n = 0; n < 2; n++)
+				if (ImGui::BeginMenu("File"))
 				{
-					bool is_selected = (currentMode == n);
-					if (ImGui::Selectable(renderingModes[n], is_selected))
-						currentMode = renderingModes[n];
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
+					if (ImGui::MenuItem("Load Scene", "L"))
+						loadScene();
+					if (ImGui::MenuItem("Save Scene", "S"))
+						saveScene();
+					ImGui::EndMenu();
 				}
-				ImGui::EndCombo();
+				if (ImGui::BeginMenu("Help"))
+				{
+					if (ImGui::MenuItem("Shortcuts", " "))
+						openHelp = true;
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenuBar();
 			}
-			ImGui::PopItemWidth();
 
-			ImGui::SameLine(0, spacing);
-			if (ImGui::ArrowButton("##l", ImGuiDir_Left))
-				currentMode = !currentMode;
-
-			ImGui::SameLine(0, spacing);
-			if (ImGui::ArrowButton("##r", ImGuiDir_Right))
-				currentMode = !currentMode;
-
-			ImGui::SameLine(0, style.ItemInnerSpacing.x);
-			ImGui::Text("Rendering Mode");
-
-			ImGui::ColorEdit3("Background Color", bgColor);
-		}
-
-		if (ImGui::CollapsingHeader("Draw Figure", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			if (ImGui::TreeNodeEx("Choose Shape", nodeFlags))
+			if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
 			{
+				ImGuiStyle& style = ImGui::GetStyle();
 
-				ImGui::TreePush();
 				float w = ImGui::CalcItemWidth();
-				for (int i = 0; i < 2; i++) {
-					for (int j = 0; j < 3; j++)
+				float spacing = style.ItemInnerSpacing.x;
+				float button_sz = ImGui::GetFrameHeight();
+
+				ImGui::PushItemWidth(w - spacing * 2.0f - button_sz * 2.0f);
+				if (ImGui::BeginCombo("##rendering mode", renderingModes[currentMode], ImGuiComboFlags_NoArrowButton))
+				{
+					for (int n = 0; n < 2; n++)
 					{
-						if (j > 0)
-							ImGui::SameLine();
-
-						if (ImGui::Selectable(shapeTypes[(3 * i) + j], shapeSelected == ((3 * i) + j), 0, ImVec2(w/ (float)2.3, 40.0f)))
-							shapeSelected = (3 * i) + j;
+						bool is_selected = (currentMode == (bool)n);
+						if (ImGui::Selectable(renderingModes[n], is_selected))
+							currentMode = renderingModes[n];
+						if (is_selected)
+							ImGui::SetItemDefaultFocus();
 					}
+					ImGui::EndCombo();
 				}
-				ImGui::TreePop();
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine(0, spacing);
+				if (ImGui::ArrowButton("##l", ImGuiDir_Left))
+					currentMode = !currentMode;
+
+				ImGui::SameLine(0, spacing);
+				if (ImGui::ArrowButton("##r", ImGuiDir_Right))
+					currentMode = !currentMode;
+
+				ImGui::SameLine(0, spacing);
+				ImGui::Text("Rendering Mode");
+
+				ImGui::ColorEdit3("Background Color", bgColor);
 			}
 
-			if (ImGui::TreeNodeEx("Edit Colors", nodeFlags))
+			if (ImGui::CollapsingHeader("Draw Figure", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::SameLine();
-				HelpMarker("Left-click on palette \nto change the fill color. \n\nRight-click on palette \nto change the border color.");
-
-				ImGui::TreePush();
-
-				if (selectedShape)
-					allowFill = selectedShape->getFillBool();
-
-				if (ImGui::Checkbox("Draw Filler", &allowFill) && selectedShape)
+				if (ImGui::TreeNodeEx("Choose Shape", nodeFlags))
 				{
-					selectedShape->setFilled(allowFill);
-					selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+					ImGui::TreePush();
+					float w = ImGui::CalcItemWidth();
+					for (int i = 0; i < 2; i++) {
+						for (int j = 0; j < 3; j++)
+						{
+							if (j > 0)
+								ImGui::SameLine();
+
+							if (ImGui::Selectable(shapeTypes[(3 * i) + j], shapeSelected == ((3 * i) + j), 0, ImVec2(w / (float)2.3, 40.0f)))
+								shapeSelected = (3 * i) + j;
+						}
+					}
+					ImGui::TreePop();
 				}
 
-				if (ImGui::ColorEdit3("Fill Color", fillColor) && selectedShape)
-					selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
-
-				if (ImGui::ColorEdit3("Border Color", borderColor) && selectedShape)
-					selectedShape->setBorderColor(borderColor[0], borderColor[1], borderColor[2]);
-				
-				/*if (selectedShape)
+				if (ImGui::TreeNodeEx("Edit Colors", nodeFlags))
 				{
-					float* bColor = selectedShape->getBorderColor();
-					float* fColor = selectedShape->getFillColor();
-					borderColor[0] = bColor[0]; borderColor[1] = bColor[1]; borderColor[2] = bColor[2];
-					fillColor[0] = fColor[0]; fillColor[1] = fColor[1]; fillColor[2] = fColor[2];
-				}*/
+					ImGui::SameLine();
+					HelpMarker("Left-click on palette \nto change the fill color. \n\nRight-click on palette \nto change the border color.");
 
-				ImGui::Separator();
-				ImGui::Text("Default Palette:");
-				drawPalette();
+					ImGui::TreePush();
 
-				ImGui::TreePop();
+					if (selectedShape)
+						allowFill = selectedShape->getFillBool();
+
+					if (ImGui::Checkbox("Draw Filler", &allowFill) && selectedShape)
+					{
+						selectedShape->setFilled(allowFill);
+						selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+					}
+
+					if (ImGui::ColorEdit3("Fill Color", fillColor) && selectedShape)
+						selectedShape->setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+
+					if (ImGui::ColorEdit3("Border Color", borderColor) && selectedShape)
+						selectedShape->setBorderColor(borderColor[0], borderColor[1], borderColor[2]);
+
+					ImGui::Separator();
+					ImGui::Text("Default Palette:");
+					drawPalette();
+
+					ImGui::TreePop();
+				}
 			}
-		}
 
-		if (ImGui::CollapsingHeader("Tools", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			if (ImGui::TreeNodeEx("Control Layer", nodeFlags))
+			if (ImGui::CollapsingHeader("Tools", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::TreePush();
+				if (ImGui::TreeNodeEx("Control Layer", nodeFlags))
+				{
+					ImGui::TreePush();
 
-				ImGui::Text("Back");
-				ImGui::SameLine();
-				if (ImGui::Button("<<", ImVec2(20, 20)))
-					toggleLevel(-2);
-				ImGui::SameLine();
+					ImGui::Text("Back");
+					ImGui::SameLine();
+					if (ImGui::Button("<<", ImVec2(20, 20)))
+						toggleLevel(-2);
+					ImGui::SameLine();
 
-				ImGui::Text("Down");
-				ImGui::SameLine();
-				if (ImGui::Button("-", ImVec2(20, 20)))
-					toggleLevel(-1);
-				ImGui::SameLine();
+					ImGui::Text("Down");
+					ImGui::SameLine();
+					if (ImGui::Button("-", ImVec2(20, 20)))
+						toggleLevel(-1);
+					ImGui::SameLine();
 
-				ImGui::Text("Up");
-				ImGui::SameLine();
-				if (ImGui::Button("+", ImVec2(20, 20)))
-					toggleLevel(1);
-				ImGui::SameLine();
+					ImGui::Text("Up");
+					ImGui::SameLine();
+					if (ImGui::Button("+", ImVec2(20, 20)))
+						toggleLevel(1);
+					ImGui::SameLine();
 
-				ImGui::Text("Front");
-				ImGui::SameLine();
-				if (ImGui::Button(">>", ImVec2(20, 20)))
-					toggleLevel(2);
+					ImGui::Text("Front");
+					ImGui::SameLine();
+					if (ImGui::Button(">>", ImVec2(20, 20)))
+						toggleLevel(2);
 
-				ImGui::TreePop();
+					ImGui::TreePop();
+				}
+
+				if (ImGui::TreeNodeEx("Delete", nodeFlags))
+				{
+					ImGui::TreePush();
+					if (ImGui::Button("Selected Figure", ImVec2(100, 20)))
+						deleteFigure();
+					ImGui::SameLine();
+
+					if (ImGui::Button("All Figures", ImVec2(100, 20)))
+						deleteAllFigures();
+					ImGui::TreePop();
+				}
 			}
 
-			if (ImGui::TreeNodeEx("Delete", nodeFlags))
-			{
-				ImGui::TreePush();
-				if (ImGui::Button("Selected Figure", ImVec2(100, 20)))
-					deleteFigure();
-				ImGui::SameLine();
-
-				if (ImGui::Button("All Figures", ImVec2(100, 20)))
-					deleteAllFigures();
-				ImGui::TreePop();
-			}
+			ImGui::End();
 		}
 
 		// Popup Windows
@@ -580,9 +575,9 @@ public:
 
 
 		if (openFillPicker && ImGui::Begin("Fill Color", &openFillPicker, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
-		{	
+		{
 			float w = ImGui::CalcItemWidth();
-			ImGui::PushItemWidth((float)1.35 *w);
+			ImGui::PushItemWidth((float)1.35 * w);
 			if (ImGui::ColorPicker3("##picker", (float*)&fillColor, ImGuiColorEditFlags_NoSidePreview))
 			{
 				if (selectedShape)
@@ -608,7 +603,7 @@ public:
 
 		if (openHelp && ImGui::Begin("Help", &openHelp, ImGuiWindowFlags_None))
 		{
-			ImGui::Text("Keyboard shortcuts list.");
+			ImGui::Text("Keyboard shortcuts:");
 			ImGui::Separator();
 			ImGui::Text("Scene");
 			ImGui::BulletText("h : change rendering mode.");
@@ -634,12 +629,12 @@ public:
 			ImGui::BulletText("+ : bring figure one layer forward.");
 			ImGui::BulletText("b : push figure to the lowest layer.");
 			ImGui::BulletText("f : bring figure to the highest layer.");
+			ImGui::Text("Others:");
+			ImGui::BulletText("H : open 'Help' window.");
+			ImGui::BulletText("I : collapse/open interface.");
 			ImGui::End();
 		}
 
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-		ImGui::End();
 		ImGui::ShowDemoWindow();
 	}
 

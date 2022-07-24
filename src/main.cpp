@@ -209,6 +209,10 @@ void onKeyboardEntry(unsigned char c, int x, int y)
 		case 'B':   ui.openBGPicker = !ui.openBGPicker;			break;  // B,C,F: Open color windows 
 		case 'C':   ui.openBorderPicker = !ui.openBorderPicker; break;
 		case 'F':   ui.openFillPicker = !ui.openFillPicker;		break;
+		case 'L':   ui.loadScene();								break;
+		case 'S':   ui.saveScene();								break;
+		case 'H':	ui.openHelp = !ui.openHelp;					break;  // H: Open window with keyboard shortcuts
+		case 'I':	ui.openMainWindow = !ui.openMainWindow;		break;	// I: Collapse/Open main interface window
 		case 'u':	unselectFigure();							break;	// u: Unselect current figure
 		case 'b':   ui.toggleLevel(-2);							break;	// f, b, -, + : Toggle current figure layer level
 		case '-':   ui.toggleLevel(-1);							break;

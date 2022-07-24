@@ -163,6 +163,8 @@ public:
 
 	std::string getInfo() override
 	{
+		std::string info = name;
+
 		info += to_string(cx - r) + " " + to_string(cy - r) + " " + to_string(cx + r) + " " + to_string(cy + r) + " ";
 		
 		// Add border info

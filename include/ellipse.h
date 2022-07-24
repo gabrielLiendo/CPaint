@@ -55,8 +55,8 @@ public:
 
 	void fillEllipse(int x, int y)
 	{
-		horizontalLine(cx - x + 1, cx + x - 1, cy + y, fillColor);
-		horizontalLine(cx - x + 1, cx + x - 1, cy - y, fillColor);
+		horizontalLine(cx - x, cx + x, cy + y, fillColor);
+		horizontalLine(cx - x, cx + x, cy - y, fillColor);
 	}
 
 	// Draw border and filler in the same iteration

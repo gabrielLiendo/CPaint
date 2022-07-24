@@ -41,26 +41,26 @@ protected:
 	Point boxPoints[4];
 	Point anchorPoint;
 	Point *pointSelected = nullptr;
-	string info;
+	string name;
 
 	int level = 0, indexSelected;
 	bool filled = true;
 
 public:
 	// Contructor for figures without a filler (ex. line and bezier curves)
-	CShape(float r, float g, float b, string info)
+	CShape(float r, float g, float b, string name)
 	{
 		borderColor.r = r; borderColor.g = g; borderColor.b = b;
-		this->info = info;
+		this->name = name;
 	}
 
 	// Contructor for figures with filler
-	CShape(float r1, float g1, float b1, float r2, float g2, float b2, bool filled, string info)
+	CShape(float r1, float g1, float b1, float r2, float g2, float b2, bool filled, string name)
 	{	
 		fillColor.r = r1; fillColor.g = g1; fillColor.b = b1;
 		borderColor.r = r2; borderColor.g = g2; borderColor.b = b2;
 		this->filled = filled;
-		this->info = info;
+		this->name = name;
 	}
 
 	virtual ~CShape(){ cout << "Se destruyo un shape" << endl; }
@@ -243,6 +243,8 @@ public:
 
 	virtual std::string getInfo()
 	{
+		std::string info = name;
+
 		// Add position info
 		info += to_string(boxPoints[0].x) + " " + to_string(boxPoints[0].y) + " "
 			+ to_string(boxPoints[2].x) + " " + to_string(boxPoints[2].y) + " ";

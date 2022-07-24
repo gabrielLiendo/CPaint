@@ -112,6 +112,8 @@ public:
 	// Form string with position and border color
 	std::string getInfo() override
 	{
+		std::string info = name;
+
 		return info + to_string(points[0].x) + " " + to_string(points[0].y) + " " + to_string(points[1].x) + " " + to_string(points[1].y) + " "
 			+ to_string(borderColor.r) + " " + to_string(borderColor.g) + " " + to_string(borderColor.b) + "\n";
 	}

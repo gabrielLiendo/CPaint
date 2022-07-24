@@ -240,6 +240,8 @@ public:
 
 	std::string getInfo() override
 	{
+		std::string info = name;
+
 		// Add number of ctrl points
 		info += to_string(n) + " ";
 

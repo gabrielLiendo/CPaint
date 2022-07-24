@@ -86,4 +86,5 @@ void deleteAllFigures()
 {
 	shapes.clear();
 	selectedShape = nullptr;
+	drawingShape = nullptr;
 }

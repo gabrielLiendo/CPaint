@@ -306,6 +306,8 @@ public:
 
 	std::string getInfo() override
 	{
+		std::string info = name;
+
 		// Add position
 		info += to_string(points[0].x) + " " + to_string(points[0].y) + " "
 			 + to_string(points[1].x) + " " + to_string(points[1].y) + " "
