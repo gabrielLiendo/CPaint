@@ -1,40 +1,14 @@
 #pragma once
 #include "imgui.h"
+#include "imgui_impl_glut.h"
+#include "imgui_impl_opengl2.h"
 #include "imgui_internal.h"
 #include "tinyfiledialogs.h"
-
-#include <string>
-
-//bin\$(Platform)$(Configuration)\
+#include "shapeUtilities.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4996) // Silences warnings about fopen
 #endif
-
-using namespace std;
-
-// Pointer to current selected shape on main app
-shared_ptr<CShape> hoveredShape;
-shared_ptr<CShape> selectedShape;
-extern list<shared_ptr<CShape>> shapes;
-
-bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure)
-{
-	return figure->getLayerLevel() > fig->getLayerLevel();
-}
-
-void deleteFigure()
-{
-	if (selectedShape)
-		shapes.remove(selectedShape);
-	selectedShape = nullptr;
-}
-
-void deleteAllFigures()
-{
-	shapes.clear();
-	selectedShape = nullptr;
-}
 
 class PaintUI
 {
@@ -159,6 +133,7 @@ public:
 			default:
 				break;
 			}
+
 			selectedShape->setLayerLevel(level);
 			shapes.sort([](const shared_ptr<CShape>& a, const shared_ptr<CShape>& b)
 				{ return a->getLayerLevel() < b->getLayerLevel(); });
@@ -293,7 +268,7 @@ public:
 			count += readColorValues(&token, fileBGColor);
 
 			if (count != 3)
-				cout << "Invalid Background Color" << endl;
+				std::cout << "Invalid Background Color" << std::endl;
 			else
 			{
 				bgColor[0] = fileBGColor[0]; 
@@ -322,7 +297,7 @@ public:
 					shapes.push_back(l);
 				}
 				else
-					cout << "Invalid Line" << endl;	
+					std::cout << "Invalid Line" << std::endl;
 			}
 			else if (strcmp(token, "TRIANGLE") == 0)
 			{
@@ -335,7 +310,7 @@ public:
 					shapes.push_back(t);
 				}	
 				else
-					cout << "Invalid Triangle" << endl;
+					std::cout << "Invalid Triangle" << std::endl;
 			}
 			else if (strcmp(token, "RECTANGLE") == 0)
 			{
@@ -346,7 +321,7 @@ public:
 					shapes.push_back(r);
 				}
 				else
-					cout << "Invalid Rectangle" << endl;
+					std::cout << "Invalid Rectangle" << std::endl;
 			}
 			else if (strcmp(token, "ELLIPSE") == 0)
 			{
@@ -357,7 +332,7 @@ public:
 					shapes.push_back(e);
 				}
 				else
-					cout << "Invalid Ellipse" << endl;
+					std::cout << "Invalid Ellipse" << std::endl;
 			}
 			else if (strcmp(token, "CIRCLE") == 0)
 			{
@@ -368,7 +343,7 @@ public:
 					shapes.push_back(c);
 				}
 				else
-					cout << "Invalid Circle" << endl;
+					std::cout << "Invalid Circle" << std::endl;
 			}
 			else if (strncmp(token, "BEZIER", 5) == 0)
 			{	
@@ -379,10 +354,10 @@ public:
 					shapes.push_back(b);
 				}
 				else
-					cout << "Invalid Bezier Curve" << endl;
+					std::cout << "Invalid Bezier Curve" << std::endl;
 			}
 			else 
-				cout << "Non existing Figure" << endl;
+				std::cout << "Non existing Figure" << std::endl;
 		}
 
 		fclose(lIn);
@@ -661,6 +636,8 @@ public:
 			ImGui::BulletText("f : bring figure to the highest layer.");
 			ImGui::End();
 		}
+
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 		ImGui::End();
 		ImGui::ShowDemoWindow();

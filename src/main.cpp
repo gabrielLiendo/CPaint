@@ -1,96 +1,11 @@
-#include "imgui.h"
-#include "imgui_impl_glut.h"
-#include "imgui_impl_opengl2.h"
-
 #include <GL/freeglut.h>
-#include <iostream>
-#include <memory>
-#include <list>
-#include <algorithm>
-
-#include "line.h"
-#include "circle.h"
-#include "ellipse.h"
-#include "rectangle.h"
-#include "triangle.h"
-#include "bezier_curve.h"
-#include "paintUI.h"
+#include "CPaintUI.h"
 
 PaintUI ui;
 int width = 1600, height = 800;
-int firstX0, firstY0;
+int oldx0, oldy0;
 bool drawing = true;
 bool clickedCtrlPoint = false;
-
-// Displayed Figures 
-list<shared_ptr<CShape>> shapes;
-shared_ptr<CShape> drawingShape = nullptr;
-
-bool isHigherLevel(shared_ptr<CShape> fig, shared_ptr<CShape> figure);
-
-void deleteFigure();
-
-void deleteAllFigures();
-
-void createFigure(int x1, int y1)
-{
-	const int shapeSelected = ui.shapeSelected;
-	const bool filled = ui.allowFill;
-	const float* fillColor = ui.fillColor, * borderColor = ui.borderColor;
-	int x0 = firstX0, y0 = firstY0;
-
-	if (shapeSelected == 0)
-	{
-		shared_ptr<CLine> l = make_shared<CLine>(x0, y0, x1, y1, borderColor[0], borderColor[1], borderColor[2]);
-		drawingShape = l;
-	}
-	else if (shapeSelected == 1)
-	{
-		shared_ptr<CCircle> c = make_shared<CCircle>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled, false);
-		drawingShape = c;
-	}
-	else if (shapeSelected == 2)
-	{
-		shared_ptr<CEllipse> e = make_shared<CEllipse>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
-		drawingShape = e;
-	}
-	else if (shapeSelected == 3)
-	{
-		shared_ptr<CRectangle> s = make_shared<CRectangle>(x0, y0, x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
-		drawingShape = s;
-	}
-	else if (shapeSelected == 4)
-	{
-		shared_ptr<CTriangle> s = make_shared<CTriangle>(x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2], filled);
-		drawingShape = s;
-	}
-	else if (shapeSelected == 5)
-	{
-		shared_ptr<CBezier> b = make_shared<CBezier>(x1, y1,
-			fillColor[0], fillColor[1], fillColor[2], borderColor[0], borderColor[1], borderColor[2]);
-		drawingShape = b;
-	}
-}
-
-void unselectFigure()
-{
-	if (selectedShape)
-		selectedShape->release();
-	selectedShape = nullptr;
-}
-
-void saveFigure()
-{
-	// We finisish the figure, and it's marked as 'selected'
-	selectedShape = drawingShape;
-	shapes.push_back(drawingShape);
-	drawingShape = nullptr;
-	drawing = false;
-}
 
 void setViewport()
 {
@@ -142,8 +57,6 @@ void onResize(int w, int h)
 	setViewport();
 }
 
-// Deberiamos revisar esto al revez, para revisar primero la lista que esta en el nivel 
-// superior
 void onHoverShape(int x, int y)
 {
 	for (auto it = shapes.crbegin(); it != shapes.crend(); it++)
@@ -157,7 +70,6 @@ void onHoverShape(int x, int y)
 	hoveredShape = nullptr;
 }
 	
-
 void onClickCanvas(int button, int state, int x, int y)
 {	
 	y = height - y - 1;
@@ -185,20 +97,23 @@ void onClickCanvas(int button, int state, int x, int y)
 			else if (ui.shapeSelected > 3)
 			{
 				if (!drawingShape)
-					createFigure(x, y);
+					createFigure(ui.shapeSelected, oldx0, oldy0, x, y, ui.fillColor, ui.borderColor, ui.allowFill);
 				else 
 					drawingShape->newPoint(x, y);
 			}
 			else 
 			{	// We can draw
 				drawing = true;
-				firstX0 = x; firstY0 = y;
+				oldx0 = x; oldy0 = y;
 			}
 		}
 		else 
 		{	// Left-click was lifted
 			if (drawingShape && drawingShape->finished())
+			{
 				saveFigure();
+				drawing = false;
+			}
 		}
 		break;
 	case GLUT_RIGHT_BUTTON:
@@ -206,6 +121,7 @@ void onClickCanvas(int button, int state, int x, int y)
 		{
 			drawingShape->forceFinish(x, y);
 			saveFigure();
+			drawing = false;
 		}
 		else if (ui.shapeSelected == 4)
 		{
@@ -244,7 +160,7 @@ void onMotion(int x, int y)
 		if (drawing)
 		{
 			if (!drawingShape)
-				createFigure(x, y);
+				createFigure(ui.shapeSelected, oldx0, oldy0, x, y, ui.fillColor, ui.borderColor, ui.allowFill);
 			else
 				drawingShape->update(x, y);
 		}

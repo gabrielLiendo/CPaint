@@ -46,16 +46,30 @@ public:
 	// We check if the click fell close to the line, threshold: 4 pixels
 	bool onClick(int x, int y) 
 	{
-		if ((points[1].x > points[0].x && (x > points[1].x + 3 || x < points[0].x - 3)) 
-			|| (points[1].x <= points[0].x && (x > points[0].x + 3 || x < points[1].x - 3)))
+		int x0 = points[0].x, x1 = points[1].x;
+		int y0 = points[0].y, y1 = points[1].y;
+		if (x0 > x1)
+		{
+			x0 = points[1].x;
+			x1 = points[0].x;
+		}
+		if (y0 > y1)
+		{
+			y0 = points[1].y;
+			y1 = points[0].y;
+		}
+
+		if (x < x0 - 3 || x > x1 + 3 || y < y0 - 3 || y > y1 + 3) 
 			return false;
-			
+		
+
 		int a = points[0].y - points[1].y;
 		int b = points[1].x - points[0].x;
 		int c = points[0].x * points[1].y - points[1].x * points[0].y;
-		int distance = static_cast<int>(abs(a * x + b * y + c) / sqrt(a * a + b * b));
+		double num = (a * x + b * y + c);
+		int distance = static_cast<int>(num / (double)(a * a + b * b) * num);
 
-		return distance <= 4;
+		return distance > 0 &&  distance <= 16 ;
 	}
 
 	// We check if the click fell on a vertex
