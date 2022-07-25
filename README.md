@@ -12,7 +12,9 @@ To draw and edit the scene we can use the user interface or the keyboard, a scen
 
 On the other hand, we can collapse the UI with the 'I' key and only use the keyboard, we can find a list with all the keyboard shortcuts by pressing the 'H' key or by pressing the 'Help->Shortcuts' tab on the UI: 
 
-![CPaint without UI](https://user-images.githubusercontent.com/35168412/180833209-f158a4c0-9b9c-4b95-a913-a76c544043ec.png)
+![CPaint without UI](https://user-images.githubusercontent.com/35168412/180834476-28ce214f-a318-4534-ad4b-806051b124dd.png)
+
+If you have trouble drawing a figure you can head over the help marker beside the 'Shape' section in the UI to find how to start and end each shape.
 
 ## Use and Compiling
 This project was developed using Visual Studio 2022, to build it yourself open the .sln file and compile it using the x84 configuration. If you just want to use the applicatton, just open the .exe file included in the main directory.
