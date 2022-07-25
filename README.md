@@ -16,7 +16,7 @@ On the other hand, we can collapse the UI with the 'I' key and only use the keyb
 
 If you have trouble drawing a figure you can head over the help marker beside the 'Shape' section in the UI to find how to start and end each shape.
 
-## Use and Compiling
+## Compiling
 This project was developed using Visual Studio 2022, to build it yourself open the .sln file and compile it using the x84 configuration. If you just want to use the application, just open the .exe file included in the main directory.
 
 ## Current Known Issues
