@@ -1,5 +1,7 @@
 # CPaint
-CPaint is a simple drawing tool that was made as a first project for Introduction to Computer Graphics. With the application we can draw 6 types of primitives (Lines, Rectangles, Circles, Ellipses, Triangles, and Bezier Curve) and modify the figures's border and filler colors, overall shape and position, after a drawing session we can save the scene to load it at a later time and continue with our work. To do all this we can use the user interface or the keyboard, a list with all the keyboard shortcuts can be displayed by pressing the 'H' key or by pressing the 'Help->Shortcuts' tab on the UI.
+CPaint is a simple drawing tool that was made as a first project for Introduction to Computer Graphics. With the application we can draw 6 types of primitives (Lines, Rectangles, Circles, Ellipses, Triangles, and Bezier Curves) and we can modify the figures's border and filler colors, overall shape and position, after a drawing session we can save the scene to load it at a later time and continue with our work. To do all this we can use the user interface or the keyboard, a list with all the keyboard shortcuts can be displayed by pressing the 'H' key or by pressing the 'Help->Shortcuts' tab on the UI.
+
+![CPaint with UI](https://ibb.co/d0vrDfy)
 
 For the rendering we have two modes (by harware and by software), the hardware mode uses the old OpenGL primitives while the software mode exploits the CPU and renders the figures pixel by pixel. To implement this last mode we use the Mid-Point Algorithm for the Line, the Circle and the Ellipse shapes, and the Casteljau's algorithm for the Bezier Curve.
 
