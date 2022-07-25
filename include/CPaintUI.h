@@ -470,6 +470,9 @@ public:
 			{
 				if (ImGui::TreeNodeEx("Choose Shape", nodeFlags))
 				{
+					ImGui::SameLine();
+					HelpMarker("To draw a Line, Rectangle, Circle or Ellipse \nleft-click and drag your mouse.\n\nTo draw a Triangle do three left-clicks. \n\nTo draw a Bezier Curve do one left click per control \npoint and do the last one with a right click.");
+
 					ImGui::TreePush();
 					float w = ImGui::CalcItemWidth();
 					for (int i = 0; i < 2; i++) {
