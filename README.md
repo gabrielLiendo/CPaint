@@ -10,8 +10,10 @@ The source code was written with C++, the user interface was integrated with ImG
 ## Use and Compiling
 This project was developed using Visual Studio 2020, to build it yourself open the .sln file and compile it using the x84 configuration. If you just want to use the applicatton, just open the .exe file included in the main directory.
 
-## Current Issues
+## Current Known Issues
 
 - Given that the keyboards keys from 1 to 6 are assigned to change the shape of the figure to draw, it's not possible to enter a color value by hand (RGB, HSV or Hex) in the color editors.
 
-- In the bezier curve after imputting more than 15 control points the curve starts to look jagged.
+- In the bezier curve after imputting more than 13 control points the curve starts to look jagged, depending of their position.
+
+- It's not possible to resize the bounding boxes of the triangles and the bezier curves.

@@ -6,7 +6,7 @@ class CCircle : public CShape
 private:
 	int r;				// Radius
 	int cx, cy;			// Center
-	Point ctrlRadius;	// Control point for resize
+	Point2D ctrlRadius;	// Control point for resize
 
 public:
 	CCircle(int x0, int y0, int x1, int y1, float r1, float g1, float b1, float r2, float g2, float b2, bool filled, bool fromFile)
@@ -30,7 +30,7 @@ public:
 			cx = x0 + r; 
 			cy = y0 + r;
 		}
-		ctrlRadius = Point(cx + r, cy);
+		ctrlRadius = Point2D(cx + r, cy);
 	}
 		
 	~CCircle(){ cout << "Se destruyo un circulo" << endl; }

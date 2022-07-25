@@ -24,9 +24,6 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="include\imgui\imgui_demo.cpp">
-      <Filter>Source Files\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="include\imgui\imgui_draw.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
@@ -89,22 +86,10 @@
     <ClInclude Include="include\circle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\paint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\boxableShape.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ellipse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\tinyfiledialogs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\vertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\CPaint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

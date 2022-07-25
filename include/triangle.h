@@ -4,7 +4,7 @@
 class CTriangle : public CShape
 {
 private:	
-	Point points[4];
+	Point2D points[4];
 	int currentIndex = 1;
 	bool closed = false;
 	double leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0; // Slopes 
@@ -13,16 +13,16 @@ public:
 	CTriangle(int x, int y, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
 		: CShape(r1, g1, b1, r2, g2, b2, filled, "TRIANGLE ")
 	{
-		points[0] = Point(x, y);
-		points[1] = Point(x, y);
+		points[0] = Point2D(x, y);
+		points[1] = Point2D(x, y);
 	}
 
 	CTriangle(int x0, int y0, int x1, int y1, int x2, int y2, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
 		: CShape(r1, g1, b1, r2, g2, b2, filled, "TRIANGLE ")
 	{
-		points[0] = Point(x0, y0);
-		points[1] = Point(x1, y1);
-		points[2] = Point(x2, y2);
+		points[0] = Point2D(x0, y0);
+		points[1] = Point2D(x1, y1);
+		points[2] = Point2D(x2, y2);
 
 		currentIndex = 3; closed = true;
 		setRenderValues();
@@ -198,7 +198,7 @@ public:
 				// Draw upper semi-triangle filler
 				for (int y = points[0].y; y <= points[1].y; y++)
 				{
-					horizontalLine(ceil(xLeft),(int)xRight, y, fillColor);
+					horizontalLine((int)ceil(xLeft),(int)xRight, y, fillColor);
 					xLeft += leftInc1;
 					xRight += rightInc1;
 				}
@@ -207,7 +207,7 @@ public:
 				xLeft = (double)points[2].x; xRight = (double)points[2].x;
 				for (int y = points[2].y; y > points[1].y; y--)
 				{
-					horizontalLine(ceil(xLeft), (int)xRight, y, fillColor);
+					horizontalLine((int)ceil(xLeft), (int)xRight, y, fillColor);
 					xLeft -= leftInc2;
 					xRight -= rightInc2;
 				}

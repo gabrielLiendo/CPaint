@@ -4,7 +4,7 @@
 PaintUI ui;
 int width = 1600, height = 800;
 int oldx0, oldy0;
-bool drawing = true;
+bool drawing = false;
 bool overCtrlPoint = false;
 
 void setViewport()
@@ -91,6 +91,7 @@ void onClickCanvas(int button, int state, int x, int y)
 			else if (ui.shapeSelected > 3)
 			{
 				unselectFigure();
+				drawing = true;
 				if (!drawingShape)
 					createFigure(ui.shapeSelected, oldx0, oldy0, x, y, ui.fillColor, ui.borderColor, ui.allowFill);
 				else 
@@ -207,12 +208,12 @@ void onKeyboardEntry(unsigned char c, int x, int y)
 {
 	switch (c)
 	{
-		case '1':	ui.shapeSelected = 0;						break;  // 1-6: Change shape to draw
-		case '2':	ui.shapeSelected = 1;						break;
-		case '3':	ui.shapeSelected = 2;						break;
-		case '4':	ui.shapeSelected = 3;						break;
-		case '5':	ui.shapeSelected = 4;						break;
-		case '6':	ui.shapeSelected = 5;						break;
+		case '1':	if (!drawing) ui.shapeSelected = 0;						break;  // 1-6: Change shape to draw
+		case '2':	if (!drawing) ui.shapeSelected = 1;						break;
+		case '3':	if (!drawing) ui.shapeSelected = 2;						break;
+		case '4':	if (!drawing) ui.shapeSelected = 3;						break;
+		case '5':	if (!drawing) ui.shapeSelected = 4;						break;
+		case '6':	if (!drawing) ui.shapeSelected = 5;						break;
 		case 'h':	ui.currentMode = !ui.currentMode;			break;  // h: Change rendering mode
 		case 'B':   ui.openBGPicker = !ui.openBGPicker;			break;  // B,C,F: Open color windows 
 		case 'C':   ui.openBorderPicker = !ui.openBorderPicker; break;

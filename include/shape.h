@@ -11,13 +11,13 @@ struct Color
 	float r, g, b;
 };
 
-struct Point
+struct Point2D
 {
 	int x, y;
 
-	Point() { x = 0; y = 0; }
+	Point2D() { x = 0; y = 0; }
 
-	Point(int x, int y)
+	Point2D(int x, int y)
 	{
 		this->x = x;
 		this->y = y;
@@ -38,10 +38,10 @@ class CShape
 {
 protected:
 	Color fillColor, borderColor;		
-	Point boxPoints[4];					
-	Point anchorPoint;					// First point clicked when moving shape
-	Point* pointHovered = nullptr;
-	Point *pointSelected = nullptr;		// Pointer to selected ctrl point
+	Point2D boxPoints[4];					
+	Point2D anchorPoint;					// First point clicked when moving shape
+	Point2D *pointHovered = nullptr;
+	Point2D *pointSelected = nullptr;		// Pointer to selected ctrl point
 	string name;						// Shape name
 
 	int level = 0;						// Level in layers of canvas

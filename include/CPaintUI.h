@@ -408,7 +408,7 @@ public:
 
 	void drawUI()
 	{	
-		if (openMainWindow && ImGui::Begin("Configuration", 0, ImGuiWindowFlags_MenuBar))
+		if (openMainWindow && ImGui::Begin("Configuration", 0, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse))
 		{
 			if (ImGui::BeginMenuBar())
 			{
@@ -634,8 +634,6 @@ public:
 			ImGui::BulletText("I : collapse/open interface.");
 			ImGui::End();
 		}
-
-		ImGui::ShowDemoWindow();
 	}
 
 	void close()

@@ -159,7 +159,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="include\imgui\imgui.cpp" />
-    <ClCompile Include="include\imgui\imgui_demo.cpp" />
     <ClCompile Include="include\imgui\imgui_draw.cpp" />
     <ClCompile Include="include\imgui\imgui_impl_glut.cpp" />
     <ClCompile Include="include\imgui\imgui_impl_opengl2.cpp" />
@@ -169,11 +168,8 @@
     <ClCompile Include="src\tinyfiledialogs.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\boxableShape.h" />
     <ClInclude Include="include\circle.h" />
-    <ClInclude Include="include\CPaint.h" />
     <ClInclude Include="include\ellipse.h" />
-    <ClInclude Include="include\paint.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_impl_glut.h" />
@@ -187,7 +183,6 @@
     <ClInclude Include="include\rectangle.h" />
     <ClInclude Include="include\tinyfiledialogs.h" />
     <ClInclude Include="include\triangle.h" />
-    <ClInclude Include="include\vertex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

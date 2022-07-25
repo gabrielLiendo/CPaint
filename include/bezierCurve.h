@@ -4,10 +4,11 @@
 class CBezier : public CShape
 {
 private:
-	vector<Point> ctrlPoints;
-	vector<Point> segmentsPoints;
+	vector<Point2D> ctrlPoints;
+	vector<Point2D> segmentsPoints;
 	int n; // number of ctrlPoints
 	int m = 0; // number of points for segments
+	
 	bool closed = false;
 
 public:
@@ -96,30 +97,33 @@ public:
 		boxPoints[2].x = maxX; boxPoints[2].y = maxY;
 		boxPoints[3].x = maxX; boxPoints[3].y = minY;
 
-		// set segment points values
-		int area = (maxX - minX) * (maxY - minY);
-		/*  This step 'formula' was created by me, and it's not very good, sorry.
-			I set up a minimun amount of 16 segments and tried to give a 'weight'
-			to the number of control points and the dimension of the bounding box
-			to contribute to the number of segments created
+		long area = (maxX - minX) * (maxY - minY);
+		/*  This next step 'formula' was created by me, and it's not very good, sorry.
+			I tried to give a 'weight' to the number of control points and the size
+			of the bounding box to contribute to the number of segments created.
 		*/
-		double step = (double)1.0 / (double)(10 + 3*n);
-		cout << area << " " << step << " " << area/5000.0 << " " << 1 / step << endl;
-		for (double t = 0; t <= 1; t += step)
+
+		int segments = (int)(3.0*n + (area / 10000.0));
+		double step = (double)1/ (segments), t = 0.0;
+
+		for (int i = 0; i <= segments; i++)
+		{
+			t = i * step; /* We multiply in each step instead of accumulating a sum to avoid accumulating rounding errors*/
 			segmentsPoints.push_back(bezierPoint(ctrlPoints, n, t));
-			
+		}
+
 		m = segmentsPoints.size();
 	}
 
-	Point bezierPoint(vector<Point> ctrlPoints, int n, double t)
+	Point2D bezierPoint(vector<Point2D> ctrlPoints, int n, double t)
 	{
 		while (n > 1)
 		{
 			n--;
 			for (int i = 0; i < n; i++)
 			{
-				ctrlPoints[i].x = ctrlPoints[i].x + t * ctrlPoints[i + 1].x - t*ctrlPoints[i].x;
-				ctrlPoints[i].y = ctrlPoints[i].y + t * ctrlPoints[i + 1].y - t*ctrlPoints[i].y;
+				ctrlPoints[i].x = (int)(t*(ctrlPoints[i + 1].x - ctrlPoints[i].x) + ctrlPoints[i].x);
+				ctrlPoints[i].y = (int)(t*(ctrlPoints[i + 1].y - ctrlPoints[i].y) + ctrlPoints[i].y);
 			}
 		}
 		return ctrlPoints[0];

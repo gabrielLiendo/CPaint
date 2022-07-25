@@ -4,13 +4,13 @@
 class CLine : public CShape
 {
 private:
-	Point points[2];
+	Point2D points[2];
 	
 public:
 	CLine(int x0, int y0, int x1, int y1, float r, float g, float b): CShape(r, g, b,"LINE ")
 	{
-		points[0] = Point(x0, y0);
-		points[1] = Point(x1, y1);
+		points[0] = Point2D(x0, y0);
+		points[1] = Point2D(x1, y1);
 	}
 
 	~CLine(){ cout << "Se destruyo una linea" << endl; }
@@ -67,9 +67,7 @@ public:
 		int b = points[1].x - points[0].x;
 		int c = points[0].x * points[1].y - points[1].x * points[0].y;
 
-		double num = (a * x + b * y + c);
-		int distance = static_cast<int>(num / (double)(a * a + b * b) * num);
-		return distance > 0 && distance <= 16;
+		return (int)abs(a * x + b * y + c) / sqrt(a * a + b * b) <= 4;
 
 		
 		/* Other method I tried for this was squaring the distance like so:
