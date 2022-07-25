@@ -7,7 +7,7 @@ private:
 	Point points[4];
 	int currentIndex = 1;
 	bool closed = false;
-	double leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0;
+	double leftInc1 = 0, leftInc2 = 0, rightInc1 = 0, rightInc2 = 0; // Slopes 
 
 public:
 	CTriangle(int x, int y, float r1, float g1, float b1, float r2, float g2, float b2, bool filled)
@@ -52,23 +52,17 @@ public:
 		points[currentIndex].y = y1;
 	}
 
-	void renderCtrlPoints()
+	void drawCtrlStructure()
 	{
+		renderBox();
+
 		// Render each vertex
 		for (int i = 0; i < 3; i++)
 			points[i].renderCtrlPoint();
-
-		// Set color and style of the line
-		glColor3f(1.0f, 1.0f, 1.0f);
-		glEnable(GL_LINE_STIPPLE);
-		glLineStipple(1, 0xAAAA);
-		glBegin(GL_LINE_LOOP);
-			for (int i = 0; i < 4; i++)
-				glVertex2i(boxPoints[i].x, boxPoints[i].y);
-		glEnd();
-		glDisable(GL_LINE_STIPPLE);
 	}
 
+	// We compute the render values only when moving the vertex of the triangle or when it's first drawn,
+	// calculating all this each time we render would be rather dumb
 	void setRenderValues()
 	{
 		// Order points by y-axis, p[0] is the smallest, p[2] is the biggest
@@ -193,7 +187,10 @@ public:
 			glEnd();
 		}
 		else
-		{	
+		{	/*  The idea is to travel by the slopes of the lines that define the triangle
+				and fill with color the pixels between them, the values of said slopes are
+				computed by setRenderValues() */
+
 			// Draw Content
 			if (currentIndex == 3 && filled)
 			{
@@ -255,7 +252,7 @@ public:
 		return false;
 	}
 
-	bool clickedCtrlPoint(int x, int y)
+	bool hoveredCtrlPoint(int x, int y)
 	{
 		// We check if the click fell on a vertex
 		int dx, dy;
@@ -266,10 +263,11 @@ public:
 			// Check squared distance between vertex i and the click, threshold: 5 pixels
 			if ((dx * dx + dy * dy) <= 25)
 			{
-				pointSelected = &points[i];
+				pointHovered = &points[i];
 				return true;
 			}
 		}
+
 		return false;
 	}
 

@@ -13,7 +13,7 @@ struct Color
 
 struct Point
 {
-	int x = 0, y = 0;
+	int x, y;
 
 	Point() { x = 0; y = 0; }
 
@@ -37,13 +37,15 @@ struct Point
 class CShape
 {
 protected:
-	Color fillColor, borderColor;
-	Point boxPoints[4];
-	Point anchorPoint;
-	Point *pointSelected = nullptr;
-	string name;
+	Color fillColor, borderColor;		
+	Point boxPoints[4];					
+	Point anchorPoint;					// First point clicked when moving shape
+	Point* pointHovered = nullptr;
+	Point *pointSelected = nullptr;		// Pointer to selected ctrl point
+	string name;						// Shape name
 
-	int level = 0, indexSelected;
+	int level = 0;						// Level in layers of canvas
+	int indexSelected = -1;				// Index of the point selected of the bounding box
 	bool filled = true;
 
 public:
@@ -101,18 +103,16 @@ public:
 		fillColor.r = r; fillColor.g = g; fillColor.b = b;
 	}
 
-	/*
-	float *getFillColor()
+	// Mark control point as deselected
+	void release()
 	{
-		float color[3] = { fillColor.r, fillColor.g, fillColor.b };
-		return color;
+		pointSelected = nullptr;
 	}
 
-	float *getBorderColor()
+	void clickedCtrlPoint(int x, int y)
 	{
-		float color[3] = { borderColor.r, borderColor.g, borderColor.b };
-		return color;
-	}*/
+		pointSelected = pointHovered;
+	};
 
 	// Display one pixel in the position (x, y) with the color c
 	void putPixel(int x, int y, Color c)
@@ -128,12 +128,6 @@ public:
 	{
 		for (int x = xmin; x <= xmax; x++)
 			putPixel(x, y, c);
-	}
-
-	// Mark control point as deselected
-	void release()
-	{
-		pointSelected = nullptr;
 	}
 
 	// Draw a line using Bresenham's algorithm
@@ -155,6 +149,7 @@ public:
 		putPixel(x0, y0, c);
 
 		// If |m| < 1 (abs(dx) > abs(dy)) we iterate over the x-axis, otherwise we iterate over the y-axis
+		// The decision factor 'd' should be diferent for each type of iteration (I realized this after a looooong time)
 		if (dy < dx)
 		{
 			d = dx - (dy << 1);
@@ -212,6 +207,34 @@ public:
 		}
 	}
 
+	/* We change the xand y values of the adjecent points to the point i of the bounding box,
+	   we allow the resize if the point i and its opposite are father than 2 pixels apart and the y axis */
+	bool yResize(int i, int op, int y)
+	{
+		int dy = boxPoints[op].y - y;
+		if ((i % 3 == 0 && dy < 2) || (i % 3 != 0 && dy > -2))
+			return false;
+
+		boxPoints[i].y = y;
+		boxPoints[-(i - 3) % 4].y = y;	// Cool little indexing trick
+		return true;
+	}
+
+	/* We change the xand y values of the adjecent points to the point i of the bounding box,
+	   we allow the resize if the point i and its opposite are father than 2 pixels apart and the x axis */
+	bool xResize(int i, int op, int x)
+	{
+		int dx = x - boxPoints[op].x;
+
+		if ((i > 1 && dx < 2) || (i < 2 && dx > -2))
+			return false;
+
+		boxPoints[i].x = x;
+		boxPoints[i - ((i & 1) << 1) + 1].x = x; // Disgusting and evil indexing
+		return true;
+	}
+
+	// Render dashed bounding box
 	void renderBox()
 	{
 		// Set color and style of the line
@@ -223,24 +246,25 @@ public:
 				glVertex2i(boxPoints[i].x, boxPoints[i].y);
 		glEnd();
 		glDisable(GL_LINE_STIPPLE);
-
-		// Render vertex points
-		for (int i = 0; i < 4; i++)
-			boxPoints[i].renderCtrlPoint();
 	}
 
 	virtual void update(int x, int y) = 0;
 
-	virtual void renderCtrlPoints() = 0;
+	// Draw the respective ctrl structure to the figure (just the vertex, just the bounding box, etc.)
+	virtual void drawCtrlStructure() = 0;
 
 	virtual void render(const bool modeHardware) = 0;
 
+	// Return true when user hovers over the figure
 	virtual bool onClick(int x, int y) = 0;
 
-	virtual bool clickedCtrlPoint(int x, int y) = 0;
+	virtual bool hoveredCtrlPoint(int x, int y) = 0;
+
+	
 	
 	virtual void onMove(int x1, int y1) = 0;
 
+	// Return string with the info to write in file when savign scenes
 	virtual std::string getInfo()
 	{
 		std::string info = name;
@@ -260,6 +284,9 @@ public:
 		return info + "\n";
 	};
 
+	/*  The following methods are not used by most shapes, so most of the times they will return meaningless values,
+		except if they are called by the types of objects they are designed for, this helps keep things short and sweet  */
+	
 	// Overridden by Triangle and Bezier Curve methods
 	virtual void newPoint(int x, int y){ return; }
 

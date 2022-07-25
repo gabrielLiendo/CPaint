@@ -23,7 +23,7 @@ public:
 	}
 
 	// Render each vertex
-	void renderCtrlPoints()
+	void drawCtrlStructure()
 	{
 		points[0].renderCtrlPoint();
 		points[1].renderCtrlPoint();
@@ -66,14 +66,26 @@ public:
 		int a = points[0].y - points[1].y;
 		int b = points[1].x - points[0].x;
 		int c = points[0].x * points[1].y - points[1].x * points[0].y;
+
 		double num = (a * x + b * y + c);
 		int distance = static_cast<int>(num / (double)(a * a + b * b) * num);
+		return distance > 0 && distance <= 16;
 
-		return distance > 0 &&  distance <= 16 ;
+		
+		/* Other method I tried for this was squaring the distance like so:
+
+			double num = (a * x + b * y + c);
+			int distance = static_cast<int>(num / (double)(a * a + b * b) * num);
+			return distance > 0 && distance <= 16;
+
+		  Getting rid of the calls to the functions abs() and sqrt(), and it worked,
+		  buuut sometimes I got negative distances and the values got really big, 
+		  really fast. So I went with the boring and slower, but safer route. */
+		
 	}
 
 	// We check if the click fell on a vertex
-	bool clickedCtrlPoint(int x, int y)
+	bool hoveredCtrlPoint(int x, int y)
 	{
 		int dx, dy;
 		for (int i = 0; i < 2; i++)
@@ -83,10 +95,11 @@ public:
 			// Check squared distance between vertex i and the click, threshold: 4 pixels
 			if ((dx * dx + dy * dy) <= 16)
 			{
-				pointSelected = &points[i];
+				pointHovered = &points[i];
 				return true;
 			}
 		}
+
 		return false;
 	}
 

@@ -19,9 +19,13 @@ public:
 	}
 	
 	// Render the bounding box
-	void renderCtrlPoints()
+	void drawCtrlStructure()
 	{
 		renderBox();
+
+		// Render vertex points
+		for (int i = 0; i < 4; i++)
+			boxPoints[i].renderCtrlPoint();
 	}
 
 	void render(const bool modeHardware)
@@ -81,7 +85,7 @@ public:
 	}
 
 	// We check if the click fell on a vertex
-	bool clickedCtrlPoint(int x, int y)
+	bool hoveredCtrlPoint(int x, int y)
 	{
 		int dx, dy;
 		for (int i = 0; i < 4; i++)
@@ -91,33 +95,13 @@ public:
 			// Check squared distance between vertex i and the click, threshold: 4 pixels
 			if ((dx * dx + dy * dy) <= 16)
 			{
-				pointSelected = &boxPoints[i];
+				pointHovered = &boxPoints[i];
 				indexSelected = i;
 				return true;
 			}
 		}
+
 		return false;
-	}
-
-	void xResize(int i, int op, int x)
-	{
-		int dx = x - boxPoints[op].x;
-
-		if ((i > 1 && dx < 2) || (i < 2 && dx > -2))
-			return;
-
-		boxPoints[i].x = x;
-		boxPoints[i - ((i & 1) << 1) + 1].x = x;
-	}
-
-	void yResize(int i, int op, int y)
-	{
-		int dy = boxPoints[op].y - y;
-		if ((i % 3 == 0 && dy < 2) || (i % 3 != 0 && dy > -2))
-			return;
-
-		boxPoints[i].y = y;
-		boxPoints[-(i - 3) % 4].y = y;
 	}
 
 	void onMove(int x, int y)

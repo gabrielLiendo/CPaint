@@ -62,19 +62,10 @@ public:
 	}
 
 	// Render control structure
-	void renderCtrlPoints()
+	void drawCtrlStructure()
 	{
 		drawCtrlPolygon();
-
-		// Set color and style of the line
-		glColor3f(1.0f, 1.0f, 1.0f);
-		glEnable(GL_LINE_STIPPLE);
-		glLineStipple(1, 0xAAAA);
-		glBegin(GL_LINE_LOOP);
-			for (int i = 0; i < 4; i++)
-				glVertex2i(boxPoints[i].x, boxPoints[i].y);
-		glEnd();
-		glDisable(GL_LINE_STIPPLE);
+		renderBox();
 
 		// Render each control points
 		for (int i = 0; i < n; i++)
@@ -105,10 +96,15 @@ public:
 		boxPoints[2].x = maxX; boxPoints[2].y = maxY;
 		boxPoints[3].x = maxX; boxPoints[3].y = minY;
 
-		// set Segment points values
-		int maxD = max(maxX - minX, maxY - minY);
-		double step = (double)1.0 / (double)(17.0 + n*4.0 + maxD/60.0);
-
+		// set segment points values
+		int area = (maxX - minX) * (maxY - minY);
+		/*  This step 'formula' was created by me, and it's not very good, sorry.
+			I set up a minimun amount of 16 segments and tried to give a 'weight'
+			to the number of control points and the dimension of the bounding box
+			to contribute to the number of segments created
+		*/
+		double step = (double)1.0 / (double)(10 + 3*n);
+		cout << area << " " << step << " " << area/5000.0 << " " << 1 / step << endl;
 		for (double t = 0; t <= 1; t += step)
 			segmentsPoints.push_back(bezierPoint(ctrlPoints, n, t));
 			
@@ -136,6 +132,8 @@ public:
 			drawLine(ctrlPoints[i - 1].x, ctrlPoints[i - 1].y, ctrlPoints[i].x, ctrlPoints[i].y, Color({ 0.0, 0.0, 0.0 }));
 	}
 
+	/* In this render function we only draw the segments, computing the segment points values in this function 
+		would be a cold and brutal murder attempt of our poor CPU*/
 	void render(const bool modeHardware)
 	{
 		if(!closed)
@@ -150,7 +148,7 @@ public:
 			glEnd();
 		}
 		else
-		{
+		{	
 			for (int i = 1; i < m; i++)
 				drawLine(segmentsPoints[i - 1].x, segmentsPoints[i - 1].y, segmentsPoints[i].x, segmentsPoints[i].y, borderColor);
 		}
@@ -176,14 +174,14 @@ public:
 				dx = x1 - x0;
 				c = x0 * y1 - x1 * y0;
 
-				if ((int)abs(dy * x + dx * y + c) / sqrt(dy * dy + dx * dx) <= 6)
+				if ((int)abs(dy * x + dx * y + c) / sqrt(dy * dy + dx * dx) <= 6) 	// Again this terrible formula...
 					return true;
 			}
 		}
 		return false;
 	}
 
-	bool clickedCtrlPoint(int x, int y)
+	bool hoveredCtrlPoint(int x, int y)
 	{
 		// We check if the click fell on a vertex
 		int dx, dy;
@@ -194,10 +192,11 @@ public:
 			// Check squared distance between vertex i and the click
 			if ((dx * dx + dy * dy) <= 25)
 			{
-				pointSelected = &ctrlPoints[i];
+				pointHovered = &ctrlPoints[i];
 				return true;
 			}
 		}
+
 		return false;
 	}
 

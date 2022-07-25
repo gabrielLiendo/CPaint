@@ -42,7 +42,7 @@ public:
 	}
 
 	// Render the ctrl radius line and point
-	void renderCtrlPoints()
+	void drawCtrlStructure()
 	{
 		drawLine(cx, cy, ctrlRadius.x, ctrlRadius.y, borderColor);
 
@@ -78,7 +78,6 @@ public:
 		{	// Draw border and filler in the same iteration
 
 			horizontalLine(cx - r + 1, cx + r - 1, cy, fillColor);
-
 			// Draw one octant and reflect it's points
 			for (; y > x; x++)
 			{
@@ -88,7 +87,7 @@ public:
 				{
 					d += ((x - y) << 1) + 5;
 					y--;
-
+					// We only draw thing filler lines when the y value changes
 					horizontalLine(cx - x + 1, cx + x - 1, cy + y, fillColor);
 					horizontalLine(cx - x + 1, cx + x - 1, cy - y, fillColor);
 				}
@@ -121,7 +120,7 @@ public:
 	}
 
 	// We check if the click fell on the control point
-	bool clickedCtrlPoint(int x, int y)
+	bool hoveredCtrlPoint(int x, int y)
 	{
 		int dx = (x - ctrlRadius.x);
 		int dy = (y - ctrlRadius.y);
@@ -129,10 +128,10 @@ public:
 		// Check squared distance between vertex i and the click, threshold: 4 pixels
 		if ((dx * dx + dy * dy) <= 16)
 		{
-			pointSelected = &ctrlRadius;
+			pointHovered = &ctrlRadius;
 			return true;
 		}
-			
+
 		return false;
 	}
 
@@ -140,6 +139,7 @@ public:
 	{
 		if (pointSelected)
 		{
+			// We adjust the new radius
 			int oldR = static_cast<int>(sqrt(pow(pointSelected->x - cx, 2) + pow(pointSelected->y - cy, 2)));
 			int newR = static_cast<int>(sqrt(pow(x - cx, 2) + pow(y - cy, 2)));
 			int diff = newR - oldR;

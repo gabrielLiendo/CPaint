@@ -5,7 +5,7 @@ PaintUI ui;
 int width = 1600, height = 800;
 int oldx0, oldy0;
 bool drawing = true;
-bool clickedCtrlPoint = false;
+bool overCtrlPoint = false;
 
 void setViewport()
 {
@@ -30,7 +30,7 @@ void renderScene(void)
 		s->render(currentMode);
 
 	if (selectedShape)
-		selectedShape->renderCtrlPoints();
+		selectedShape->drawCtrlStructure();
 
 	if (drawingShape)
 		drawingShape->render(currentMode);
@@ -80,29 +80,25 @@ void onClickCanvas(int button, int state, int x, int y)
 		if(state == GLUT_DOWN)
 		{	// Left-click was pressed
 			
-			// Check if click fell on a ctrl point of the selected figure
-			if (selectedShape && selectedShape->clickedCtrlPoint(x, y))
-				break;
-
-			// Check if click fell on figure
-			unselectFigure();
-			
-			if (hoveredShape) 
+			if (selectedShape && overCtrlPoint)
+				selectedShape->clickedCtrlPoint(x, y);
+			else if (hoveredShape) 
 			{	// The click fell on top of a figure
 				selectedShape = hoveredShape;
 				selectedShape->setAnchorPoint(x, y);
-				selectedShape->clickedCtrlPoint(x, y);
 				drawing = false;
 			}
 			else if (ui.shapeSelected > 3)
 			{
+				unselectFigure();
 				if (!drawingShape)
 					createFigure(ui.shapeSelected, oldx0, oldy0, x, y, ui.fillColor, ui.borderColor, ui.allowFill);
 				else 
 					drawingShape->newPoint(x, y);
 			}
 			else 
-			{	// We can draw
+			{	// We clicked on free space
+				unselectFigure();
 				drawing = true;
 				oldx0 = x; oldy0 = y;
 			}
@@ -166,10 +162,11 @@ void onMotion(int x, int y)
 		}
 		else if (selectedShape) 
 		{	// Drag shape position
-			if (clickedCtrlPoint)
+			if (overCtrlPoint)
 				glutSetCursor(GLUT_CURSOR_CROSSHAIR);
 			else
 				glutSetCursor(GLUT_CURSOR_CYCLE);
+				
 			selectedShape->onMove(x, y);
 		}
 	}
@@ -188,10 +185,21 @@ void onPassiveMotion(int x, int y)
 	else
 	{	// We are freely hovering over the canvas
 		onHoverShape(x, y);
-		if (hoveredShape)
-			glutSetCursor(GLUT_CURSOR_CYCLE);
+		if (selectedShape && selectedShape->hoveredCtrlPoint(x, y))
+		{
+			glutSetCursor(GLUT_CURSOR_CROSSHAIR);
+			overCtrlPoint = true;
+		}
 		else
-			glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
+		{	
+			if (selectedShape)
+				selectedShape->release();
+			overCtrlPoint = false;
+			if (hoveredShape)
+				glutSetCursor(GLUT_CURSOR_CYCLE);
+			else
+				glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
+		}
 	}
 }
 
