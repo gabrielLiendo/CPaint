@@ -1,5 +1,5 @@
 # CPaint
-CPaint is a simple drawing tool that was made as a first project for Introduction to Computer Graphics. With the application we can draw 6 types of primitives (Lines, Rectangles, Circles, Ellipses, Triangles, and Bezier Curves) and we can modify the figures's border and filler colors, overall shape and position, after a drawing session we can save the scene to load it at a later time and continue with our work.
+CPaint is a simple drawing tool that was made as a first project for Introduction to Computer Graphics. With the application we can draw 6 types of primitives (Lines, Rectangles, Circles, Ellipses, Triangles, and Bezier Curves) and we can modify the figures's border and filler colors, overall shape and position. Afterwards, we can save the scene to load it at a later time and continue with our work.
 
 For rendering we have two options (by harware and by software), the hardware mode uses the old OpenGL primitives while the software mode exploits the CPU and renders the figures pixel by pixel. To implement this last mode we use the Mid-Point Algorithm for the Line, the Circle and the Ellipse shapes, and the Casteljau's algorithm for the Bezier Curve.
 
@@ -17,7 +17,7 @@ On the other hand, we can collapse the UI with the 'I' key and only use the keyb
 If you have trouble drawing a figure you can head over the help marker beside the 'Shape' section in the UI to find how to start and end each shape.
 
 ## Use and Compiling
-This project was developed using Visual Studio 2022, to build it yourself open the .sln file and compile it using the x84 configuration. If you just want to use the applicatton, just open the .exe file included in the main directory.
+This project was developed using Visual Studio 2022, to build it yourself open the .sln file and compile it using the x84 configuration. If you just want to use the application, just open the .exe file included in the main directory.
 
 ## Current Known Issues
 
@@ -26,3 +26,5 @@ This project was developed using Visual Studio 2022, to build it yourself open t
 - In the bezier curve after imputting more than 13 control points, the curve starts to look jagged, depending of the positions of said control points.
 
 - It's not possible to resize the bounding boxes of the triangles and the bezier curves.
+
+- If you bring the executable outside of the main directory you can still use the program, but the font of the interface will revert back to the deafult ImGui font. which is rather unpleasant.
